@@ -1,0 +1,25 @@
+/* Variables de diseño y reglas globales. Cambia colores aquí, no en otros archivos. */
+:root {
+  --color-bg: #f6f7f4;
+  --color-surface: #ffffff;
+  --color-text: #16212b;
+  --color-muted: #5b6672;
+  --color-line: #dfe3e0;
+  --color-primary: #0f766e;
+  --color-danger: #b91c1c;
+  --space: 1rem;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  background: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.45;
+}
+
+h1, h2 { margin: 0; }
+[hidden] { display: none !important; }
+:focus-visible { outline: 3px solid var(--color-primary); outline-offset: 2px; }

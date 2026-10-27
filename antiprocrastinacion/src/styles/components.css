@@ -1,0 +1,37 @@
+/* Componentes reutilizables: tarjetas, formularios, botones, mensajes, tareas, Pomodoro, calendario. */
+.card { background: var(--color-surface); border: 1px solid var(--color-line); border-radius: 8px; padding: var(--space); }
+.card-title { font-size: 1.05rem; margin-bottom: .75rem; }
+
+.form { display: grid; gap: .6rem; }
+.field { display: grid; gap: .25rem; font-size: .85rem; color: var(--color-muted); }
+.input { width: 100%; padding: .55rem; border: 1px solid #c5ccc8; border-radius: 6px; font: inherit; color: var(--color-text); }
+
+.btn { padding: .55rem .9rem; border: 1px solid var(--color-line); border-radius: 6px; font: inherit; cursor: pointer; background: #eef1ee; color: var(--color-text); }
+.btn--primary { background: var(--color-primary); border-color: var(--color-primary); color: #fff; }
+.btn--danger { color: var(--color-danger); }
+.btn:disabled, .input:disabled { opacity: .5; cursor: not-allowed; }
+.btn-row { display: flex; flex-wrap: wrap; gap: .5rem; }
+
+.message { margin: 0; padding: .6rem var(--space); font-size: .9rem; }
+.message--info { background: #d7ece9; }
+.message--error { background: #fbe1e1; color: #7f1d1d; }
+.loading { margin: 0; padding: .4rem var(--space); font-size: .85rem; color: var(--color-muted); }
+.note { margin: .75rem 0 0; font-size: .8rem; color: var(--color-muted); }
+
+.task-list { list-style: none; margin: 1rem 0 0; padding: 0; display: grid; gap: .5rem; }
+.task-item { display: grid; gap: .3rem; padding: .6rem; border: 1px solid var(--color-line); border-radius: 6px; }
+.task-item--done .task-title { text-decoration: line-through; color: var(--color-muted); }
+.task-title { font-weight: 600; }
+.task-time { font-size: .8rem; color: var(--color-muted); }
+
+.pomodoro-mode { margin: 0; color: var(--color-muted); }
+.pomodoro-time { font-size: 2.75rem; font-weight: 700; margin: .1rem 0 .6rem; font-variant-numeric: tabular-nums; }
+
+.move-log { margin: .75rem 0 0; padding: .6rem; background: #eef1ee; border-radius: 6px; font-size: .8rem; overflow-x: auto; white-space: pre-wrap; }
+
+/* FullCalendar: clases que agrega calendar.mapper.js según el estado de la tarea */
+.fc { font-size: .85rem; }
+.fc .fc-toolbar { flex-wrap: wrap; gap: .5rem; }
+.fc .fc-toolbar-title { font-size: 1.05rem; }
+.fc-event.event--done { opacity: .55; }
+.fc-event.event--in_progress { border-style: dashed; }

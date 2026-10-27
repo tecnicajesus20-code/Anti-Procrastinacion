@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sistema Antiprocrastinación</title>
+  <link rel="stylesheet" href="src/styles/base.css" />
+  <link rel="stylesheet" href="src/styles/layout.css" />
+  <link rel="stylesheet" href="src/styles/components.css" />
+</head>
+<body>
+  <header class="app-header">
+    <h1 class="app-title">Antiprocrastinación</h1>
+    <p class="app-user" id="user-label">Modo demo (sin sesión)</p>
+  </header>
+
+  <p class="message" id="message" role="status" hidden></p>
+  <p class="loading" id="loading" hidden>Cargando…</p>
+
+  <main class="app-main">
+    <section class="card card--calendar">
+      <h2 class="card-title">Calendario</h2>
+      <div class="calendar" id="calendar"></div>
+      <pre class="move-log" id="move-log">Arrastra un evento para ver su nueva fecha de inicio y fin.</pre>
+    </section>
+
+    <section class="card">
+      <h2 class="card-title">Nueva tarea</h2>
+      <form class="form" id="task-form">
+        <label class="field">Título
+          <input class="input" id="task-title" type="text" maxlength="120" required />
+        </label>
+        <label class="field">Descripción (opcional)
+          <input class="input" id="task-description" type="text" />
+        </label>
+        <label class="field">Inicio
+          <input class="input" id="task-start" type="datetime-local" required />
+        </label>
+        <label class="field">Fin
+          <input class="input" id="task-end" type="datetime-local" required />
+        </label>
+        <label class="field">Fecha límite (opcional)
+          <input class="input" id="task-due" type="datetime-local" />
+        </label>
+        <button class="btn btn--primary" type="submit">Agregar tarea</button>
+      </form>
+      <ul class="task-list" id="task-list"></ul>
+    </section>
+
+    <section class="card">
+      <h2 class="card-title">Pomodoro</h2>
+      <p class="pomodoro-mode" id="pomodoro-mode">Trabajo</p>
+      <p class="pomodoro-time" id="pomodoro-time">25:00</p>
+      <div class="btn-row">
+        <button class="btn btn--primary" id="pomodoro-start" type="button">Iniciar</button>
+        <button class="btn" id="pomodoro-pause" type="button">Pausar</button>
+        <button class="btn" id="pomodoro-reset" type="button">Reiniciar</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 class="card-title">Cuenta</h2>
+      <form class="form" id="auth-form">
+        <label class="field">Correo
+          <input class="input" id="auth-email" type="email" autocomplete="email" />
+        </label>
+        <label class="field">Contraseña
+          <input class="input" id="auth-password" type="password" autocomplete="current-password" />
+        </label>
+        <div class="btn-row">
+          <button class="btn btn--primary" id="auth-login" type="button">Iniciar sesión</button>
+          <button class="btn" id="auth-register" type="button">Crear cuenta</button>
+          <button class="btn" id="auth-reset" type="button">Recuperar contraseña</button>
+          <button class="btn" id="auth-logout" type="button" hidden>Cerrar sesión</button>
+        </div>
+      </form>
+      <p class="note" id="auth-note"></p>
+    </section>
+  </main>
+
+  <!-- FullCalendar 6.1.15 (paquete completo con vistas e interacción). Define window.FullCalendar -->
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>

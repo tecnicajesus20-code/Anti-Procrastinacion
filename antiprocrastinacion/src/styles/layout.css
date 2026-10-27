@@ -1,0 +1,26 @@
+/* Estructura de la página: móvil primero, una columna; en escritorio, dos. */
+.app-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: .5rem var(--space);
+  padding: var(--space);
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-line);
+}
+.app-title { font-size: 1.25rem; }
+.app-user { margin: 0; font-size: .85rem; color: var(--color-muted); }
+
+.app-main {
+  display: grid;
+  gap: var(--space);
+  padding: var(--space);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+@media (min-width: 900px) {
+  .app-main { grid-template-columns: 2fr 1fr; align-items: start; }
+  .card--calendar { grid-row: span 3; }
+}

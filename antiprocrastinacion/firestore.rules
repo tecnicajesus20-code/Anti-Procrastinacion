@@ -1,0 +1,25 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Cada usuario solo accede a sus propias tareas: users/{uid}/tasks/{taskId}
+    match /users/{uid}/tasks/{taskId} {
+      allow read, delete: if isOwner(uid);
+      allow create, update: if isOwner(uid) && isValidTask(request.resource.data);
+    }
+
+    function isOwner(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    // Valida el contrato de datos de la tarea (ver src/modules/tasks/task.model.js)
+    function isValidTask(t) {
+      return t.keys().hasAll(['title', 'status', 'start', 'end'])
+        && t.keys().hasOnly(['title', 'description', 'status', 'dueDate', 'start', 'end'])
+        && t.title is string && t.title.size() > 0 && t.title.size() <= 120
+        && t.status in ['pending', 'in_progress', 'done']
+        && t.start is string && t.end is string
+        && t.end > t.start;
+    }
+  }
+}
