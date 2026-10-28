@@ -13,7 +13,7 @@ Los módulos ES **no funcionan abriendo `index.html` con doble clic**.
    - VS Code: extensión **Live Server** → "Go Live".
    - Python: `python -m http.server 8080` y abre http://localhost:8080
    - Node: `npx serve`
-3. Verás el calendario con 3 tareas de prueba. Arrastra un evento: el cuadro de abajo muestra su nuevo inicio y fin.
+3. Verás el calendario con 3 tareas de prueba. Arrastra sobre un espacio libre para crear una tarea o arrastra una existente para moverla.
 
 Sin configurar Firebase la app funciona en **modo demo** (datos en memoria, se pierden al recargar) y el formulario de cuenta queda desactivado con un aviso. No se simula ninguna sesión.
 
@@ -57,7 +57,7 @@ src/modules/storage/       memory.repository (demo), firestore.repository (real)
 
 - HTML solo con etiquetas; estilos con **clases**; JS se engancha con **ids** (`byId`). En `.js` solo JavaScript (y HTML/CSS que haya que inyectar).
 - Los **servicios** (`*.service.js`, repositorios) no tocan el DOM. La UI (`*.ui.js`) no contiene lógica de negocio.
-- El calendario **no guarda datos**: dibuja las tareas de `taskService` y avisa cuando mueves un evento.
+- El calendario **no guarda datos**: dibuja las tareas de `taskService`, avisa cuando mueves un evento y permite seleccionar un espacio libre para abrir el formulario de creación.
 - Todo cambio de tareas pasa por `taskService`. Fechas siempre en ISO 8601.
 - Comentar en español qué hace cada archivo y cada función pública.
 

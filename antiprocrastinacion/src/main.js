@@ -43,13 +43,14 @@ async function startApp() {
   try {
     const taskService = createTaskService(demoRepository());
     const calendar = createCalendarView();
+    const taskUi = initTaskUi(taskService);
 
     calendar.mount(byId("calendar"), {
+      onDateSelected: taskUi.openCalendarTask,
       // FullCalendar entrega el nuevo bloque; el servicio actualiza la tarea y el calendario se redibuja.
       onEventMoved: async ({ id, start, end }) => {
         try {
           await taskService.moveBlock(id, start, end);
-          byId("move-log").textContent = `Evento movido\nid:     ${id}\ninicio: ${start}\nfin:    ${end}`;
         } catch (error) {
           showMessage(error.message, "error");
           throw error; // el calendario devuelve el evento a su sitio
@@ -58,7 +59,6 @@ async function startApp() {
     });
 
     taskService.subscribe(calendar.render);
-    initTaskUi(taskService);
     initPomodoroUi(createPomodoroService());
     const authUi = initAuthUi(authService);
 

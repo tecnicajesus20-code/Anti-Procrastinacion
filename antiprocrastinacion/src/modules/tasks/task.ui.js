@@ -11,6 +11,12 @@ function toIso(value) {
   return value ? new Date(value).toISOString() : null;
 }
 
+/** Convierte una fecha al formato local que espera un input datetime-local. */
+function toLocalInputValue(date) {
+  const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
+  return localDate.toISOString().slice(0, 16);
+}
+
 /** Ejecuta una acción y muestra el error si falla. */
 async function run(action) {
   try {
@@ -25,6 +31,8 @@ async function run(action) {
 export function initTaskUi(taskService) {
   const form = byId("task-form");
   const list = byId("task-list");
+  const eventDialog = byId("event-dialog");
+  const eventForm = byId("event-form");
 
   form.addEventListener("submit", (event) => {
     event.preventDefault();
@@ -39,6 +47,35 @@ export function initTaskUi(taskService) {
       form.reset();
     });
   });
+
+  function openCalendarTask({ start, end }) {
+    byId("event-title").value = "";
+    byId("event-description").value = "";
+    byId("event-start").value = toLocalInputValue(start);
+    byId("event-end").value = toLocalInputValue(end);
+    eventDialog.showModal();
+    byId("event-title").focus();
+  }
+
+  eventForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    try {
+      await taskService.add({
+        title: byId("event-title").value,
+        description: byId("event-description").value,
+        start: toIso(byId("event-start").value),
+        end: toIso(byId("event-end").value),
+      });
+      eventDialog.close();
+      eventForm.reset();
+      clearMessage();
+    } catch (error) {
+      showMessage(error.message, "error");
+    }
+  });
+
+  byId("event-dialog-close").addEventListener("click", () => eventDialog.close());
+  byId("event-dialog-cancel").addEventListener("click", () => eventDialog.close());
 
   function render(tasks) {
     list.replaceChildren();
@@ -81,4 +118,5 @@ export function initTaskUi(taskService) {
   }
 
   taskService.subscribe(render);
+  return { openCalendarTask };
 }

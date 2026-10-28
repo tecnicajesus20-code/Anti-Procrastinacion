@@ -3,7 +3,7 @@
  * FullCalendar 6.1.15 se carga por <script> en index.html y expone window.FullCalendar.
  *
  * API pública:
- *   mount(element, { onEventMoved })   Crea el calendario. onEventMoved({id, start, end}) puede ser async;
+ *   mount(element, { onEventMoved, onDateSelected })   Crea el calendario. onEventMoved({id, start, end}) puede ser async;
  *                                      si lanza un error, el evento vuelve a su posición.
  *   render(tasks)                      Dibuja las tareas como eventos (reemplaza los anteriores)
  */
@@ -12,7 +12,7 @@ import { taskToEvent, eventToBlock } from "./calendar.mapper.js";
 export function createCalendarView() {
   let calendar = null;
 
-  function mount(element, { onEventMoved }) {
+  function mount(element, { onEventMoved, onDateSelected }) {
     const { Calendar } = window.FullCalendar ?? {};
     if (!Calendar) throw new Error("FullCalendar no se cargó. Revisa tu conexión a internet.");
 
@@ -29,6 +29,12 @@ export function createCalendarView() {
       editable: true,              // permite arrastrar eventos
       eventDurationEditable: false, // en el MVP solo se mueve, no se redimensiona
       eventLongPressDelay: 300,     // en móvil, mantener pulsado para arrastrar
+      selectable: true,
+      selectMirror: true,
+      select: (info) => {
+        onDateSelected({ start: info.start, end: info.end });
+        calendar.unselect();
+      },
       eventDrop: async (info) => {
         try {
           // info.event.start / info.event.end son las nuevas fechas del evento

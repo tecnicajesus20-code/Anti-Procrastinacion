@@ -21,7 +21,7 @@
     <section class="card card--calendar">
       <h2 class="card-title">Calendario</h2>
       <div class="calendar" id="calendar"></div>
-      <pre class="move-log" id="move-log">Arrastra un evento para ver su nueva fecha de inicio y fin.</pre>
+      <p class="calendar-hint">Arrastra sobre un espacio libre para crear una tarea. También puedes mover las tareas existentes.</p>
     </section>
 
     <section class="card">
@@ -77,6 +77,33 @@
       <p class="note" id="auth-note"></p>
     </section>
   </main>
+
+  <dialog class="event-dialog" id="event-dialog" aria-labelledby="event-dialog-title">
+    <form class="event-form" id="event-form">
+      <div class="event-dialog__header">
+        <h2 class="event-dialog__title" id="event-dialog-title">Nueva tarea</h2>
+        <button class="icon-button" id="event-dialog-close" type="button" aria-label="Cerrar">×</button>
+      </div>
+      <label class="field">Título
+        <input class="input event-title-input" id="event-title" type="text" maxlength="120" placeholder="Añade un título" required />
+      </label>
+      <div class="event-time-fields">
+        <label class="field">Inicio
+          <input class="input" id="event-start" type="datetime-local" required />
+        </label>
+        <label class="field">Fin
+          <input class="input" id="event-end" type="datetime-local" required />
+        </label>
+      </div>
+      <label class="field">Descripción <span class="optional-label">(opcional)</span>
+        <textarea class="input event-description-input" id="event-description" rows="2"></textarea>
+      </label>
+      <div class="event-dialog__actions">
+        <button class="btn" id="event-dialog-cancel" type="button">Cancelar</button>
+        <button class="btn btn--primary" type="submit">Guardar</button>
+      </div>
+    </form>
+  </dialog>
 
   <!-- FullCalendar 6.1.15 (paquete completo con vistas e interacción). Define window.FullCalendar -->
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
