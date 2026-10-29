@@ -1,25 +1,93 @@
-/* Variables de diseño y reglas globales. Cambia colores aquí, no en otros archivos. */
+/* src/styles/base.css - Cristal Esmeralda con Fondo y Transparencia Real */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
 :root {
-  --color-bg: #f6f7f4;
-  --color-surface: #ffffff;
-  --color-text: #16212b;
-  --color-muted: #5b6672;
-  --color-line: #dfe3e0;
-  --color-primary: #0f766e;
-  --color-danger: #b91c1c;
-  --space: 1rem;
+  /* Fondo diagonal menta a azul hielo (igual a la referencia) */
+  --bg-gradient: linear-gradient(125deg, #D4F3E7 0%, #E3F2FD 50%, #CDE7F8 100%);
+  
+  /* CRISTAL REAL (Baja opacidad para que se vea el fondo a través de las tarjetas) */
+  --glass-bg: rgba(255, 255, 255, 0.42);
+  --glass-bg-strong: rgba(255, 255, 255, 0.48);
+  --glass-input: rgba(255, 255, 255, 0.45);
+  --glass-border: rgba(255, 255, 255, 0.85);
+  --glass-shadow: 0 12px 32px -4px rgba(15, 38, 58, 0.1), inset 0 1px 1px rgba(255, 255, 255, 0.9);
+  --glass-blur: blur(18px) saturate(160%);
+
+  /* Colores de Acento */
+  --teal-primary: #0D8A7B;
+  --teal-hover: #096E62;
+  --ocean-badge: #0277BD;
+  
+  /* Textos */
+  --text-slate: #0F1E2E;
+  --text-body: #1E293B;
+  --text-muted: #5A6B7C;
+
+  /* Bordes */
+  --radius-card: 18px;
+  --radius-btn: 10px;
+  --radius-pill: 999px;
+  --font-main: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
 }
 
-*, *::before, *::after { box-sizing: border-box; }
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  background: var(--bg-gradient);
+  min-height: 100%;
+}
 
 body {
-  margin: 0;
-  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
-  background: var(--color-bg);
-  color: var(--color-text);
-  line-height: 1.45;
+  font-family: var(--font-main);
+  background: transparent; /* Clave para no tapar las figuras */
+  color: var(--text-body);
+  min-height: 100vh;
+  padding: 1.75rem 2.25rem 3rem;
+  position: relative;
+  z-index: 1;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
 }
 
-h1, h2 { margin: 0; }
-[hidden] { display: none !important; }
-:focus-visible { outline: 3px solid var(--color-primary); outline-offset: 2px; }
+/* Figuras geométricas/orgánicas del fondo (visibles a través del cristal) */
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* 1. Forma de hoja verde esmeralda inclinada (Izquierda / Centro) */
+body::before {
+  width: 380px;
+  height: 520px;
+  top: 14%;
+  left: 15%;
+  background: linear-gradient(160deg, rgba(67, 160, 71, 0.65) 0%, rgba(27, 94, 32, 0.45) 100%);
+  border-radius: 80% 15% 80% 15%;
+  transform: rotate(-18deg);
+  filter: blur(8px); /* Borde suave pero forma definida como en la imagen */
+}
+
+/* 2. Círculo grande azul celeste/océano (Centro / Derecha) */
+body::after {
+  width: 540px;
+  height: 540px;
+  top: 18%;
+  left: 42%;
+  background: linear-gradient(135deg, rgba(100, 181, 246, 0.65) 0%, rgba(30, 136, 229, 0.42) 100%);
+  border-radius: 50%;
+  filter: blur(10px);
+}
+
+/* Respetar atributo hidden de JS */
+[hidden] {
+  display: none !important;
+}

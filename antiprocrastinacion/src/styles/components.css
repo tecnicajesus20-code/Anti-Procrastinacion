@@ -1,37 +1,359 @@
-/* Componentes reutilizables: tarjetas, formularios, botones, mensajes, tareas, Pomodoro, calendario. */
-.card { background: var(--color-surface); border: 1px solid var(--color-line); border-radius: 8px; padding: var(--space); }
-.card-title { font-size: 1.05rem; margin-bottom: .75rem; }
+/* src/styles/components.css - Transparencia Glassmorphism Real */
 
-.form { display: grid; gap: .6rem; }
-.field { display: grid; gap: .25rem; font-size: .85rem; color: var(--color-muted); }
-.input { width: 100%; padding: .55rem; border: 1px solid #c5ccc8; border-radius: 6px; font: inherit; color: var(--color-text); }
-
-.btn { padding: .55rem .9rem; border: 1px solid var(--color-line); border-radius: 6px; font: inherit; cursor: pointer; background: #eef1ee; color: var(--color-text); }
-.btn--primary { background: var(--color-primary); border-color: var(--color-primary); color: #fff; }
-.btn--danger { color: var(--color-danger); }
-.btn:disabled, .input:disabled { opacity: .5; cursor: not-allowed; }
-.btn-row { display: flex; flex-wrap: wrap; gap: .5rem; }
-
-.message { margin: 0; padding: .6rem var(--space); font-size: .9rem; }
-.message--info { background: #d7ece9; }
-.message--error { background: #fbe1e1; color: #7f1d1d; }
-.loading { margin: 0; padding: .4rem var(--space); font-size: .85rem; color: var(--color-muted); }
-.note { margin: .75rem 0 0; font-size: .8rem; color: var(--color-muted); }
-
-.task-list { list-style: none; margin: 1rem 0 0; padding: 0; display: grid; gap: .5rem; }
-.task-item { display: grid; gap: .3rem; padding: .6rem; border: 1px solid var(--color-line); border-radius: 6px; }
-.task-item--done .task-title { text-decoration: line-through; color: var(--color-muted); }
-.task-title { font-weight: 600; }
-.task-time { font-size: .8rem; color: var(--color-muted); }
-
-.pomodoro-mode { margin: 0; color: var(--color-muted); }
-.pomodoro-time { font-size: 2.75rem; font-weight: 700; margin: .1rem 0 .6rem; font-variant-numeric: tabular-nums; }
-
-.move-log { margin: .75rem 0 0; padding: .6rem; background: #eef1ee; border-radius: 6px; font-size: .8rem; overflow-x: auto; white-space: pre-wrap; }
-
-/* FullCalendar: clases que agrega calendar.mapper.js según el estado de la tarea */
-.fc { font-size: .85rem; }
-.fc .fc-toolbar { flex-wrap: wrap; gap: .5rem; }
-.fc .fc-toolbar-title { font-size: 1.05rem; }
-.fc-event.event--done { opacity: .55; }
-.fc-event.event--in_progress { border-style: dashed; }
+/* =========================================
+   1. TARJETAS DE CRISTAL ESMERILADO
+   ========================================= */
+   .card {
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1.5px solid var(--glass-border);
+    border-radius: var(--radius-card);
+    padding: 1.35rem 1.5rem;
+    box-shadow: var(--glass-shadow);
+    height: fit-content;
+  }
+  
+  .card-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-slate);
+    margin-bottom: 1rem;
+    letter-spacing: -0.01em;
+  }
+  
+  /* =========================================
+     2. TEMPORIZADOR POMODORO
+     ========================================= */
+  .card:has(#pomodoro-time) {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto auto;
+    grid-template-areas:
+      "title mode"
+      "time  buttons";
+    align-items: center;
+    align-content: start;
+    column-gap: 1.75rem;
+    row-gap: 0.5rem;
+    padding: 1.35rem 1.65rem;
+  }
+  
+  .card:has(#pomodoro-time) .card-title {
+    grid-area: title;
+    margin-bottom: 0;
+  }
+  
+  .pomodoro-mode {
+    grid-area: mode;
+    justify-self: end;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--teal-primary);
+    background: rgba(255, 255, 255, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--radius-pill);
+  }
+  
+  .pomodoro-time {
+    grid-area: time;
+    font-size: 4rem;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--text-slate);
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+    margin: 0.25rem 0;
+  }
+  
+  .card:has(#pomodoro-time) .btn-row {
+    grid-area: buttons;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.6rem;
+    margin-top: 0;
+  }
+  
+  .card:has(#pomodoro-time) .btn {
+    background-color: var(--teal-primary);
+    color: #FFFFFF;
+    border: none;
+    padding: 0.6rem 1.15rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border-radius: var(--radius-btn);
+    box-shadow: 0 4px 10px rgba(13, 138, 123, 0.25);
+  }
+  
+  .card:has(#pomodoro-time) .btn:hover {
+    background-color: var(--teal-hover);
+    transform: translateY(-1px);
+  }
+  
+  .card:has(#pomodoro-time) #pomodoro-reset {
+    background-color: rgba(255, 255, 255, 0.45);
+    color: var(--teal-primary);
+    box-shadow: none;
+    border: 1px solid rgba(255, 255, 255, 0.85);
+  }
+  
+  .card:has(#pomodoro-time) #pomodoro-reset:hover {
+    background-color: rgba(255, 255, 255, 0.7);
+  }
+  
+  /* =========================================
+     3. FORMULARIOS E INPUTS DE CRISTAL
+     ========================================= */
+  .form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.65rem 0.85rem;
+  }
+  
+  .form .field:nth-child(1),
+  .form .field:nth-child(2),
+  .form .field:nth-child(5),
+  .form > .btn,
+  .form > .btn-row {
+    grid-column: 1 / -1;
+  }
+  
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-slate);
+  }
+  
+  .input {
+    width: 100%;
+    padding: 0.55rem 0.8rem;
+    font-family: inherit;
+    font-size: 0.9rem;
+    color: var(--text-slate);
+    background: var(--glass-input); /* Transparente */
+    border: 1.5px solid rgba(255, 255, 255, 0.85);
+    border-radius: 8px;
+    transition: all 0.2s ease;
+  }
+  
+  .input:focus {
+    outline: none;
+    background: rgba(255, 255, 255, 0.75);
+    border-color: var(--teal-primary);
+    box-shadow: 0 0 0 3px rgba(13, 138, 123, 0.15);
+  }
+  
+  /* =========================================
+     4. BOTONES GENERALES
+     ========================================= */
+  .btn-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.35rem;
+  }
+  
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.6rem 1rem;
+    font-family: inherit;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text-slate);
+    background: rgba(255, 255, 255, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .btn:hover {
+    background: rgba(255, 255, 255, 0.8);
+  }
+  
+  .btn--primary {
+    background-color: var(--teal-primary);
+    color: #FFFFFF;
+    border-color: var(--teal-primary);
+    box-shadow: 0 4px 10px rgba(13, 138, 123, 0.22);
+  }
+  
+  .btn--primary:hover {
+    background-color: var(--teal-hover);
+    border-color: var(--teal-hover);
+  }
+  
+  #task-form > .btn--primary {
+    margin-top: 0.25rem;
+    padding: 0.7rem;
+  }
+  
+  /* =========================================
+     5. LISTA DE TAREAS TRANSLÚCIDA
+     ========================================= */
+  .task-list {
+    list-style: none;
+    margin-top: 1.25rem;
+    padding-top: 1.1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.6);
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    max-height: 460px;
+    overflow-y: auto;
+    padding-right: 0.25rem;
+  }
+  
+  .task-list:empty {
+    display: none;
+  }
+  
+  .task-list li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem 0.75rem;
+    padding: 0.75rem 1rem;
+    background: rgba(255, 255, 255, 0.42); /* Deja pasar el color del fondo */
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    border-left: 4px solid var(--teal-primary);
+    border-radius: 10px;
+    font-size: 0.9rem;
+    color: var(--text-body);
+  }
+  
+  .task-list li button,
+  .task-list li .btn {
+    padding: 0.35rem 0.7rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.65);
+    color: var(--teal-primary);
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    cursor: pointer;
+  }
+  
+  .task-list li button:hover,
+  .task-list li .btn:hover {
+    background: var(--teal-primary);
+    color: #FFFFFF;
+  }
+  
+  .task-list li::after {
+    content: "Prioridad";
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #FFFFFF;
+    background-color: var(--ocean-badge);
+    padding: 0.2rem 0.6rem;
+    border-radius: var(--radius-pill);
+    flex-shrink: 0;
+  }
+  
+  .task-list li.completed,
+  .task-list li.done,
+  .task-list li:has(input[type="checkbox"]:checked) {
+    color: var(--text-muted);
+    text-decoration: line-through;
+    background: rgba(255, 255, 255, 0.22);
+    border-left-color: #94A3B8;
+  }
+  
+  /* =========================================
+     6. CALENDARIO TRANSPARENTE
+     ========================================= */
+  .calendar {
+    font-size: 0.82rem;
+    --fc-page-bg-color: transparent; /* Quita el fondo blanco interno de FullCalendar */
+    --fc-neutral-bg-color: rgba(255, 255, 255, 0.25);
+    --fc-border-color: rgba(255, 255, 255, 0.55);
+    --fc-button-bg-color: var(--teal-primary);
+    --fc-button-border-color: var(--teal-primary);
+    --fc-button-hover-bg-color: var(--teal-hover);
+    --fc-button-hover-border-color: var(--teal-hover);
+    --fc-button-active-bg-color: var(--ocean-badge);
+    --fc-button-active-border-color: var(--ocean-badge);
+    --fc-event-bg-color: var(--ocean-badge);
+    --fc-event-border-color: var(--ocean-badge);
+    --fc-today-bg-color: rgba(13, 138, 123, 0.14);
+  }
+  
+  .calendar .fc-theme-standard td,
+  .calendar .fc-theme-standard th,
+  .calendar .fc-scrollgrid {
+    background: transparent !important;
+  }
+  
+  .calendar .fc-toolbar-title {
+    font-size: 1rem !important;
+    font-weight: 700;
+    color: var(--text-slate);
+    text-transform: capitalize;
+  }
+  
+  .calendar .fc-button {
+    padding: 0.3rem 0.6rem !important;
+    font-size: 0.78rem !important;
+  }
+  
+  .calendar .fc-col-header-cell-cushion,
+  .calendar .fc-daygrid-day-number {
+    color: var(--text-slate);
+    text-decoration: none;
+    font-weight: 600;
+  }
+  
+  .move-log {
+    margin-top: 0.75rem;
+    padding: 0.55rem 0.8rem;
+    background: rgba(255, 255, 255, 0.38);
+    border: 1px solid rgba(255, 255, 255, 0.75);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    white-space: pre-wrap;
+  }
+  
+  /* =========================================
+     7. MENSAJES Y NOTAS
+     ========================================= */
+  .message,
+  .loading {
+    max-width: 1320px;
+    margin: 0 auto 1rem;
+    padding: 0.75rem 1.15rem;
+    background: var(--glass-bg-strong);
+    backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+  
+  .message {
+    color: var(--ocean-badge);
+    border-left: 4px solid var(--ocean-badge);
+  }
+  
+  .loading {
+    color: var(--teal-primary);
+    border-left: 4px solid var(--teal-primary);
+  }
+  
+  .note {
+    margin-top: 0.5rem;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
