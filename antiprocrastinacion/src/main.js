@@ -1,7 +1,7 @@
 /**
  * PUNTO DE ENTRADA. Aquí (y solo aquí) se crean los módulos y se conectan entre sí.
  *
- *   calendario --(onEventMoved)--> taskService --(subscribe)--> calendario / lista
+ *   calendario --(onEventChanged)--> taskService --(subscribe)--> calendario / lista
  *   authService --(usuario)--> repositorio (Firestore con sesión, memoria sin sesión)
  */
 import { byId } from "./ui/dom.js";
@@ -47,8 +47,8 @@ async function startApp() {
 
     calendar.mount(byId("calendar"), {
       onDateSelected: taskUi.openCalendarTask,
-      // FullCalendar entrega el nuevo bloque; el servicio actualiza la tarea y el calendario se redibuja.
-      onEventMoved: async ({ id, start, end }) => {
+      // Al mover o redimensionar, el servicio actualiza el bloque y el calendario se redibuja.
+      onEventChanged: async ({ id, start, end }) => {
         try {
           await taskService.moveBlock(id, start, end);
         } catch (error) {

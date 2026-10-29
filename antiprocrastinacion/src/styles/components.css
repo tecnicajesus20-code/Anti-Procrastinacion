@@ -57,6 +57,7 @@
 .fc .fc-toolbar-title { font-size: 1.05rem; }
 .fc .fc-highlight { background: rgb(15 118 110 / 14%); }
 .fc .fc-timegrid-slot { cursor: crosshair; }
+.fc .fc-event-resizer { cursor: ns-resize; }
 .fc-event.event--done { opacity: .55; }
 .fc-event.event--in_progress { border-style: dashed; }
 
