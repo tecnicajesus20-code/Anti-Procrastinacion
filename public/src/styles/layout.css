@@ -54,6 +54,11 @@
   min-width: 0;
 }
 
+/* ⚠️ REVISIÓN PENDIENTE (D-05): las áreas de la cuadrícula dependen de ids usados por JavaScript y de :has().
+   - Renombrar un id en index.html rompería el diseño sin ningún error visible.
+   - Navegadores sin :has() (Firefox < 121, Safari < 15.4) no asignan las áreas y la cuadrícula se descoloca.
+   Sugerencia: añadir clases propias en index.html (card--pomodoro, card--tasks, card--auth) y usarlas aquí:
+     .card--pomodoro { grid-area: pomodoro; }  .card--tasks { grid-area: tasks; }  .card--auth { grid-area: auth; } */
 .card:has(#pomodoro-time) { grid-area: pomodoro; }
 .card:has(#task-form)     { grid-area: tasks; }
 .card--calendar           { grid-area: calendar; }

@@ -25,6 +25,8 @@
 /* =========================================
    POMODORO (bosque profundo + cristal)
    ========================================= */
+/* ⚠️ REVISIÓN PENDIENTE (D-05): estilo enganchado a un id de JS mediante :has(). Ver layout.css.
+   Sugerencia: .card--pomodoro en lugar de .card:has(#pomodoro-time) en todo este bloque. */
 .card:has(#pomodoro-time) {
   background:
     radial-gradient(18rem 10rem at 12% 0%, rgba(255, 255, 255, 0.14), transparent 70%),
@@ -258,6 +260,7 @@ input[type="datetime-local"].input {
   transform: translateY(0);
 }
 
+/* ⚠️ REVISIÓN PENDIENTE (D-05): selector por id de JS. Sugerencia: una clase modificadora, p. ej. .btn--block. */
 #task-form .btn--primary {
   width: 100%;
   margin-top: 0.35rem;
@@ -517,6 +520,8 @@ input[type="datetime-local"].input {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.75), rgba(235, 243, 238, 0.55));
 }
 
+/* ⚠️ REVISIÓN PENDIENTE (D-07): las reglas .fc-daygrid-* de este archivo no se aplican: la app solo usa vistas
+   timeGrid (semana/día). Inofensivas; eliminarlas o conservarlas es decisión de diseño. */
 .calendar .fc-col-header-cell-cushion,
 .calendar .fc-daygrid-day-number {
   color: var(--text-main);
@@ -560,6 +565,10 @@ input[type="datetime-local"].input {
 }
 
 /* Eventos: gotas de azul con brillo de cristal */
+/* ⚠️ REVISIÓN PENDIENTE (D-04): cada evento recibe .event--pending / .event--in_progress / .event--done
+   (presentation/calendar/calendar.mapper.js), pero no hay estilos: en el calendario una tarea
+   completada se ve igual que una pendiente, mientras que en la lista sí aparece tachada.
+   Sugerencia: .calendar .event--done { opacity: 0.6; text-decoration: line-through; } */
 .calendar .fc-event {
   border-radius: 7px;
   font-weight: 600;
@@ -597,6 +606,8 @@ input[type="datetime-local"].input {
   color: var(--text-muted);
 }
 
+/* ⚠️ REVISIÓN PENDIENTE (D-07): .move-log no se usa en ningún HTML ni JS (resto de una versión anterior).
+   Sugerencia: eliminar el bloque si el equipo de diseño confirma que no se va a usar. */
 .move-log {
   margin-top: 1rem;
   padding: 0.75rem 1rem;
@@ -622,6 +633,12 @@ input[type="datetime-local"].input {
               inset 0 1px 1px rgba(255, 255, 255, 0.7);
 }
 
+/* ⚠️ REVISIÓN PENDIENTE (D-03): JavaScript usa también .message--error (shared/feedback.js) y NO tiene estilo:
+   los errores se ven sin fondo ni borde de color, menos visibles que los avisos informativos.
+   Sugerencia (siguiendo el patrón de .message--info):
+     .message--error { background: rgba(254, 226, 226, 0.85); color: #991B1B; border-left: 4px solid #DC2626; }
+   Ídem .btn--danger (botón "Eliminar" de la lista, sin estilo propio; D-10):
+     .btn--danger { color: #B91C1C; border-color: #F3C4C4; }  .btn--danger:hover { background: #FEF2F2; border-color: #DC2626; } */
 .message--info {
   background: rgba(219, 234, 254, 0.85);
   color: #1E3A8A;
