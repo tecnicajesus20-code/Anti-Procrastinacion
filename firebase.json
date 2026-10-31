@@ -1,0 +1,12 @@
+{
+  "hosting": {
+    "site": "muvenapp-antiprocrastinacion",
+    "public": "public"
+  },
+  "firestore": {
+    "database": "(default)",
+    "location": "nam5",
+    "rules": "public/firestore.rules",
+    "indexes": "firestore.indexes.json"
+  }
+}

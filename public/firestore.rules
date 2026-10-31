@@ -1,18 +1,20 @@
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Cada usuario solo accede a sus propias tareas: users/{uid}/tasks/{taskId}
+    // Bloque específico para la colección de tareas de cada usuario
     match /users/{uid}/tasks/{taskId} {
       allow read, delete: if isOwner(uid);
       allow create, update: if isOwner(uid) && isValidTask(request.resource.data);
     }
 
+    // Verifica que el usuario autenticado sea el dueño de la información
     function isOwner(uid) {
       return request.auth != null && request.auth.uid == uid;
     }
 
-    // Valida el contrato de datos de la tarea (ver src/modules/tasks/task.model.js)
+    // Valida el contrato de datos de la tarea
     function isValidTask(t) {
       return t.keys().hasAll(['title', 'status', 'start', 'end'])
         && t.keys().hasOnly(['title', 'description', 'status', 'dueDate', 'start', 'end'])
@@ -21,5 +23,8 @@ service cloud.firestore {
         && t.start is string && t.end is string
         && t.end > t.start;
     }
+
+    // NOTA: Se eliminó la regla abierta "match /{document=**}" para evitar que
+    // cualquier usuario no autenticado acceda a tus colecciones de forma pública.
   }
 }
