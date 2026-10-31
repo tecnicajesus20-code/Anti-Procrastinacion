@@ -1,33 +1,42 @@
-/* src/styles/base.css - Cristal Esmeralda con Fondo y Transparencia Real */
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+/* src/styles/base.css - Bosque Solar · tokens, fondo de bosque y reset */
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400..800;1,9..40,400..700&display=swap');
 
 :root {
-  /* Fondo diagonal menta a azul hielo (igual a la referencia) */
-  --bg-gradient: linear-gradient(125deg, #D4F3E7 0%, #E3F2FD 50%, #CDE7F8 100%);
-  
-  /* CRISTAL REAL (Baja opacidad para que se vea el fondo a través de las tarjetas) */
-  --glass-bg: rgba(255, 255, 255, 0.42);
-  --glass-bg-strong: rgba(255, 255, 255, 0.48);
-  --glass-input: rgba(255, 255, 255, 0.45);
-  --glass-border: rgba(255, 255, 255, 0.85);
-  --glass-shadow: 0 12px 32px -4px rgba(15, 38, 58, 0.1), inset 0 1px 1px rgba(255, 255, 255, 0.9);
-  --glass-blur: blur(18px) saturate(160%);
+  /* Paleta original Bosque Solar (sin cambios) */
+  --bg-main: #EBF3EE;
+  --bg-card: #FFFFFF;
+  --forest-dark: #0A4635;
+  --forest-hover: #073528;
+  --forest-border: #C5D7CD;
 
-  /* Colores de Acento */
-  --teal-primary: #0D8A7B;
-  --teal-hover: #096E62;
-  --ocean-badge: #0277BD;
-  
-  /* Textos */
-  --text-slate: #0F1E2E;
-  --text-body: #1E293B;
-  --text-muted: #5A6B7C;
+  --blue-main: #2A74E0;
+  --blue-hover: #1D5FC2;
 
-  /* Bordes */
+  --text-main: #18241E;
+  --text-muted: #64746C;
+  --text-light: #F4F9F6;
+
+  /* Cristal: relleno con brillo diagonal + bordes con luz */
+  --glass-bg: linear-gradient(140deg, rgba(255, 255, 255, 0.72) 0%, rgba(255, 255, 255, 0.46) 100%);
+  --glass-bg-strong: linear-gradient(140deg, rgba(255, 255, 255, 0.88) 0%, rgba(255, 255, 255, 0.66) 100%);
+  --glass-bg-soft: linear-gradient(140deg, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0.22) 100%);
+  --glass-border: rgba(197, 215, 205, 0.8);
+  --glass-blur: blur(16px) saturate(160%);
+  --glass-shadow:
+    0 12px 32px -6px rgba(10, 70, 53, 0.14),
+    0 2px 6px -1px rgba(10, 70, 53, 0.06),
+    inset 0 1px 1px rgba(255, 255, 255, 0.95),
+    inset 1px 0 1px rgba(255, 255, 255, 0.5),
+    inset 0 -1px 1px rgba(10, 70, 53, 0.05);
+
   --radius-card: 18px;
-  --radius-btn: 10px;
+  --radius-input: 10px;
   --radius-pill: 999px;
-  --font-main: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --shadow-card: var(--glass-shadow);
+  --focus-ring: 0 0 0 3px rgba(10, 70, 53, 0.18);
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+
+  --font-main: 'DM Sans', system-ui, -apple-system, sans-serif;
 }
 
 *,
@@ -39,55 +48,82 @@
 }
 
 html {
-  background: var(--bg-gradient);
+  background-color: var(--bg-main);
   min-height: 100%;
 }
 
+/* ---------- FONDO ----------
+   Base crema menta + malla de puntos finos (da textura que el cristal
+   desenfoca) + dos capas de luz: bosque (::before) y cielo (::after). */
 body {
   font-family: var(--font-main);
-  background: transparent; /* Clave para no tapar las figuras */
-  color: var(--text-body);
+  background-color: var(--bg-main);
+  background-image:
+    radial-gradient(rgba(10, 70, 53, 0.10) 1px, transparent 1.3px),
+    linear-gradient(180deg, #EEF5F0 0%, #E3EEE7 100%);
+  background-size: 22px 22px, 100% 100%;
+  background-attachment: fixed;
+  color: var(--text-main);
   min-height: 100vh;
-  padding: 1.75rem 2.25rem 3rem;
-  position: relative;
-  z-index: 1;
-  overflow-x: hidden;
+  padding: 1.5rem 2rem 3rem;
+  line-height: 1.45;
   -webkit-font-smoothing: antialiased;
+  position: relative;
 }
 
-/* Figuras geométricas/orgánicas del fondo (visibles a través del cristal) */
+/* Luz de bosque: copas profundas arriba a la izquierda y abajo */
 body::before,
 body::after {
   content: "";
+  display: block;
   position: fixed;
-  z-index: -1;
+  inset: 0;
   pointer-events: none;
+  z-index: 0;
 }
 
-/* 1. Forma de hoja verde esmeralda inclinada (Izquierda / Centro) */
 body::before {
-  width: 380px;
-  height: 520px;
-  top: 14%;
-  left: 15%;
-  background: linear-gradient(160deg, rgba(67, 160, 71, 0.65) 0%, rgba(27, 94, 32, 0.45) 100%);
-  border-radius: 80% 15% 80% 15%;
-  transform: rotate(-18deg);
-  filter: blur(8px); /* Borde suave pero forma definida como en la imagen */
+  background:
+    radial-gradient(38rem 30rem at 6% 4%,  rgba(10, 70, 53, 0.34), transparent 70%),
+    radial-gradient(34rem 26rem at 42% 108%, rgba(10, 70, 53, 0.26), transparent 70%),
+    radial-gradient(22rem 18rem at 62% 6%,  rgba(10, 70, 53, 0.12), transparent 70%);
 }
 
-/* 2. Círculo grande azul celeste/océano (Centro / Derecha) */
+/* Luz de cielo: azul a la derecha y destello bajo a la izquierda */
 body::after {
-  width: 540px;
-  height: 540px;
-  top: 18%;
-  left: 42%;
-  background: linear-gradient(135deg, rgba(100, 181, 246, 0.65) 0%, rgba(30, 136, 229, 0.42) 100%);
-  border-radius: 50%;
-  filter: blur(10px);
+  background:
+    radial-gradient(30rem 26rem at 98% 38%, rgba(42, 116, 224, 0.36), transparent 70%),
+    radial-gradient(22rem 18rem at 4% 82%,  rgba(42, 116, 224, 0.22), transparent 70%),
+    radial-gradient(16rem 14rem at 78% 96%, rgba(42, 116, 224, 0.16), transparent 70%);
+  animation: sky-drift 28s ease-in-out infinite alternate;
 }
 
-/* Respetar atributo hidden de JS */
+@keyframes sky-drift {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(-2.5%, 2%, 0); }
+}
+
+/* El contenido siempre sobre el fondo (el <dialog> usa la capa superior) */
+body > :not(dialog):not(script) {
+  position: relative;
+  z-index: 1;
+}
+
 [hidden] {
   display: none !important;
+}
+
+:focus-visible {
+  outline: 2px solid var(--forest-dark);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }
