@@ -1,359 +1,659 @@
-/* src/styles/components.css - Transparencia Glassmorphism Real */
+/* src/styles/components.css - Bosque Solar · cristal en tarjetas, formularios y calendario */
 
 /* =========================================
-   1. TARJETAS DE CRISTAL ESMERILADO
+   TARJETAS DE CRISTAL
    ========================================= */
-   .card {
-    background: var(--glass-bg);
-    backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
-    border: 1.5px solid var(--glass-border);
-    border-radius: var(--radius-card);
-    padding: 1.35rem 1.5rem;
-    box-shadow: var(--glass-shadow);
-    height: fit-content;
+.card {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1.5px solid var(--glass-border);
+  border-radius: var(--radius-card);
+  padding: 1.75rem;
+  box-shadow: var(--glass-shadow);
+}
+
+.card-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-main);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 1.25rem;
+}
+
+/* =========================================
+   POMODORO (bosque profundo + cristal)
+   ========================================= */
+.card:has(#pomodoro-time) {
+  background:
+    radial-gradient(18rem 10rem at 12% 0%, rgba(255, 255, 255, 0.14), transparent 70%),
+    linear-gradient(145deg, rgba(10, 70, 53, 0.95) 0%, rgba(6, 45, 34, 0.98) 100%);
+  backdrop-filter: blur(16px) saturate(150%);
+  -webkit-backdrop-filter: blur(16px) saturate(150%);
+  color: var(--text-light);
+  padding: 2.25rem 1.75rem;
+  border: 1.5px solid rgba(255, 255, 255, 0.16);
+  box-shadow:
+    0 20px 44px -10px rgba(10, 70, 53, 0.5),
+    0 2px 6px rgba(6, 45, 34, 0.25),
+    inset 0 1px 1px rgba(255, 255, 255, 0.28),
+    inset 0 -1px 1px rgba(0, 0, 0, 0.2);
+}
+
+.card:has(#pomodoro-time) .card-title {
+  color: #DCE7E1;
+}
+
+.pomodoro-mode {
+  display: inline-block;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #9CC8FF;
+  background: rgba(42, 116, 224, 0.22);
+  padding: 0.25rem 0.85rem;
+  border-radius: var(--radius-pill);
+  border: 1px solid rgba(120, 175, 255, 0.45);
+  margin-bottom: 0.25rem;
+}
+
+.pomodoro-time {
+  font-size: 4.5rem;
+  font-weight: 800;
+  line-height: 1.05;
+  color: #EFECE1;
+  margin: 0.35rem 0 1.25rem;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.25);
+}
+
+.card:has(#pomodoro-time) .btn {
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0) 55%);
+  background-color: var(--blue-main);
+  color: #FFFFFF;
+  border: 1.5px solid transparent;
+  font-weight: 700;
+  padding: 0.7rem 1.25rem;
+  box-shadow: 0 4px 14px rgba(42, 116, 224, 0.4),
+              inset 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+
+.card:has(#pomodoro-time) .btn:hover {
+  background-color: var(--blue-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 9px 20px rgba(42, 116, 224, 0.45),
+              inset 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+
+.card:has(#pomodoro-time) .btn:active {
+  transform: translateY(0);
+}
+
+.card:has(#pomodoro-time) #pomodoro-reset {
+  background-image: none;
+  background-color: rgba(255, 255, 255, 0.12);
+  color: var(--text-light);
+  border: 1.5px solid rgba(255, 255, 255, 0.28);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.card:has(#pomodoro-time) #pomodoro-reset:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  box-shadow: none;
+}
+
+.card:has(#pomodoro-time) .btn:focus-visible {
+  outline-color: #FFFFFF;
+}
+
+/* =========================================
+   FORMULARIOS DE CRISTAL
+   ========================================= */
+/* Panel de cristal dentro de la tarjeta: sensación de vidrio sobre vidrio */
+.card .form {
+  background: var(--glass-bg-soft);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1.5px solid rgba(197, 215, 205, 0.75);
+  border-radius: 14px;
+  padding: 1.25rem;
+  box-shadow:
+    0 6px 16px -6px rgba(10, 70, 53, 0.12),
+    inset 0 1px 1px rgba(255, 255, 255, 0.95),
+    inset 0 -1px 1px rgba(10, 70, 53, 0.05);
+}
+
+.form,
+.event-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+/* Campo "tallado" en el cristal: sombra interior arriba, luz abajo */
+.input,
+select.input,
+textarea.input {
+  width: 100%;
+  padding: 0.72rem 0.95rem;
+  font-family: inherit;
+  font-size: 0.95rem;
+  color: var(--text-main);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.50), rgba(255, 255, 255, 0.78));
+  border: 1.5px solid var(--forest-border);
+  border-radius: var(--radius-input);
+  box-shadow:
+    inset 0 2px 4px rgba(10, 70, 53, 0.07),
+    0 1px 0 rgba(255, 255, 255, 0.9);
+  transition: background 0.2s var(--ease), border-color 0.2s var(--ease), box-shadow 0.2s var(--ease);
+}
+
+.input::placeholder {
+  color: var(--text-muted);
+  opacity: 0.8;
+}
+
+.input:hover {
+  border-color: #A9C2B5;
+}
+
+.input:focus {
+  outline: none;
+  background: #FFFFFF;
+  border-color: var(--forest-dark);
+  box-shadow:
+    inset 0 1px 2px rgba(10, 70, 53, 0.04),
+    var(--focus-ring);
+}
+
+select.input {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 2.4rem;
+  cursor: pointer;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%230A4635' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.50), rgba(255, 255, 255, 0.78));
+  background-repeat: no-repeat;
+  background-position: right 0.95rem center, 0 0;
+}
+
+textarea.input {
+  resize: vertical;
+  min-height: 4.5rem;
+  line-height: 1.45;
+}
+
+input[type="datetime-local"].input {
+  min-height: 2.9rem;
+}
+
+/* =========================================
+   BOTONES
+   ========================================= */
+.btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 0.5rem;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.7rem 1.2rem;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--forest-dark);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.85), rgba(235, 243, 238, 0.7));
+  border: 1.5px solid var(--forest-border);
+  border-radius: var(--radius-input);
+  box-shadow: 0 2px 6px -2px rgba(10, 70, 53, 0.12),
+              inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  cursor: pointer;
+  transition: background 0.2s var(--ease), transform 0.2s var(--ease),
+              box-shadow 0.2s var(--ease), border-color 0.2s var(--ease);
+}
+
+.btn:hover {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(226, 236, 230, 0.9));
+  border-color: #A9C2B5;
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn--primary {
+  background: linear-gradient(180deg, #0F5A45 0%, var(--forest-dark) 100%);
+  color: #FFFFFF;
+  border-color: var(--forest-dark);
+  font-weight: 700;
+  box-shadow: 0 5px 14px rgba(10, 70, 53, 0.32),
+              inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+.btn--primary:hover {
+  background: linear-gradient(180deg, #0A4635 0%, var(--forest-hover) 100%);
+  border-color: var(--forest-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(10, 70, 53, 0.36),
+              inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+.btn--primary:active {
+  transform: translateY(0);
+}
+
+#task-form .btn--primary {
+  width: 100%;
+  margin-top: 0.35rem;
+  padding: 0.8rem;
+}
+
+.icon-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  font-family: inherit;
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--forest-dark);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(235, 243, 238, 0.7));
+  border: 1.5px solid var(--forest-border);
+  border-radius: 50%;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  cursor: pointer;
+  transition: background 0.2s var(--ease), transform 0.2s var(--ease);
+}
+
+.icon-button:hover {
+  background: #E2ECE6;
+  transform: rotate(90deg);
+}
+
+/* =========================================
+   LISTA DE TAREAS (fichas de cristal)
+   ========================================= */
+.task-list {
+  list-style: none;
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1.5px solid rgba(197, 215, 205, 0.6);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.task-list:empty {
+  display: none;
+}
+
+.task-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.85rem 1rem;
+  background: var(--glass-bg-soft);
+  border: 1.5px solid rgba(197, 215, 205, 0.7);
+  border-left: 4px solid var(--blue-main);
+  border-radius: var(--radius-input);
+  box-shadow: 0 3px 10px -3px rgba(10, 70, 53, 0.10),
+              inset 0 1px 1px rgba(255, 255, 255, 0.95);
+  transition: box-shadow 0.2s var(--ease), background 0.2s var(--ease);
+}
+
+.task-item:hover {
+  background: var(--glass-bg);
+  box-shadow: 0 8px 18px -4px rgba(10, 70, 53, 0.16),
+              inset 0 1px 1px rgba(255, 255, 255, 0.95);
+}
+
+.task-item--done {
+  opacity: 0.65;
+  border-left-color: var(--forest-border);
+}
+
+.task-item--done .task-title {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+.task-title {
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.task-time {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+/* =========================================
+   MODAL (cristal, centrado)
+   ========================================= */
+.event-dialog {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  width: min(480px, calc(100% - 2rem));
+  height: fit-content;
+  max-height: calc(100dvh - 2rem);
+  overflow-y: auto;
+  padding: 1.75rem;
+  color: var(--text-main);
+  background: var(--glass-bg-strong);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1.5px solid var(--glass-border);
+  border-radius: 20px;
+  box-shadow:
+    0 32px 64px -12px rgba(10, 70, 53, 0.38),
+    0 4px 12px rgba(10, 70, 53, 0.10),
+    inset 0 1px 1px rgba(255, 255, 255, 0.95),
+    inset 1px 0 1px rgba(255, 255, 255, 0.5);
+}
+
+.event-dialog[open] {
+  animation: dialog-in 0.22s var(--ease);
+}
+
+.event-dialog::backdrop {
+  background: rgba(10, 70, 53, 0.45);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+}
+
+@keyframes dialog-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to   { opacity: 1; transform: none; }
+}
+
+.event-dialog__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.event-dialog__title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--forest-dark);
+}
+
+.event-title-input {
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.event-time-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.event-time-fields .field {
+  min-width: 0;
+}
+
+.optional-label {
+  font-weight: 400;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+}
+
+.event-dialog__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+@media (max-width: 480px) {
+  .event-time-fields {
+    grid-template-columns: 1fr;
   }
-  
-  .card-title {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: var(--text-slate);
-    margin-bottom: 1rem;
-    letter-spacing: -0.01em;
+}
+
+/* =========================================
+   CALENDARIO DE CRISTAL (FullCalendar)
+   ========================================= */
+/* El calendario es una lámina de vidrio dentro de la tarjeta */
+.calendar {
+  margin-top: 0.5rem;
+  padding: 1rem;
+  font-size: 0.88rem;
+  background: var(--glass-bg-soft);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1.5px solid rgba(197, 215, 205, 0.75);
+  border-radius: 14px;
+  box-shadow:
+    0 6px 16px -6px rgba(10, 70, 53, 0.12),
+    inset 0 1px 1px rgba(255, 255, 255, 0.95),
+    inset 0 -1px 1px rgba(10, 70, 53, 0.05);
+
+  --fc-border-color: rgba(10, 70, 53, 0.10);
+  --fc-page-bg-color: transparent;
+  --fc-neutral-bg-color: rgba(255, 255, 255, 0.35);
+  --fc-neutral-text-color: var(--text-muted);
+  --fc-button-bg-color: var(--forest-dark);
+  --fc-button-border-color: var(--forest-dark);
+  --fc-button-hover-bg-color: var(--forest-hover);
+  --fc-button-hover-border-color: var(--forest-hover);
+  --fc-button-active-bg-color: var(--blue-main);
+  --fc-button-active-border-color: var(--blue-main);
+  --fc-event-bg-color: var(--blue-main);
+  --fc-event-border-color: var(--blue-main);
+  --fc-event-text-color: #FFFFFF;
+  --fc-today-bg-color: rgba(10, 70, 53, 0.09);
+  --fc-highlight-color: rgba(42, 116, 224, 0.24);
+  --fc-non-business-color: rgba(10, 70, 53, 0.04);
+}
+
+.calendar .fc-toolbar-title {
+  font-size: 1.1rem !important;
+  font-weight: 700;
+  color: var(--forest-dark);
+  text-transform: capitalize;
+}
+
+.calendar .fc-button {
+  font-family: inherit;
+  font-weight: 600;
+  border-radius: var(--radius-input);
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0) 55%);
+  box-shadow: 0 3px 10px rgba(10, 70, 53, 0.22),
+              inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  transition: background-color 0.2s var(--ease), transform 0.2s var(--ease);
+}
+
+.calendar .fc-button:focus {
+  box-shadow: var(--focus-ring);
+}
+
+.calendar .fc-button-primary:not(:disabled).fc-button-active,
+.calendar .fc-button-primary:not(:disabled):active {
+  color: #FFFFFF;
+}
+
+.calendar .fc-button-primary:disabled {
+  opacity: 0.5;
+}
+
+/* Rejilla: marco tipo vidrio y celdas translúcidas */
+.calendar .fc-scrollgrid {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1.5px solid rgba(197, 215, 205, 0.8);
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.calendar .fc-scrollgrid td:last-child,
+.calendar .fc-scrollgrid th:last-child {
+  border-right-color: transparent;
+}
+
+.calendar .fc-col-header-cell {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.75), rgba(235, 243, 238, 0.55));
+}
+
+.calendar .fc-col-header-cell-cushion,
+.calendar .fc-daygrid-day-number {
+  color: var(--text-main);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.calendar .fc-daygrid-day,
+.calendar .fc-timegrid-slot,
+.calendar .fc-timegrid-col {
+  transition: background-color 0.15s var(--ease);
+}
+
+.calendar .fc-daygrid-day:hover,
+.calendar .fc-timegrid-col:hover {
+  background-color: rgba(255, 255, 255, 0.45);
+}
+
+.calendar .fc-day-today {
+  background-color: var(--fc-today-bg-color) !important;
+  box-shadow: inset 0 0 0 1.5px rgba(10, 70, 53, 0.14);
+}
+
+.calendar .fc-day-today .fc-daygrid-day-number {
+  background-color: var(--forest-dark);
+  color: #FFFFFF;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 2px;
+  box-shadow: 0 3px 8px rgba(10, 70, 53, 0.3);
+}
+
+.calendar .fc-timegrid-axis-cushion,
+.calendar .fc-timegrid-slot-label-cushion {
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+/* Eventos: gotas de azul con brillo de cristal */
+.calendar .fc-event {
+  border-radius: 7px;
+  font-weight: 600;
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0) 60%);
+  box-shadow: 0 3px 8px rgba(42, 116, 224, 0.38),
+              inset 0 1px 0 rgba(255, 255, 255, 0.55);
+  cursor: pointer;
+  transition: transform 0.15s var(--ease), box-shadow 0.15s var(--ease);
+}
+
+.calendar .fc-event:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(42, 116, 224, 0.45),
+              inset 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+
+.calendar .fc-highlight {
+  border-radius: 6px;
+  box-shadow: inset 0 0 0 1.5px rgba(42, 116, 224, 0.55);
+}
+
+.calendar .fc-timegrid-now-indicator-line {
+  border-color: var(--blue-main);
+}
+
+.calendar .fc-timegrid-now-indicator-arrow {
+  border-color: var(--blue-main);
+  border-top-color: transparent;
+  border-bottom-color: transparent;
+}
+
+.calendar-hint {
+  margin-top: 0.85rem;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.move-log {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  background: var(--glass-bg-soft);
+  border: 1.5px dashed var(--forest-border);
+  border-radius: var(--radius-input);
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* =========================================
+   MENSAJES
+   ========================================= */
+.message,
+.loading {
+  margin-bottom: 1.25rem;
+  padding: 0.85rem 1.25rem;
+  border-radius: var(--radius-input);
+  font-weight: 600;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 4px 14px -4px rgba(10, 70, 53, 0.14),
+              inset 0 1px 1px rgba(255, 255, 255, 0.7);
+}
+
+.message--info {
+  background: rgba(219, 234, 254, 0.85);
+  color: #1E3A8A;
+  border-left: 4px solid var(--blue-main);
+}
+
+.loading {
+  background: rgba(209, 250, 229, 0.85);
+  color: var(--forest-dark);
+  border-left: 4px solid var(--forest-dark);
+}
+
+.note {
+  margin-top: 0.75rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+@media (max-width: 520px) {
+  .card {
+    padding: 1.25rem;
   }
-  
-  /* =========================================
-     2. TEMPORIZADOR POMODORO
-     ========================================= */
-  .card:has(#pomodoro-time) {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    grid-template-rows: auto auto;
-    grid-template-areas:
-      "title mode"
-      "time  buttons";
-    align-items: center;
-    align-content: start;
-    column-gap: 1.75rem;
-    row-gap: 0.5rem;
-    padding: 1.35rem 1.65rem;
+
+  .card .form {
+    padding: 1rem;
   }
-  
-  .card:has(#pomodoro-time) .card-title {
-    grid-area: title;
-    margin-bottom: 0;
-  }
-  
-  .pomodoro-mode {
-    grid-area: mode;
-    justify-self: end;
-    font-size: 0.75rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--teal-primary);
-    background: rgba(255, 255, 255, 0.55);
-    border: 1px solid rgba(255, 255, 255, 0.8);
-    padding: 0.25rem 0.75rem;
-    border-radius: var(--radius-pill);
-  }
-  
-  .pomodoro-time {
-    grid-area: time;
-    font-size: 4rem;
-    font-weight: 800;
-    line-height: 1;
-    color: var(--text-slate);
-    letter-spacing: -0.03em;
-    font-variant-numeric: tabular-nums;
-    margin: 0.25rem 0;
-  }
-  
-  .card:has(#pomodoro-time) .btn-row {
-    grid-area: buttons;
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 0.6rem;
-    margin-top: 0;
-  }
-  
-  .card:has(#pomodoro-time) .btn {
-    background-color: var(--teal-primary);
-    color: #FFFFFF;
-    border: none;
-    padding: 0.6rem 1.15rem;
-    font-size: 0.9rem;
-    font-weight: 600;
-    border-radius: var(--radius-btn);
-    box-shadow: 0 4px 10px rgba(13, 138, 123, 0.25);
-  }
-  
-  .card:has(#pomodoro-time) .btn:hover {
-    background-color: var(--teal-hover);
-    transform: translateY(-1px);
-  }
-  
-  .card:has(#pomodoro-time) #pomodoro-reset {
-    background-color: rgba(255, 255, 255, 0.45);
-    color: var(--teal-primary);
-    box-shadow: none;
-    border: 1px solid rgba(255, 255, 255, 0.85);
-  }
-  
-  .card:has(#pomodoro-time) #pomodoro-reset:hover {
-    background-color: rgba(255, 255, 255, 0.7);
-  }
-  
-  /* =========================================
-     3. FORMULARIOS E INPUTS DE CRISTAL
-     ========================================= */
-  .form {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.65rem 0.85rem;
-  }
-  
-  .form .field:nth-child(1),
-  .form .field:nth-child(2),
-  .form .field:nth-child(5),
-  .form > .btn,
-  .form > .btn-row {
-    grid-column: 1 / -1;
-  }
-  
-  .field {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--text-slate);
-  }
-  
-  .input {
-    width: 100%;
-    padding: 0.55rem 0.8rem;
-    font-family: inherit;
-    font-size: 0.9rem;
-    color: var(--text-slate);
-    background: var(--glass-input); /* Transparente */
-    border: 1.5px solid rgba(255, 255, 255, 0.85);
-    border-radius: 8px;
-    transition: all 0.2s ease;
-  }
-  
-  .input:focus {
-    outline: none;
-    background: rgba(255, 255, 255, 0.75);
-    border-color: var(--teal-primary);
-    box-shadow: 0 0 0 3px rgba(13, 138, 123, 0.15);
-  }
-  
-  /* =========================================
-     4. BOTONES GENERALES
-     ========================================= */
-  .btn-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-top: 0.35rem;
-  }
-  
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.6rem 1rem;
-    font-family: inherit;
-    font-size: 0.88rem;
-    font-weight: 600;
-    color: var(--text-slate);
-    background: rgba(255, 255, 255, 0.55);
-    border: 1px solid rgba(255, 255, 255, 0.9);
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-  
-  .btn:hover {
-    background: rgba(255, 255, 255, 0.8);
-  }
-  
-  .btn--primary {
-    background-color: var(--teal-primary);
-    color: #FFFFFF;
-    border-color: var(--teal-primary);
-    box-shadow: 0 4px 10px rgba(13, 138, 123, 0.22);
-  }
-  
-  .btn--primary:hover {
-    background-color: var(--teal-hover);
-    border-color: var(--teal-hover);
-  }
-  
-  #task-form > .btn--primary {
-    margin-top: 0.25rem;
-    padding: 0.7rem;
-  }
-  
-  /* =========================================
-     5. LISTA DE TAREAS TRANSLÚCIDA
-     ========================================= */
-  .task-list {
-    list-style: none;
-    margin-top: 1.25rem;
-    padding-top: 1.1rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.6);
-    display: flex;
-    flex-direction: column;
-    gap: 0.65rem;
-    max-height: 460px;
-    overflow-y: auto;
-    padding-right: 0.25rem;
-  }
-  
-  .task-list:empty {
-    display: none;
-  }
-  
-  .task-list li {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.5rem 0.75rem;
-    padding: 0.75rem 1rem;
-    background: rgba(255, 255, 255, 0.42); /* Deja pasar el color del fondo */
-    border: 1px solid rgba(255, 255, 255, 0.8);
-    border-left: 4px solid var(--teal-primary);
-    border-radius: 10px;
-    font-size: 0.9rem;
-    color: var(--text-body);
-  }
-  
-  .task-list li button,
-  .task-list li .btn {
-    padding: 0.35rem 0.7rem;
-    font-size: 0.78rem;
-    font-weight: 600;
-    border-radius: 6px;
-    background: rgba(255, 255, 255, 0.65);
-    color: var(--teal-primary);
-    border: 1px solid rgba(255, 255, 255, 0.9);
-    cursor: pointer;
-  }
-  
-  .task-list li button:hover,
-  .task-list li .btn:hover {
-    background: var(--teal-primary);
-    color: #FFFFFF;
-  }
-  
-  .task-list li::after {
-    content: "Prioridad";
-    font-size: 0.7rem;
-    font-weight: 700;
-    color: #FFFFFF;
-    background-color: var(--ocean-badge);
-    padding: 0.2rem 0.6rem;
-    border-radius: var(--radius-pill);
-    flex-shrink: 0;
-  }
-  
-  .task-list li.completed,
-  .task-list li.done,
-  .task-list li:has(input[type="checkbox"]:checked) {
-    color: var(--text-muted);
-    text-decoration: line-through;
-    background: rgba(255, 255, 255, 0.22);
-    border-left-color: #94A3B8;
-  }
-  
-  /* =========================================
-     6. CALENDARIO TRANSPARENTE
-     ========================================= */
+
   .calendar {
-    font-size: 0.82rem;
-    --fc-page-bg-color: transparent; /* Quita el fondo blanco interno de FullCalendar */
-    --fc-neutral-bg-color: rgba(255, 255, 255, 0.25);
-    --fc-border-color: rgba(255, 255, 255, 0.55);
-    --fc-button-bg-color: var(--teal-primary);
-    --fc-button-border-color: var(--teal-primary);
-    --fc-button-hover-bg-color: var(--teal-hover);
-    --fc-button-hover-border-color: var(--teal-hover);
-    --fc-button-active-bg-color: var(--ocean-badge);
-    --fc-button-active-border-color: var(--ocean-badge);
-    --fc-event-bg-color: var(--ocean-badge);
-    --fc-event-border-color: var(--ocean-badge);
-    --fc-today-bg-color: rgba(13, 138, 123, 0.14);
+    padding: 0.6rem;
   }
-  
-  .calendar .fc-theme-standard td,
-  .calendar .fc-theme-standard th,
-  .calendar .fc-scrollgrid {
-    background: transparent !important;
+
+  .pomodoro-time {
+    font-size: 3.6rem;
   }
-  
-  .calendar .fc-toolbar-title {
-    font-size: 1rem !important;
-    font-weight: 700;
-    color: var(--text-slate);
-    text-transform: capitalize;
-  }
-  
-  .calendar .fc-button {
-    padding: 0.3rem 0.6rem !important;
-    font-size: 0.78rem !important;
-  }
-  
-  .calendar .fc-col-header-cell-cushion,
-  .calendar .fc-daygrid-day-number {
-    color: var(--text-slate);
-    text-decoration: none;
-    font-weight: 600;
-  }
-  
-  .move-log {
-    margin-top: 0.75rem;
-    padding: 0.55rem 0.8rem;
-    background: rgba(255, 255, 255, 0.38);
-    border: 1px solid rgba(255, 255, 255, 0.75);
-    border-radius: 8px;
-    font-family: inherit;
-    font-size: 0.78rem;
-    color: var(--text-muted);
-    white-space: pre-wrap;
-  }
-  
-  /* =========================================
-     7. MENSAJES Y NOTAS
-     ========================================= */
-  .message,
-  .loading {
-    max-width: 1320px;
-    margin: 0 auto 1rem;
-    padding: 0.75rem 1.15rem;
-    background: var(--glass-bg-strong);
-    backdrop-filter: var(--glass-blur);
-    border: 1px solid var(--glass-border);
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 0.9rem;
-  }
-  
-  .message {
-    color: var(--ocean-badge);
-    border-left: 4px solid var(--ocean-badge);
-  }
-  
-  .loading {
-    color: var(--teal-primary);
-    border-left: 4px solid var(--teal-primary);
-  }
-  
-  .note {
-    margin-top: 0.5rem;
-    font-size: 0.8rem;
-    color: var(--text-muted);
-  }
+}
