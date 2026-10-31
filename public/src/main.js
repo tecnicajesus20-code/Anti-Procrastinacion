@@ -1,7 +1,7 @@
 /**
  * PUNTO DE ENTRADA. Aquí (y solo aquí) se crean los módulos y se conectan entre sí.
  *
- *   calendario --(onEventMoved)--> taskService --(subscribe)--> calendario / lista
+ *   calendario --(onEventChanged)--> taskService --(subscribe)--> calendario / lista
  *   authService --(usuario)--> repositorio (Firestore con sesión, memoria sin sesión)
  */
 import { byId } from "./ui/dom.js";
@@ -43,13 +43,14 @@ async function startApp() {
   try {
     const taskService = createTaskService(demoRepository());
     const calendar = createCalendarView();
+    const taskUi = initTaskUi(taskService);
 
     calendar.mount(byId("calendar"), {
-      // FullCalendar entrega el nuevo bloque; el servicio actualiza la tarea y el calendario se redibuja.
-      onEventMoved: async ({ id, start, end }) => {
+      onDateSelected: taskUi.openCalendarTask,
+      // Al mover o redimensionar, el servicio actualiza el bloque y el calendario se redibuja.
+      onEventChanged: async ({ id, start, end }) => {
         try {
           await taskService.moveBlock(id, start, end);
-          byId("move-log").textContent = `Evento movido\nid:     ${id}\ninicio: ${start}\nfin:    ${end}`;
         } catch (error) {
           showMessage(error.message, "error");
           throw error; // el calendario devuelve el evento a su sitio
@@ -58,7 +59,6 @@ async function startApp() {
     });
 
     taskService.subscribe(calendar.render);
-    initTaskUi(taskService);
     initPomodoroUi(createPomodoroService());
     const authUi = initAuthUi(authService);
 

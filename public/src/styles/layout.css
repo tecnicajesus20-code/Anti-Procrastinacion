@@ -1,26 +1,83 @@
-/* Estructura de la página: móvil primero, una columna; en escritorio, dos. */
+/* src/styles/layout.css - Corregido (Compacto y sin huecos gigantes) */
+
 .app-header {
+  max-width: 1320px;
+  margin: 0 auto 1.25rem;
+  padding: 0.85rem 1.5rem;
+  background: var(--glass-bg-strong);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1.5px solid var(--glass-border);
+  border-radius: 14px;
+  box-shadow: var(--glass-shadow);
   display: flex;
-  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
-  gap: .5rem var(--space);
-  padding: var(--space);
-  background: var(--color-surface);
-  border-bottom: 1px solid var(--color-line);
+  flex-wrap: wrap;
+  gap: 1rem;
 }
-.app-title { font-size: 1.25rem; }
-.app-user { margin: 0; font-size: .85rem; color: var(--color-muted); }
 
+.app-title {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--text-slate);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.app-user {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--teal-primary);
+  background: rgba(13, 138, 123, 0.1);
+  padding: 0.35rem 0.9rem;
+  border-radius: var(--radius-pill);
+  border: 1px solid rgba(13, 138, 123, 0.25);
+}
+
+/* Cuadrícula de 2 columnas balanceadas sin estirar tarjetas */
 .app-main {
-  display: grid;
-  gap: var(--space);
-  padding: var(--space);
-  max-width: 1200px;
+  max-width: 1320px;
   margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  grid-template-rows: auto auto 1fr;
+  grid-template-areas:
+    "pomodoro tasks"
+    "calendar tasks"
+    "auth     tasks";
+  gap: 1.25rem;
+  align-items: start; /* CLAVE: Evita que el Pomodoro se estire */
 }
 
-@media (min-width: 900px) {
-  .app-main { grid-template-columns: 2fr 1fr; align-items: start; }
-  .card--calendar { grid-row: span 3; }
+.card:has(#pomodoro-time) {
+  grid-area: pomodoro;
+}
+
+.card:has(#task-form) {
+  grid-area: tasks;
+}
+
+.card--calendar {
+  grid-area: calendar;
+}
+
+.card:has(#auth-form) {
+  grid-area: auth;
+}
+
+/* Vista Responsiva (Tablet y Móvil) */
+@media (max-width: 980px) {
+  body {
+    padding: 1rem;
+  }
+
+  .app-main {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "pomodoro"
+      "tasks"
+      "calendar"
+      "auth";
+  }
 }
