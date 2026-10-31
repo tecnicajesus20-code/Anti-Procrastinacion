@@ -15,24 +15,28 @@ export function createCalendarView() {
   function mount(element, { onEventChanged, onDateSelected }) {
     const { Calendar } = window.FullCalendar ?? {};
     if (!Calendar) throw new Error("FullCalendar no se cargó. Revisa tu conexión a internet.");
-
+    console.log(window.innerWidth);
     calendar = new Calendar(element, {
       initialView: window.innerWidth < 600 ? "timeGridDay" : "timeGridWeek", // móvil: un día
-      headerToolbar: { left: "prev,next today", center: "title", right: "timeGridWeek,timeGridDay" },
+      headerToolbar: { left: "prev,next today", center: "title", right: "timeGridWeek,timeGridDays" },
       locale: "es",
-      firstDay: 1,
+      firstDay: 2,
       allDaySlot: false,
       nowIndicator: true,
       height: "auto",
-      slotMinTime: "06:00:00",
-      slotMaxTime: "23:00:00",
+      slotMinTime: "00:00:00",
+      slotMaxTime: "24:00:00",
       editable: true,              // permite arrastrar eventos
       eventDurationEditable: true, // permite ajustar la duración desde el borde inferior
       eventLongPressDelay: 300,     // en móvil, mantener pulsado para arrastrar
       selectable: true,
       selectMirror: true,
+      revertEdits: true, // si falla un cambio, el evento vuelve a su posición|
+      revertDuration: "0.5s", // animación de reversión
+      revertEasing: "ease-in-out",
+    
       select: (info) => {
-        onDateSelected({ start: info.start, end: info.end });
+        onDateSelected({ start: info.start , end: info.end });
         calendar.unselect();
       },
       eventDrop: saveEventChange,
