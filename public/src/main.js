@@ -7,10 +7,9 @@
  *   firebase-auth ──sesión──▶ session.coordinator ──▶ task.service.useRepository(...)
  *
  * Orden de arranque (se conserva tal cual): vistas de tareas → calendario → Pomodoro → cuenta →
- * carga demo → escucha de sesión. Si FullCalendar no carga, se muestra el error y no sigue.
+ * carga demo → escucha de sesión. Si FullCalendar no carga, sus funciones fallan con un aviso,
+ * pero las tareas, la cuenta y el Pomodoro siguen disponibles.
  * La navegación entre pantallas (solo mostrar/ocultar) se inicia al principio, antes de las vistas de tareas.
- * Orden de arranque: vistas de tareas/Pomodoro/avisos → calendario → cuenta → carga demo →
- * escucha de sesión. Si FullCalendar no carga, se muestra el error y no sigue.
  */
 import { byId } from "./shared/dom.js";
 import { setLoading, showMessage } from "./shared/feedback.js";
@@ -84,22 +83,25 @@ async function startApp() {
     });
     reminders.start();
 
-    calendar.mount(byId("calendar"), {
-      onDateSelected: calendarDialog.open,
-      onEventSelected: calendarDialog.openTask,
-      // Al mover o redimensionar, el caso de uso actualiza el bloque y el calendario se redibuja.
-      onEventChanged: async ({ id, blockIndex, start, end }) => {
-        try {
-          await taskService.moveBlock(id, start, end, blockIndex);
-        } catch (error) {
-          showMessage(error.message, "error");
-          throw error; // el calendario devuelve el evento a su sitio
-        }
-      },
-    });
+    try {
+      calendar.mount(byId("calendar"), {
+        onDateSelected: calendarDialog.open,
+        onEventSelected: calendarDialog.openTask,
+        // Al mover o redimensionar, el caso de uso actualiza el bloque y el calendario se redibuja.
+        onEventChanged: async ({ id, blockIndex, start, end }) => {
+          try {
+            await taskService.moveBlock(id, start, end, blockIndex);
+          } catch (error) {
+            showMessage(error.message, "error");
+            throw error; // el calendario devuelve el evento a su sitio
+          }
+        },
+      });
+    } catch (error) {
+      showMessage(error.message, "error");
+    }
 
     taskService.subscribe(calendar.render);
-    initPomodoroUi(createPomodoroService());
     const authUi = initAuthUi(auth);
 
     await taskService.load();
