@@ -1,36 +1,205 @@
 /**
- * DIÁLOGO "NUEVA TAREA" que se abre al seleccionar un hueco del calendario.
- * Usa el mismo caso de uso que el formulario de la lista (taskService.add).
+ * Diálogo para crear tareas, editar una tarea existente o añadirle otro bloque horario.
  */
 import { byId } from "../../shared/dom.js";
-import { runAction } from "../../shared/feedback.js";
+import { runAction, showMessage } from "../../shared/feedback.js";
 import { dateToLocalInputValue } from "../../shared/date-time.js";
+import { getTaskBlocks } from "../../domain/task.js";
 import { readTaskInput } from "./task-input.js";
 
 const FIELDS = { title: "event-title", description: "event-description", start: "event-start", end: "event-end" };
+const modes = { CREATE: "create", VIEW: "view", EDIT: "edit", ADD_BLOCK: "add-block" };
 
 /**
  * @param {ReturnType<import("../../application/task.service.js").createTaskService>} taskService
- * @returns {{ open: (slot: { start: Date, end: Date }) => void }}
+ * @param {(taskTitle: string, block: {start: string, end: string}) => void} startPomodoro
+ * @returns {{
+ *   open: (slot: { start: Date, end: Date }) => void,
+ *   openTask: (selection: { taskId: string, blockIndex: number }) => void,
+ *   editTask: (taskId: string) => void,
+ *   editBlock: (selection: { taskId: string, blockIndex: number }) => void,
+ *   addBlockToTask: (taskId: string) => void
+ * }}
  */
-export function initCalendarTaskDialog(taskService) {
+export function initCalendarTaskDialog(taskService, startPomodoro) {
   const dialog = byId("event-dialog");
   const form = byId("event-form");
+  const title = byId("event-title");
+  const description = byId("event-description");
+  const start = byId("event-start");
+  const end = byId("event-end");
+  const editButton = byId("event-dialog-edit");
+  const addBlockButton = byId("event-dialog-add-block");
+  const pomodoroButton = byId("event-dialog-pomodoro");
+  const deleteBlockButton = byId("event-dialog-delete-block");
+  const deleteTaskButton = byId("event-dialog-delete-task");
+  const blockHint = byId("event-dialog-block-hint");
+  const saveButton = byId("event-dialog-save");
+  let mode = modes.CREATE;
+  let selected = null;
+  let selectedBlockCount = 0;
+
+  function setMode(nextMode) {
+    mode = nextMode;
+    const viewing = mode === modes.VIEW;
+    const addingBlock = mode === modes.ADD_BLOCK;
+    title.disabled = viewing || addingBlock;
+    description.disabled = viewing || addingBlock;
+    start.disabled = viewing;
+    end.disabled = viewing;
+    editButton.hidden = mode !== modes.VIEW;
+    addBlockButton.hidden = mode !== modes.VIEW;
+    pomodoroButton.hidden = mode !== modes.VIEW;
+    deleteBlockButton.hidden = mode !== modes.VIEW;
+    deleteTaskButton.hidden = mode !== modes.VIEW;
+    blockHint.hidden = mode !== modes.VIEW || selectedBlockCount !== 1;
+    saveButton.hidden = viewing;
+
+    byId("event-dialog-title").textContent = ({
+      [modes.CREATE]: "Nueva tarea",
+      [modes.VIEW]: "Detalles de tarea",
+      [modes.EDIT]: "Editar tarea",
+      [modes.ADD_BLOCK]: "Crear otro bloque",
+    })[mode];
+    saveButton.textContent = addingBlock ? "Crear bloque" : "Guardar";
+  }
 
   /** Abre el diálogo con el hueco seleccionado ya relleno. */
-  function open({ start, end }) {
-    byId("event-title").value = "";
-    byId("event-description").value = "";
-    byId("event-start").value = dateToLocalInputValue(start);
-    byId("event-end").value = dateToLocalInputValue(end);
+  function open({ start: slotStart, end: slotEnd }) {
+    selected = null;
+    selectedBlockCount = 0;
+    form.reset();
+    title.value = "";
+    description.value = "";
+    blockHint.hidden = true;
+    start.value = dateToLocalInputValue(slotStart);
+    end.value = dateToLocalInputValue(slotEnd);
+    setMode(modes.CREATE);
     dialog.showModal();
-    byId("event-title").focus();
+    title.focus();
   }
+
+  function openTask({ taskId, blockIndex }, initialMode = modes.VIEW) {
+    const task = taskService.getAll().find((candidate) => candidate.id === taskId);
+    if (!task) {
+      showMessage("No se encontró la tarea seleccionada.", "error");
+      return;
+    }
+
+    const blocks = getTaskBlocks(task);
+    if (!Number.isInteger(blockIndex) || blockIndex < 0 || blockIndex >= blocks.length) {
+      showMessage("No se encontró el bloque horario seleccionado.", "error");
+      return;
+    }
+
+    selected = { taskId, blockIndex };
+    selectedBlockCount = blocks.length;
+    title.value = task.title;
+    description.value = task.description ?? "";
+    start.value = dateToLocalInputValue(new Date(blocks[blockIndex].start));
+    end.value = dateToLocalInputValue(new Date(blocks[blockIndex].end));
+    deleteBlockButton.disabled = blocks.length === 1;
+    deleteBlockButton.title = blocks.length === 1
+      ? "Agrega otro bloque o elimina la tarea para quitar su único bloque."
+      : "";
+    blockHint.textContent = blocks.length === 1
+      ? "Esta tarea tiene un solo bloque. Agrega otro antes de eliminarlo, o elimina la tarea completa."
+      : "";
+    blockHint.hidden = blocks.length !== 1;
+    setMode(initialMode);
+    dialog.showModal();
+  }
+
+  function editTask(taskId) {
+    openTask({ taskId, blockIndex: 0 }, modes.EDIT);
+  }
+
+  function editBlock(selection) {
+    openTask(selection, modes.EDIT);
+  }
+
+  function prepareNewBlock(task) {
+    const blocks = getTaskBlocks(task).sort((a, b) => Date.parse(a.start) - Date.parse(b.start));
+    selected = { taskId: task.id, blockIndex: blocks.length - 1 };
+    title.value = task.title;
+    description.value = task.description ?? "";
+    const suggestedStart = new Date(blocks[blocks.length - 1].end);
+    const suggestedEnd = new Date(suggestedStart.getTime() + 60 * 60 * 1000);
+    start.value = dateToLocalInputValue(suggestedStart);
+    end.value = dateToLocalInputValue(suggestedEnd);
+    setMode(modes.ADD_BLOCK);
+  }
+
+  function addBlockToTask(taskId) {
+    const task = taskService.getAll().find((candidate) => candidate.id === taskId);
+    if (!task) {
+      showMessage("No se encontró la tarea seleccionada.", "error");
+      return;
+    }
+
+    selectedBlockCount = getTaskBlocks(task).length;
+    prepareNewBlock(task);
+    dialog.showModal();
+  }
+
+  pomodoroButton.addEventListener("click", () => {
+    if (!selected) return;
+    const task = taskService.getAll().find((candidate) => candidate.id === selected.taskId);
+    if (!task) {
+      showMessage("No se encontró la tarea seleccionada.", "error");
+      return;
+    }
+
+    const block = getTaskBlocks(task)[selected.blockIndex];
+    startPomodoro(task.title, block);
+    dialog.close();
+  });
+
+  editButton.addEventListener("click", () => setMode(modes.EDIT));
+  addBlockButton.addEventListener("click", () => {
+    const task = taskService.getAll().find((candidate) => candidate.id === selected?.taskId);
+    if (!task || !selected) {
+      showMessage("No se encontró la tarea seleccionada.", "error");
+      return;
+    }
+
+    prepareNewBlock(task);
+  });
+
+  deleteBlockButton.addEventListener("click", () => {
+    if (!selected || deleteBlockButton.disabled) return;
+    runAction(async () => {
+      await taskService.removeBlock(selected.taskId, selected.blockIndex);
+      dialog.close();
+    });
+  });
+
+  deleteTaskButton.addEventListener("click", () => {
+    if (!selected || !window.confirm("¿Eliminar esta tarea y todos sus bloques?")) return;
+    runAction(async () => {
+      await taskService.remove(selected.taskId);
+      dialog.close();
+    });
+  });
 
   form.addEventListener("submit", (event) => {
     event.preventDefault();
+    if (mode === modes.VIEW) return;
+
     runAction(async () => {
-      await taskService.add(readTaskInput(FIELDS));
+      if (mode === modes.CREATE) {
+        await taskService.add(readTaskInput(FIELDS));
+      } else if (mode === modes.EDIT && selected) {
+        const changes = readTaskInput(FIELDS);
+        await taskService.updateBlock(selected.taskId, selected.blockIndex, {
+          ...changes,
+          title: changes.title.trim(),
+          description: changes.description.trim() || null,
+        });
+      } else if (mode === modes.ADD_BLOCK && selected) {
+        const { start: blockStart, end: blockEnd } = readTaskInput({ start: FIELDS.start, end: FIELDS.end });
+        await taskService.addBlock(selected.taskId, blockStart, blockEnd);
+      }
       dialog.close();
       form.reset();
     });
@@ -39,5 +208,5 @@ export function initCalendarTaskDialog(taskService) {
   byId("event-dialog-close").addEventListener("click", () => dialog.close());
   byId("event-dialog-cancel").addEventListener("click", () => dialog.close());
 
-  return { open };
+  return { open, openTask, editTask, editBlock, addBlockToTask };
 }

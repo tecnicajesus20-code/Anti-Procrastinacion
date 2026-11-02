@@ -19,80 +19,81 @@
   <p class="message" id="message" role="status" hidden></p>
   <p class="loading" id="loading" hidden>Cargando…</p>
 
-  <!-- ================= INICIO (landing) ================= -->
-  <section class="view wrap" id="view-home">
-    <nav class="nav">
-      <span class="logo">Antiprocrastinación</span>
-      <button class="btn guest-only" type="button" data-go="cuenta">Iniciar sesión</button>
-      <button class="btn user-only" type="button" data-go="tareas">Ir a mis tareas</button>
-    </nav>
+  <main class="app-main">
+    <!-- ================= INICIO (landing) ================= -->
+    <section class="view wrap" id="view-home">
+      <nav class="nav">
+        <span class="logo">Antiprocrastinación</span>
+        <button class="btn guest-only" type="button" data-go="cuenta">Iniciar sesión</button>
+        <button class="btn user-only" type="button" data-go="tareas">Ir a mis tareas</button>
+      </nav>
 
-    <div class="hero">
-      <div>
-        <h1 class="hero__title">Lo que postergas se vuelve una lista de bloques cortos.</h1>
-        <p class="hero__lead">Escribe la tarea, elige cuándo la harás y colócala en tu calendario. Enfócate con un Pomodoro y empieza por la primera, nada más.</p>
-        <div class="cta-row">
-          <button class="btn btn--primary btn--big guest-only" type="button" data-go="tareas">Probar el demo</button>
-          <button class="btn btn--big guest-only" type="button" data-go="cuenta">Crear cuenta</button>
-          <button class="btn btn--big guest-only" type="button" data-go="cuenta">Iniciar sesión</button>
-          <button class="btn btn--primary btn--big user-only" type="button" data-go="tareas">Ir a mis tareas</button>
+      <div class="hero">
+        <div>
+          <h1 class="hero__title">Lo que postergas se vuelve una lista de bloques cortos.</h1>
+          <p class="hero__lead">Escribe la tarea, elige cuándo la harás y colócala en tu calendario. Enfócate con un Pomodoro y empieza por la primera, nada más.</p>
+          <div class="cta-row">
+            <button class="btn btn--primary btn--big guest-only" type="button" data-go="tareas">Probar el demo</button>
+            <button class="btn btn--big guest-only" type="button" data-go="cuenta">Crear cuenta</button>
+            <button class="btn btn--big guest-only" type="button" data-go="cuenta">Iniciar sesión</button>
+            <button class="btn btn--primary btn--big user-only" type="button" data-go="tareas">Ir a mis tareas</button>
+          </div>
+        </div>
+        <div class="stage" aria-hidden="true">
+          <div class="orb">
+            <svg viewBox="0 0 260 260"><circle class="orb__track" cx="130" cy="130" r="116" /><circle class="orb__arc" cx="130" cy="130" r="116" /></svg>
+            <b class="orb__time">24:12</b>
+          </div>
+          <div class="pill pill--done">Tarea 1 · completada</div>
+          <div class="pill pill--now">Tarea 2 · ahora</div>
+          <div class="pill pill--next">Tarea 3 · 16:30</div>
         </div>
       </div>
-      <div class="stage" aria-hidden="true">
-        <div class="orb">
-          <svg viewBox="0 0 260 260"><circle class="orb__track" cx="130" cy="130" r="116" /><circle class="orb__arc" cx="130" cy="130" r="116" /></svg>
-          <b class="orb__time">24:12</b>
-        </div>
-        <div class="pill pill--done">Tarea 1 · completada</div>
-        <div class="pill pill--now">Tarea 2 · ahora</div>
-        <div class="pill pill--next">Tarea 3 · 16:30</div>
+
+      <div class="feats">
+        <div class="card"><div class="feat__icon">📝</div><h3 class="feat__title">Tareas claras</h3><p class="feat__text">Crea cada tarea con su título, descripción, horario y fecha límite.</p></div>
+        <div class="card"><div class="feat__icon">🗓️</div><h3 class="feat__title">Calendario</h3><p class="feat__text">Arrastra una tarea para moverla o estira su borde para cambiar su duración.</p></div>
+        <div class="card"><div class="feat__icon">⏱️</div><h3 class="feat__title">Pomodoro propio</h3><p class="feat__text">Trabaja 25 minutos y descansa 5, con un temporizador que respira contigo.</p></div>
       </div>
-    </div>
 
-    <div class="feats">
-      <div class="card"><div class="feat__icon">📝</div><h3 class="feat__title">Tareas claras</h3><p class="feat__text">Crea cada tarea con su título, descripción, horario y fecha límite.</p></div>
-      <div class="card"><div class="feat__icon">🗓️</div><h3 class="feat__title">Calendario</h3><p class="feat__text">Arrastra una tarea para moverla o estira su borde para cambiar su duración.</p></div>
-      <div class="card"><div class="feat__icon">⏱️</div><h3 class="feat__title">Pomodoro propio</h3><p class="feat__text">Trabaja 25 minutos y descansa 5, con un temporizador que respira contigo.</p></div>
-    </div>
+      <div class="flow">
+        <h2>Así avanzas</h2>
+        <ol class="flow__steps">
+          <li><b>1.</b> Creas una tarea</li>
+          <li><b>2.</b> La ubicas en el calendario</li>
+          <li><b>3.</b> Enfocas con el Pomodoro</li>
+          <li><b>4.</b> La marcas como completada</li>
+        </ol>
+      </div>
+    </section>
 
-    <div class="flow">
-      <h2>Así avanzas</h2>
-      <ol class="flow__steps">
-        <li><b>1.</b> Creas una tarea</li>
-        <li><b>2.</b> La ubicas en el calendario</li>
-        <li><b>3.</b> Enfocas con el Pomodoro</li>
-        <li><b>4.</b> La marcas como completada</li>
-      </ol>
-    </div>
-  </section>
+    <!-- ================= CUENTA ================= -->
+    <section class="view wrap" id="view-auth" hidden>
+      <button class="link" type="button" data-go="inicio">← Volver al inicio</button>
+      <div class="card auth-box">
+        <h2 class="auth-title">Tu cuenta</h2>
+        <p class="muted">Inicia sesión para guardar tus tareas en la nube.</p>
+        <form class="form" id="auth-form">
+          <label class="field">Correo
+            <input class="input" id="auth-email" type="email" autocomplete="email" required />
+          </label>
+          <label class="field">Contraseña
+            <!-- ⚠️ REVISIÓN PENDIENTE (D-09): el mismo campo sirve para "Crear cuenta"; con current-password el navegador no
+                 propone una contraseña nueva al registrarse. Opcional: cambiar a "new-password" al pulsar "Crear cuenta". -->
+            <input class="input" id="auth-password" type="password" autocomplete="current-password" minlength="6" required />
+          </label>
+          <div class="auth-actions">
+            <button class="btn btn--primary btn--big" id="auth-login" type="submit">Iniciar sesión</button>
+            <button class="btn" id="auth-register" type="submit">Crear cuenta</button>
+            <button class="link" id="auth-reset" type="button">Recuperar contraseña</button>
+          </div>
+        </form>
+        <p class="note" id="auth-note"></p>
+      </div>
+    </section>
 
-  <!-- ================= CUENTA ================= -->
-  <section class="view wrap" id="view-auth" hidden>
-    <button class="link" type="button" data-go="inicio">← Volver al inicio</button>
-    <div class="card auth-box">
-      <h2 class="auth-title">Tu cuenta</h2>
-      <p class="muted">Inicia sesión para guardar tus tareas en la nube.</p>
-      <form class="form" id="auth-form">
-        <label class="field">Correo
-          <input class="input" id="auth-email" type="email" autocomplete="email" />
-        </label>
-        <label class="field">Contraseña
-          <!-- ⚠️ REVISIÓN PENDIENTE (D-09): el mismo campo sirve para "Crear cuenta"; con current-password el navegador no
-               propone una contraseña nueva al registrarse. Opcional: cambiar a "new-password" al pulsar "Crear cuenta". -->
-          <input class="input" id="auth-password" type="password" autocomplete="current-password" />
-        </label>
-        <div class="auth-actions">
-          <button class="btn btn--primary btn--big" id="auth-login" type="button">Iniciar sesión</button>
-          <button class="btn" id="auth-register" type="button">Crear cuenta</button>
-          <button class="link" id="auth-reset" type="button">Recuperar contraseña</button>
-        </div>
-      </form>
-      <p class="note" id="auth-note"></p>
-    </div>
-  </section>
-
-  <!-- ================= APP ================= -->
-  <section class="view wrap" id="view-app" hidden>
+    <!-- ================= APP ================= -->
+    <section class="view wrap" id="view-app" hidden>
     <header class="top">
       <span class="logo">Antiprocrastinación</span>
       <nav class="nav-tabs" aria-label="Secciones">
@@ -109,6 +110,15 @@
       Estás en modo demo: los cambios no se guardan.
       <button class="link" type="button" data-go="cuenta">Iniciar sesión o crear una cuenta</button>
     </div>
+
+    <section class="card">
+      <h2 class="card-title">Recordatorios</h2>
+      <div class="btn-row">
+        <button class="btn" id="notifications-enable" type="button">Activar notificaciones</button>
+        <button class="btn" id="alarm-enable" type="button">Activar alarma sonora</button>
+        <button class="btn btn--danger" id="alarm-stop" type="button" hidden>Silenciar alarma</button>
+      </div>
+    </section>
 
     <!-- Tareas -->
     <div id="panel-tasks">
@@ -134,9 +144,7 @@
             <button class="btn btn--primary btn--block" type="submit">Agregar tarea</button>
           </form>
         </section>
- 
-        
-        <section class="card">
+            <section class="card">
           <h2 class="card-title">Mis tareas</h2>
           <ul class="task-list" id="task-list"></ul>
         </section>
@@ -164,6 +172,7 @@
             </svg>
             <p class="pomodoro-time" id="pomodoro-time">25:00</p>
           </div>
+          <p class="pomodoro-task" id="pomodoro-task">Sin tarea seleccionada</p>
           <div class="btn-row">
             <button class="btn btn--primary" id="pomodoro-start" type="button">Iniciar</button>
             <button class="btn" id="pomodoro-pause" type="button">Pausar</button>
@@ -172,7 +181,8 @@
         </section>
       </div>
     </div>
-  </section>
+    </section>
+  </main>
 
   <dialog class="event-dialog" id="event-dialog" aria-labelledby="event-dialog-title">
     <form class="event-form" id="event-form">
@@ -194,11 +204,30 @@
       <label class="field">Descripción <span class="optional-label">(opcional)</span>
         <textarea class="input event-description-input" id="event-description" rows="2"></textarea>
       </label>
+      <p class="note event-dialog__block-hint" id="event-dialog-block-hint" hidden></p>
       <div class="event-dialog__actions">
         <button class="btn" id="event-dialog-cancel" type="button">Cancelar</button>
-        <button class="btn btn--primary" type="submit">Guardar</button>
+        <button class="btn" id="event-dialog-edit" type="button" hidden>Editar tarea</button>
+        <button class="btn" id="event-dialog-add-block" type="button" hidden>Crear otro bloque</button>
+        <button class="btn btn--pomodoro" id="event-dialog-pomodoro" type="button" hidden>Iniciar Pomodoro</button>
+        <button class="btn btn--danger" id="event-dialog-delete-block" type="button" hidden>Eliminar bloque</button>
+        <button class="btn btn--danger" id="event-dialog-delete-task" type="button" hidden>Eliminar tarea</button>
+        <button class="btn btn--primary" id="event-dialog-save" type="submit">Guardar</button>
       </div>
     </form>
+  </dialog>
+
+  <dialog class="alarm-dialog" id="alarm-dialog" aria-labelledby="alarm-dialog-title">
+    <div class="alarm-dialog__content">
+      <p class="alarm-dialog__eyebrow">Recordatorio de tarea</p>
+      <h2 class="alarm-dialog__title" id="alarm-dialog-title">¡Te toca realizar esta tarea!</h2>
+      <p class="alarm-dialog__task" id="alarm-dialog-task"></p>
+      <p class="alarm-dialog__time" id="alarm-dialog-time"></p>
+      <div class="alarm-dialog__actions">
+        <button class="btn btn--primary" id="alarm-do-pomodoro" type="button">Hacerla con Pomodoro</button>
+        <button class="btn btn--danger" id="alarm-reject" type="button">Rechazar y silenciar</button>
+      </div>
+    </div>
   </dialog>
 
   <!-- FullCalendar 6.1.15 (paquete completo con vistas e interacción). Define window.FullCalendar -->
