@@ -13,13 +13,15 @@ export function initAuthUi(authService) {
 
   const run = (action, successText) => runAction(action, { successText, formatError: authErrorText });
 
-  // Pulsar Enter en el formulario equivale a iniciar sesión (y evita recargar la página).
   byId("auth-form").addEventListener("submit", (event) => {
     event.preventDefault();
-    byId("auth-login").click();
+    const registering = event.submitter?.id === "auth-register";
+    if (registering) {
+      run(() => authService.register(email.value, password.value), "Cuenta creada.");
+    } else {
+      run(() => authService.login(email.value, password.value), "Sesión iniciada.");
+    }
   });
-  byId("auth-login").addEventListener("click", () => run(() => authService.login(email.value, password.value), "Sesión iniciada."));
-  byId("auth-register").addEventListener("click", () => run(() => authService.register(email.value, password.value), "Cuenta creada."));
   byId("auth-reset").addEventListener("click", () => run(() => authService.resetPassword(email.value), "Revisa tu correo para restablecer la contraseña."));
   logout.addEventListener("click", () => run(() => authService.logout(), "Sesión cerrada."));
 

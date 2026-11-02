@@ -36,6 +36,53 @@ test("CRUD básico y notificación con copias", async () => {
   assert.equal(service.getAll()[0].title, "Nueva");
 });
 
+test("una tarea admite varios bloques y mover uno conserva los demás", async () => {
+  const service = createTaskService(createMemoryTaskRepository([T("a")]));
+  await service.load();
+
+  await assert.rejects(
+    service.addBlock("a", "2026-11-02T09:00:00.000Z", "2026-11-02T10:00:00.000Z"),
+    { message: "Los bloques de una misma tarea no pueden repetir ni superponer horarios." }
+  );
+  await service.addBlock("a", "2026-11-03T09:00:00.000Z", "2026-11-03T10:00:00.000Z");
+  await service.moveBlock("a", "2026-11-03T11:00:00.000Z", "2026-11-03T12:00:00.000Z", 1);
+  await service.updateBlock("a", 1, {
+    title: "Tarea editada",
+    description: "Más información",
+    start: "2026-11-03T11:00:00.000Z",
+    end: "2026-11-03T12:00:00.000Z",
+  });
+  const task = service.getAll()[0];
+
+  assert.equal(task.title, "Tarea editada");
+  assert.equal(task.description, "Más información");
+  assert.deepEqual(task.blocks, [
+    { start: "2026-11-02T09:00:00.000Z", end: "2026-11-02T10:00:00.000Z" },
+    { start: "2026-11-03T11:00:00.000Z", end: "2026-11-03T12:00:00.000Z" },
+  ]);
+  assert.equal(task.start, task.blocks[0].start);
+  assert.equal(task.end, task.blocks[0].end);
+  task.blocks[0].start = "mutado";
+  assert.notEqual(service.getAll()[0].blocks[0].start, "mutado");
+  await assert.rejects(service.addBlock("a", "2026-11-03T12:00:00.000Z", "2026-11-03T11:00:00.000Z"),
+    { message: "Cada bloque necesita una hora de fin posterior a la de inicio." });
+});
+
+test("se puede eliminar un bloque, pero no dejar una tarea sin programación", async () => {
+  const service = createTaskService(createMemoryTaskRepository([T("a")]));
+  await service.load();
+  await service.addBlock("a", "2026-11-03T09:00:00.000Z", "2026-11-03T10:00:00.000Z");
+  await service.removeBlock("a", 0);
+
+  assert.deepEqual(service.getAll()[0].blocks, [
+    { start: "2026-11-03T09:00:00.000Z", end: "2026-11-03T10:00:00.000Z" },
+  ]);
+  assert.equal(service.getAll()[0].start, "2026-11-03T09:00:00.000Z");
+  await assert.rejects(service.removeBlock("a", 0), {
+    message: "No puedes eliminar el único bloque. Agrega otro bloque o elimina la tarea.",
+  });
+});
+
 test("validación: errores del dominio y tarea inexistente (como promesa rechazada)", async () => {
   const service = createTaskService(createMemoryTaskRepository([T("a")]));
   await service.load();

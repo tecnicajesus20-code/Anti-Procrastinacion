@@ -1,3 +1,5 @@
+import { cloneTask } from "../../domain/task.js";
+
 /**
  * REPOSITORIO DE TAREAS EN MEMORIA (modo demo). Los datos se pierden al recargar.
  * Implementa el contrato TaskRepository (ver application/task-repository.js).
@@ -7,22 +9,22 @@
  * @returns {import("../../application/task-repository.js").TaskRepository}
  */
 export function createMemoryTaskRepository(initialTasks = []) {
-  let tasks = initialTasks.map((task) => ({ ...task }));
+  let tasks = initialTasks.map(cloneTask);
 
   return {
     async list() {
-      return tasks.map((task) => ({ ...task }));
+      return tasks.map(cloneTask);
     },
     async create(data) {
-      const task = { ...data, id: crypto.randomUUID() };
+      const task = cloneTask({ ...data, id: crypto.randomUUID() });
       tasks.push(task);
-      return { ...task };
+      return cloneTask(task);
     },
     async update(id, changes) {
       const index = tasks.findIndex((task) => task.id === id);
       if (index < 0) throw new Error(`No existe la tarea ${id}`);
-      tasks[index] = { ...tasks[index], ...changes, id };
-      return { ...tasks[index] };
+      tasks[index] = cloneTask({ ...tasks[index], ...changes, id });
+      return cloneTask(tasks[index]);
     },
     async remove(id) {
       tasks = tasks.filter((task) => task.id !== id);
