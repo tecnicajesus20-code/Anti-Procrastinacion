@@ -2,6 +2,8 @@
 import { byId } from "../../shared/dom.js";
 import { formatMinutesSeconds } from "../../shared/date-time.js";
 import { POMODORO_MODE, POMODORO_DEFAULTS } from "../../domain/pomodoro.js";
+import { formatMinutesSeconds, formatShortDateTime } from "../../shared/date-time.js";
+import { POMODORO_MODE } from "../../domain/pomodoro.js";
 
 const MODE_LABELS = { [POMODORO_MODE.WORK]: "Trabajo", [POMODORO_MODE.BREAK]: "Descanso" };
 /** Duración total de cada modo, solo para calcular cuánto del anillo queda lleno (apariencia). */
@@ -13,6 +15,18 @@ export function initPomodoroUi(pomodoro) {
   const mode = byId("pomodoro-mode");
   const card = byId("pomodoro-card");
   const ring = byId("pomodoro-ring");
+  const taskLabel = byId("pomodoro-task");
+  let activeTask = "";
+
+  function startForTask(taskTitle, block) {
+    activeTask = taskTitle;
+    const blockTime = block
+      ? ` · ${formatShortDateTime(block.start)} → ${formatShortDateTime(block.end)}`
+      : "";
+    taskLabel.textContent = `Tarea: ${activeTask}${blockTime}`;
+    pomodoro.start();
+    byId("pomodoro-time").scrollIntoView({ behavior: "smooth", block: "center" });
+  }
 
   pomodoro.onTick((state) => {
     time.textContent = formatMinutesSeconds(state.remaining);
@@ -28,5 +42,11 @@ export function initPomodoroUi(pomodoro) {
 
   byId("pomodoro-start").addEventListener("click", () => pomodoro.start());
   byId("pomodoro-pause").addEventListener("click", () => pomodoro.pause());
-  byId("pomodoro-reset").addEventListener("click", () => pomodoro.reset());
+  byId("pomodoro-reset").addEventListener("click", () => {
+    activeTask = "";
+    taskLabel.textContent = "Sin tarea seleccionada";
+    pomodoro.reset();
+  });
+
+  return startForTask;
 }

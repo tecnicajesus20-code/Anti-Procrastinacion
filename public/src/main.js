@@ -9,6 +9,8 @@
  * Orden de arranque (se conserva tal cual): vistas de tareas → calendario → Pomodoro → cuenta →
  * carga demo → escucha de sesión. Si FullCalendar no carga, se muestra el error y no sigue.
  * La navegación entre pantallas (solo mostrar/ocultar) se inicia al principio, antes de las vistas de tareas.
+ * Orden de arranque: vistas de tareas/Pomodoro/avisos → calendario → cuenta → carga demo →
+ * escucha de sesión. Si FullCalendar no carga, se muestra el error y no sigue.
  */
 import { byId } from "./shared/dom.js";
 import { setLoading, showMessage } from "./shared/feedback.js";
@@ -16,6 +18,7 @@ import { setLoading, showMessage } from "./shared/feedback.js";
 import { createTaskService } from "./application/task.service.js";
 import { createSessionCoordinator } from "./application/session.coordinator.js";
 import { createPomodoroService } from "./application/pomodoro.service.js";
+import { createTaskReminderService } from "./application/task-reminder.service.js";
 
 import { createFirebaseAuth } from "./infrastructure/firebase/firebase-auth.js";
 import { createFirestoreTaskRepository } from "./infrastructure/firebase/task.firestore.repository.js";
@@ -29,6 +32,7 @@ import { createCalendarView } from "./presentation/calendar/calendar.view.js";
 import { initPomodoroUi } from "./presentation/pomodoro/pomodoro.ui.js";
 import { initAuthUi } from "./presentation/auth/auth.ui.js";
 import { initNavigation } from "./presentation/shell/navigation.ui.js";
+import { initTaskReminderUi } from "./presentation/tasks/task-reminder.ui.js";
 
 const auth = createFirebaseAuth();
 const createDemoRepository = () => createMemoryTaskRepository(buildSeedTasks());
@@ -61,17 +65,32 @@ async function startApp() {
     const calendar = createCalendarView();
     // El calendario se monta con su pestaña oculta; al mostrarla recalcula su tamaño.
     const navigation = initNavigation({ onPanelShown: { calendar: calendar.refresh } });
+    const pomodoro = createPomodoroService();
 
     initTaskForm(taskService);
-    const calendarDialog = initCalendarTaskDialog(taskService);
-    initTaskList(taskService);
+    const startPomodoroForTask = initPomodoroUi(pomodoro);
+    const calendarDialog = initCalendarTaskDialog(taskService, startPomodoroForTask);
+    initTaskList(
+      taskService,
+      calendarDialog.editBlock,
+      calendarDialog.editTask,
+      calendarDialog.addBlockToTask,
+      startPomodoroForTask
+    );
+    const reminderUi = initTaskReminderUi(startPomodoroForTask);
+    const reminders = createTaskReminderService({
+      taskService,
+      onReminder: reminderUi.notify,
+    });
+    reminders.start();
 
     calendar.mount(byId("calendar"), {
       onDateSelected: calendarDialog.open,
+      onEventSelected: calendarDialog.openTask,
       // Al mover o redimensionar, el caso de uso actualiza el bloque y el calendario se redibuja.
-      onEventChanged: async ({ id, start, end }) => {
+      onEventChanged: async ({ id, blockIndex, start, end }) => {
         try {
-          await taskService.moveBlock(id, start, end);
+          await taskService.moveBlock(id, start, end, blockIndex);
         } catch (error) {
           showMessage(error.message, "error");
           throw error; // el calendario devuelve el evento a su sitio

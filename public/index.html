@@ -19,7 +19,10 @@
   <p class="message" id="message" role="status" hidden></p>
   <p class="loading" id="loading" hidden>Cargando…</p>
 
-  <!-- ================= INICIO (landing) ================= -->
+  <main class="app-main">
+    <section class="card card--calendar">
+      <h2 class="card-title">Calendario</h2>
+      <!-- ================= INICIO (landing) ================= -->
   <section class="view wrap" id="view-home">
     <nav class="nav">
       <span class="logo">Antiprocrastinación</span>
@@ -89,7 +92,9 @@
       </form>
       <p class="note" id="auth-note"></p>
     </div>
-  </section>
+      <div class="calendar" id="calendar"></div>
+      <p class="calendar-hint">Arrastra sobre un espacio libre para crear una tarea. También puedes mover las tareas existentes.</p>
+    </section>
 
   <!-- ================= APP ================= -->
   <section class="view wrap" id="view-app" hidden>
@@ -135,7 +140,7 @@
           </form>
         </section>
 
-        <section class="card">
+            <section class="card">
           <h2 class="card-title">Mis tareas</h2>
           <ul class="task-list" id="task-list"></ul>
         </section>
@@ -169,9 +174,28 @@
             <button class="btn" id="pomodoro-reset" type="button">Reiniciar</button>
           </div>
         </section>
-      </div>
-    </div>
-  </section>
+
+    <section class="card">
+      <h2 class="card-title">Cuenta</h2>
+      <form class="form" id="auth-form">
+        <label class="field">Correo
+          <input class="input" id="auth-email" type="email" autocomplete="email" />
+        </label>
+        <label class="field">Contraseña
+          <!-- ⚠️ REVISIÓN PENDIENTE (D-09): el mismo campo sirve para "Crear cuenta"; con current-password el navegador no
+               propone una contraseña nueva al registrarse. Opcional: cambiar a "new-password" al pulsar "Crear cuenta". -->
+          <input class="input" id="auth-password" type="password" autocomplete="current-password" />
+        </label>
+        <div class="btn-row">
+          <button class="btn btn--primary" id="auth-login" type="button">Iniciar sesión</button>
+          <button class="btn" id="auth-register" type="button">Crear cuenta</button>
+          <button class="btn" id="auth-reset" type="button">Recuperar contraseña</button>
+          <button class="btn" id="auth-logout" type="button" hidden>Cerrar sesión</button>
+        </div>
+      </form>
+      <p class="note" id="auth-note"></p>
+    </section>
+  </main>
 
   <dialog class="event-dialog" id="event-dialog" aria-labelledby="event-dialog-title">
     <form class="event-form" id="event-form">
@@ -193,11 +217,30 @@
       <label class="field">Descripción <span class="optional-label">(opcional)</span>
         <textarea class="input event-description-input" id="event-description" rows="2"></textarea>
       </label>
+      <p class="note event-dialog__block-hint" id="event-dialog-block-hint" hidden></p>
       <div class="event-dialog__actions">
         <button class="btn" id="event-dialog-cancel" type="button">Cancelar</button>
-        <button class="btn btn--primary" type="submit">Guardar</button>
+        <button class="btn" id="event-dialog-edit" type="button" hidden>Editar tarea</button>
+        <button class="btn" id="event-dialog-add-block" type="button" hidden>Crear otro bloque</button>
+        <button class="btn btn--pomodoro" id="event-dialog-pomodoro" type="button" hidden>Iniciar Pomodoro</button>
+        <button class="btn btn--danger" id="event-dialog-delete-block" type="button" hidden>Eliminar bloque</button>
+        <button class="btn btn--danger" id="event-dialog-delete-task" type="button" hidden>Eliminar tarea</button>
+        <button class="btn btn--primary" id="event-dialog-save" type="submit">Guardar</button>
       </div>
     </form>
+  </dialog>
+
+  <dialog class="alarm-dialog" id="alarm-dialog" aria-labelledby="alarm-dialog-title">
+    <div class="alarm-dialog__content">
+      <p class="alarm-dialog__eyebrow">Recordatorio de tarea</p>
+      <h2 class="alarm-dialog__title" id="alarm-dialog-title">¡Te toca realizar esta tarea!</h2>
+      <p class="alarm-dialog__task" id="alarm-dialog-task"></p>
+      <p class="alarm-dialog__time" id="alarm-dialog-time"></p>
+      <div class="alarm-dialog__actions">
+        <button class="btn btn--primary" id="alarm-do-pomodoro" type="button">Hacerla con Pomodoro</button>
+        <button class="btn btn--danger" id="alarm-reject" type="button">Rechazar y silenciar</button>
+      </div>
+    </div>
   </dialog>
 
   <!-- FullCalendar 6.1.15 (paquete completo con vistas e interacción). Define window.FullCalendar -->
