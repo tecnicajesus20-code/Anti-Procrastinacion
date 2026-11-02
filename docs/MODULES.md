@@ -71,10 +71,11 @@ Dependencias: `auth.onAuthChange`, `taskService`, `createUserRepository(uid)`, `
 | `tasks/task-form.ui.js` | `initTaskForm(taskService)` | `task-form`, `task-title`, `task-description`, `task-start`, `task-end`, `task-due` |
 | `tasks/calendar-task-dialog.ui.js` | `initCalendarTaskDialog(taskService)` → `{ open({ start: Date, end: Date }) }` | `event-dialog`, `event-form`, `event-title`, `event-description`, `event-start`, `event-end`, `event-dialog-close`, `event-dialog-cancel` |
 | `tasks/task-list.view.js` | `initTaskList(taskService)` | `task-list` |
-| `calendar/calendar.view.js` | `createCalendarView()` → `{ mount(el, { onDateSelected, onEventChanged }), render(tasks) }` | (recibe el elemento) |
+| `calendar/calendar.view.js` | `createCalendarView()` → `{ mount(el, { onDateSelected, onEventChanged }), render(tasks), refresh() }` | (recibe el elemento) |
 | `calendar/calendar.mapper.js` | `taskToEvent(task)`, `eventToBlock(event, oldEvent)` | — |
-| `pomodoro/pomodoro.ui.js` | `initPomodoroUi(pomodoro)` | `pomodoro-time`, `pomodoro-mode`, `pomodoro-start`, `pomodoro-pause`, `pomodoro-reset` |
-| `auth/auth.ui.js` | `initAuthUi(auth)` → `{ setUser(user), disable(reason) }` | `auth-form`, `auth-email`, `auth-password`, `auth-login`, `auth-register`, `auth-reset`, `auth-logout`, `auth-note`, `user-label` |
+| `pomodoro/pomodoro.ui.js` | `initPomodoroUi(pomodoro)` | `pomodoro-time`, `pomodoro-mode`, `pomodoro-card`, `pomodoro-ring`, `pomodoro-start`, `pomodoro-pause`, `pomodoro-reset` |
+| `auth/auth.ui.js` | `initAuthUi(auth)` → `{ setUser(user), disable(reason) }` | `auth-form`, `auth-email`, `auth-password`, `auth-login`, `auth-register`, `auth-reset`, `auth-logout`, `auth-note`, `user-label` |
+| `shell/navigation.ui.js` | `initNavigation({ onPanelShown? })` → `{ navigate(ruta), setUser(user) }`; `ROUTES`, `resolveRoute(hash)`, `routeAfterUserChange(prev, user, ruta)` | `view-home`, `view-auth`, `view-app`, `panel-tasks`, `panel-calendar`, `panel-pomodoro` (+ botones con `data-go`) |
 
 `onEventChanged({ id, start, end })` puede ser `async`; si lanza, el calendario revierte el evento.
 

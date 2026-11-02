@@ -8,6 +8,7 @@
  *
  * Orden de arranque (se conserva tal cual): vistas de tareas → calendario → Pomodoro → cuenta →
  * carga demo → escucha de sesión. Si FullCalendar no carga, se muestra el error y no sigue.
+ * La navegación entre pantallas (solo mostrar/ocultar) se inicia al principio, antes de las vistas de tareas.
  */
 import { byId } from "./shared/dom.js";
 import { setLoading, showMessage } from "./shared/feedback.js";
@@ -27,18 +28,22 @@ import { initTaskList } from "./presentation/tasks/task-list.view.js";
 import { createCalendarView } from "./presentation/calendar/calendar.view.js";
 import { initPomodoroUi } from "./presentation/pomodoro/pomodoro.ui.js";
 import { initAuthUi } from "./presentation/auth/auth.ui.js";
+import { initNavigation } from "./presentation/shell/navigation.ui.js";
 
 const auth = createFirebaseAuth();
 const createDemoRepository = () => createMemoryTaskRepository(buildSeedTasks());
 
 /** Conecta la sesión con el repositorio de tareas. Si Firebase no está configurado, se queda en modo demo. */
-async function connectSession(authUi, taskService) {
+async function connectSession(authUi, taskService, navigation) {
   const session = createSessionCoordinator({
     auth,
     taskService,
     createUserRepository: (uid) => createFirestoreTaskRepository(uid),
     createGuestRepository: createDemoRepository,
-    onUserChanged: authUi.setUser,
+    onUserChanged: (user) => {
+      authUi.setUser(user);
+      navigation.setUser(user); // solo apariencia y destino de pantalla
+    },
     onLoadingChange: setLoading,
     onLoadError: (error) => showMessage(`No se pudieron cargar las tareas: ${error.message}`, "error"),
   });
@@ -54,6 +59,8 @@ async function startApp() {
   try {
     const taskService = createTaskService(createDemoRepository());
     const calendar = createCalendarView();
+    // El calendario se monta con su pestaña oculta; al mostrarla recalcula su tamaño.
+    const navigation = initNavigation({ onPanelShown: { calendar: calendar.refresh } });
 
     initTaskForm(taskService);
     const calendarDialog = initCalendarTaskDialog(taskService);
@@ -78,7 +85,7 @@ async function startApp() {
 
     await taskService.load();
     setLoading(false);
-    connectSession(authUi, taskService);
+    connectSession(authUi, taskService, navigation);
   } catch (error) {
     setLoading(false);
     showMessage(error.message, "error");

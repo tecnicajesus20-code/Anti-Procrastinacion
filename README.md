@@ -58,9 +58,9 @@ public/                          Lo que se publica
   src/domain/                    Modelo y reglas (tareas, Pomodoro). Sin dependencias
   src/application/               Casos de uso, contrato de repositorio, sesión, temporizador
   src/infrastructure/            Firebase (auth, Firestore) y repositorio en memoria
-  src/presentation/              Formularios, lista, calendario, Pomodoro y cuenta
+  src/presentation/              Formularios, lista, calendario, Pomodoro, cuenta y navegación entre pantallas
   src/shared/                    Fechas, DOM y mensajes
-  src/styles/                    CSS (diseño congelado)
+  src/styles/                    CSS: base (tokens, modo oscuro), layout, landing (solo la pantalla de inicio) y components
 tests/unit/                      Pruebas unitarias y de arquitectura (node:test)
 tests/regression/                Arnés de regresión (jsdom + FullCalendar + Firebase falso)
 docs/                            Documentación técnica

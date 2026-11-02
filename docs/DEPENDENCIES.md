@@ -14,6 +14,7 @@ flowchart TD
     cv[calendar/calendar.view] --> cm[calendar/calendar.mapper]
     pu[pomodoro/pomodoro.ui]
     au[auth/auth.ui]
+    nv[shell/navigation.ui]
   end
   subgraph application
     ts[task.service] --> tr[task-repository<br/>contrato]
@@ -70,7 +71,8 @@ flowchart TD
 | `presentation/calendar/calendar.view.js` | `calendar.mapper` (+ `window.FullCalendar`) |
 | `presentation/calendar/calendar.mapper.js` | `shared/date-time` |
 | `presentation/pomodoro/pomodoro.ui.js` | `shared/dom`, `shared/date-time`, `domain/pomodoro` |
-| `presentation/auth/auth.ui.js` | `shared/dom`, `shared/feedback` |
+| `presentation/auth/auth.ui.js` | `shared/dom`, `shared/feedback` |
+| `presentation/shell/navigation.ui.js` | `shared/dom` |
 | `shared/feedback.js` | `shared/dom` |
 | `shared/dom.js`, `shared/date-time.js` | — |
 | `main.js` | todas las fábricas de presentación, aplicación e infraestructura; `shared/dom`, `shared/feedback` |
@@ -84,7 +86,8 @@ flowchart TD
 | `task.service` | un `TaskRepository` (memoria o Firestore) |
 | `session.coordinator` | `auth`, `taskService`, fábricas de repositorio, callbacks de UI |
 | `pomodoro.ui` | `pomodoroService` |
-| `auth.ui` | `auth` |
+| `auth.ui` | `auth` |
+| `navigation.ui` | `onPanelShown.calendar` → `calendar.refresh`; la sesión llega por `navigation.setUser` desde `session.coordinator` |
 
 ## Externas
 
@@ -92,7 +95,7 @@ flowchart TD
 |---|---|---|---|
 | FullCalendar (paquete completo) | 6.1.15 | `<script>` jsDelivr en `index.html` | `presentation/calendar/calendar.view.js` |
 | Firebase app/auth/firestore | 10.14.1 | `import()` de gstatic, bajo demanda | `infrastructure/firebase/firebase.client.js` |
-| DM Sans | — | `@import` Google Fonts en `base.css` | estilos |
+| Plus Jakarta Sans | — | `@import` Google Fonts en `base.css` | estilos |
 | jsdom, fullcalendar (npm) | 24.1.3, 6.1.15 | `devDependencies` | solo `tests/regression/` |
 
 ## Archivos fuera de la app

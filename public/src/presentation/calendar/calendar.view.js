@@ -9,6 +9,7 @@
  *     onEventChanged({ id, start, end })           al mover o redimensionar (ISO 8601). Puede ser async;
  *                                                  si lanza un error, el evento vuelve a su posición.
  *   render(tasks)  Dibuja las tareas como eventos (reemplaza los anteriores)
+ *   refresh()      Recalcula el tamaño. Hace falta al mostrar la pestaña Calendario: se monta mientras está oculta
  */
 import { taskToEvent, eventToBlock } from "./calendar.mapper.js";
 
@@ -68,5 +69,10 @@ export function createCalendarView() {
     });
   }
 
-  return { mount, render };
+  /** Solo apariencia: FullCalendar mide su contenedor, y oculto mide 0. No cambia datos ni opciones. */
+  function refresh() {
+    calendar?.updateSize();
+  }
+
+  return { mount, render, refresh };
 }

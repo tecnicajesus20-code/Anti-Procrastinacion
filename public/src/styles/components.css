@@ -1,204 +1,32 @@
-/* src/styles/components.css - Bosque Solar · cristal en tarjetas, formularios y calendario */
+/* src/styles/components.css - Botones, tarjetas, formularios, lista de tareas, diálogo, calendario, Pomodoro y mensajes.
+   Los estilos usan SOLO clases (nunca ids de JavaScript ni :has()). */
 
 /* =========================================
-   TARJETAS DE CRISTAL
+   TARJETAS
    ========================================= */
 .card {
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border: 1.5px solid var(--glass-border);
+  padding: 1.4rem;
+  background: var(--glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1.5px solid var(--line);
   border-radius: var(--radius-card);
-  padding: 1.75rem;
-  box-shadow: var(--glass-shadow);
+  box-shadow: var(--shadow);
 }
 
 .card-title {
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: var(--text-main);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  margin-bottom: 1.25rem;
-}
-
-/* =========================================
-   POMODORO (bosque profundo + cristal)
-   ========================================= */
-/* ⚠️ REVISIÓN PENDIENTE (D-05): estilo enganchado a un id de JS mediante :has(). Ver layout.css.
-   Sugerencia: .card--pomodoro en lugar de .card:has(#pomodoro-time) en todo este bloque. */
-.card:has(#pomodoro-time) {
-  background:
-    radial-gradient(18rem 10rem at 12% 0%, rgba(255, 255, 255, 0.14), transparent 70%),
-    linear-gradient(145deg, rgba(10, 70, 53, 0.95) 0%, rgba(6, 45, 34, 0.98) 100%);
-  backdrop-filter: blur(16px) saturate(150%);
-  -webkit-backdrop-filter: blur(16px) saturate(150%);
-  color: var(--text-light);
-  padding: 2.25rem 1.75rem;
-  border: 1.5px solid rgba(255, 255, 255, 0.16);
-  box-shadow:
-    0 20px 44px -10px rgba(10, 70, 53, 0.5),
-    0 2px 6px rgba(6, 45, 34, 0.25),
-    inset 0 1px 1px rgba(255, 255, 255, 0.28),
-    inset 0 -1px 1px rgba(0, 0, 0, 0.2);
-}
-
-.card:has(#pomodoro-time) .card-title {
-  color: #DCE7E1;
-}
-
-.pomodoro-mode {
-  display: inline-block;
-  font-size: 0.85rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: #9CC8FF;
-  background: rgba(42, 116, 224, 0.22);
-  padding: 0.25rem 0.85rem;
-  border-radius: var(--radius-pill);
-  border: 1px solid rgba(120, 175, 255, 0.45);
-  margin-bottom: 0.25rem;
-}
-
-.pomodoro-time {
-  font-size: 4.5rem;
+  margin-bottom: 1rem;
+  font-size: 1.05rem;
   font-weight: 800;
-  line-height: 1.05;
-  color: #EFECE1;
-  margin: 0.35rem 0 1.25rem;
-  font-variant-numeric: tabular-nums;
-  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.25);
 }
 
-.card:has(#pomodoro-time) .btn {
-  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0) 55%);
-  background-color: var(--blue-main);
-  color: #FFFFFF;
-  border: 1.5px solid transparent;
-  font-weight: 700;
-  padding: 0.7rem 1.25rem;
-  box-shadow: 0 4px 14px rgba(42, 116, 224, 0.4),
-              inset 0 1px 0 rgba(255, 255, 255, 0.45);
+.page-title {
+  font-size: 1.4rem;
+  font-weight: 800;
 }
 
-.card:has(#pomodoro-time) .btn:hover {
-  background-color: var(--blue-hover);
-  transform: translateY(-1px);
-  box-shadow: 0 9px 20px rgba(42, 116, 224, 0.45),
-              inset 0 1px 0 rgba(255, 255, 255, 0.45);
-}
-
-.card:has(#pomodoro-time) .btn:active {
-  transform: translateY(0);
-}
-
-.card:has(#pomodoro-time) #pomodoro-reset {
-  background-image: none;
-  background-color: rgba(255, 255, 255, 0.12);
-  color: var(--text-light);
-  border: 1.5px solid rgba(255, 255, 255, 0.28);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
-}
-
-.card:has(#pomodoro-time) #pomodoro-reset:hover {
-  background-color: rgba(255, 255, 255, 0.2);
-  box-shadow: none;
-}
-
-.card:has(#pomodoro-time) .btn:focus-visible {
-  outline-color: #FFFFFF;
-}
-
-/* =========================================
-   FORMULARIOS DE CRISTAL
-   ========================================= */
-/* Panel de cristal dentro de la tarjeta: sensación de vidrio sobre vidrio */
-.card .form {
-  background: var(--glass-bg-soft);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1.5px solid rgba(197, 215, 205, 0.75);
-  border-radius: 14px;
-  padding: 1.25rem;
-  box-shadow:
-    0 6px 16px -6px rgba(10, 70, 53, 0.12),
-    inset 0 1px 1px rgba(255, 255, 255, 0.95),
-    inset 0 -1px 1px rgba(10, 70, 53, 0.05);
-}
-
-.form,
-.event-form {
-  display: flex;
-  flex-direction: column;
-  gap: 0.9rem;
-}
-
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  font-size: 0.88rem;
-  font-weight: 600;
-  color: var(--text-main);
-}
-
-/* Campo "tallado" en el cristal: sombra interior arriba, luz abajo */
-.input,
-select.input,
-textarea.input {
-  width: 100%;
-  padding: 0.72rem 0.95rem;
-  font-family: inherit;
-  font-size: 0.95rem;
-  color: var(--text-main);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.50), rgba(255, 255, 255, 0.78));
-  border: 1.5px solid var(--forest-border);
-  border-radius: var(--radius-input);
-  box-shadow:
-    inset 0 2px 4px rgba(10, 70, 53, 0.07),
-    0 1px 0 rgba(255, 255, 255, 0.9);
-  transition: background 0.2s var(--ease), border-color 0.2s var(--ease), box-shadow 0.2s var(--ease);
-}
-
-.input::placeholder {
-  color: var(--text-muted);
-  opacity: 0.8;
-}
-
-.input:hover {
-  border-color: #A9C2B5;
-}
-
-.input:focus {
-  outline: none;
-  background: #FFFFFF;
-  border-color: var(--forest-dark);
-  box-shadow:
-    inset 0 1px 2px rgba(10, 70, 53, 0.04),
-    var(--focus-ring);
-}
-
-select.input {
-  appearance: none;
-  -webkit-appearance: none;
-  padding-right: 2.4rem;
-  cursor: pointer;
-  background-image:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%230A4635' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.50), rgba(255, 255, 255, 0.78));
-  background-repeat: no-repeat;
-  background-position: right 0.95rem center, 0 0;
-}
-
-textarea.input {
-  resize: vertical;
-  min-height: 4.5rem;
-  line-height: 1.45;
-}
-
-input[type="datetime-local"].input {
-  min-height: 2.9rem;
+.muted {
+  color: var(--muted);
 }
 
 /* =========================================
@@ -215,98 +43,229 @@ input[type="datetime-local"].input {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.7rem 1.2rem;
-  font-family: inherit;
-  font-size: 0.95rem;
+  gap: 0.4rem;
+  padding: 0.65rem 1.1rem;
+  font-size: 0.9rem;
   font-weight: 600;
-  color: var(--forest-dark);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.85), rgba(235, 243, 238, 0.7));
-  border: 1.5px solid var(--forest-border);
+  background: var(--field);
+  border: 1px solid var(--bdr);
   border-radius: var(--radius-input);
-  box-shadow: 0 2px 6px -2px rgba(10, 70, 53, 0.12),
-              inset 0 1px 0 rgba(255, 255, 255, 0.95);
   cursor: pointer;
-  transition: background 0.2s var(--ease), transform 0.2s var(--ease),
-              box-shadow 0.2s var(--ease), border-color 0.2s var(--ease);
+  transition: transform 0.15s, background 0.15s, border-color 0.15s;
 }
 
 .btn:hover {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(226, 236, 230, 0.9));
-  border-color: #A9C2B5;
+  transform: translateY(-1px);
+  background: var(--solid);
 }
 
 .btn:active {
-  transform: translateY(1px);
-}
-
-.btn--primary {
-  background: linear-gradient(180deg, #0F5A45 0%, var(--forest-dark) 100%);
-  color: #FFFFFF;
-  border-color: var(--forest-dark);
-  font-weight: 700;
-  box-shadow: 0 5px 14px rgba(10, 70, 53, 0.32),
-              inset 0 1px 0 rgba(255, 255, 255, 0.22);
-}
-
-.btn--primary:hover {
-  background: linear-gradient(180deg, #0A4635 0%, var(--forest-hover) 100%);
-  border-color: var(--forest-hover);
-  transform: translateY(-1px);
-  box-shadow: 0 10px 20px rgba(10, 70, 53, 0.36),
-              inset 0 1px 0 rgba(255, 255, 255, 0.22);
-}
-
-.btn--primary:active {
   transform: translateY(0);
 }
 
-/* ⚠️ REVISIÓN PENDIENTE (D-05): selector por id de JS. Sugerencia: una clase modificadora, p. ej. .btn--block. */
-#task-form .btn--primary {
+.btn--primary {
+  color: var(--on-teal);
+  background: var(--teal);
+  border-color: var(--teal);
+}
+
+.btn--primary:hover {
+  background: var(--teal-hover);
+  border-color: var(--teal-hover);
+}
+
+.btn--big {
+  padding: 0.9rem 1.5rem;
+  font-size: 1rem;
+  border-radius: 12px;
+}
+
+.btn--sm {
+  padding: 0.3rem 0.65rem;
+  font-size: 0.78rem;
+}
+
+.btn--block {
   width: 100%;
-  margin-top: 0.35rem;
-  padding: 0.8rem;
+}
+
+/* "Eliminar" (lista de tareas) */
+.btn--danger {
+  color: var(--danger-text);
+  border-color: var(--danger-line);
+}
+
+.btn--danger:hover {
+  background: var(--danger-bg);
+  border-color: var(--danger);
+}
+
+.link {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--link);
+  background: none;
+  border: 0;
+  text-decoration: underline;
+  cursor: pointer;
 }
 
 .icon-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  width: 32px;
-  height: 32px;
-  font-family: inherit;
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 34px;
+  height: 34px;
   font-size: 1.1rem;
-  font-weight: 700;
   line-height: 1;
-  color: var(--forest-dark);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(235, 243, 238, 0.7));
-  border: 1.5px solid var(--forest-border);
+  background: var(--field);
+  border: 0;
   border-radius: 50%;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95);
   cursor: pointer;
-  transition: background 0.2s var(--ease), transform 0.2s var(--ease);
+  transition: transform 0.2s var(--ease), background 0.2s;
 }
 
 .icon-button:hover {
-  background: #E2ECE6;
   transform: rotate(90deg);
+  background: var(--bdr);
 }
 
 /* =========================================
-   LISTA DE TAREAS (fichas de cristal)
+   NAVEGACIÓN DE LA APP (pestañas de la cabecera)
+   ========================================= */
+.nav-tab {
+  padding: 0.5rem 0.9rem;
+  font-weight: 700;
+  color: var(--muted);
+  background: none;
+  border: 0;
+  border-radius: 9px;
+  cursor: pointer;
+}
+
+.nav-tab[aria-current="page"] {
+  color: var(--on-teal);
+  background: var(--teal);
+}
+
+.user {
+  padding: 0.3rem 0.8rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: var(--field);
+  border: 1px solid var(--bdr);
+  border-radius: var(--radius-pill);
+}
+
+.demo-banner .link {
+  color: var(--ocean);
+}
+
+.demo-banner {
+  margin-bottom: 1rem;
+  padding: 0.6rem 1rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #5B3D00;
+  background: #FFF4D9;
+  border-radius: 10px;
+}
+
+/* Contenido solo para visitantes / solo para sesión iniciada (lo alterna presentation/shell con una clase en <body>) */
+.is-signed-in .guest-only,
+body:not(.is-signed-in) .user-only {
+  display: none !important;
+}
+
+/* =========================================
+   FORMULARIOS
+   ========================================= */
+.form,
+.event-form {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.field {
+  display: grid;
+  gap: 0.25rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.input,
+select.input,
+textarea.input {
+  width: 100%;
+  padding: 0.65rem 0.8rem;
+  background: var(--field);
+  border: 1.5px solid var(--bdr);
+  border-radius: 9px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--teal);
+  box-shadow: 0 0 0 3px rgba(22, 224, 138, 0.25);
+}
+
+.input::placeholder {
+  color: var(--muted);
+  opacity: 0.8;
+}
+
+textarea.input {
+  resize: vertical;
+  min-height: 4.5rem;
+  line-height: 1.45;
+}
+
+.optional-label {
+  font-weight: 400;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+/* Pestaña "Cuenta": título y texto de apoyo */
+.auth-title {
+  margin-bottom: 0.3rem;
+  font-size: 1.4rem;
+  font-weight: 800;
+}
+
+.auth-actions {
+  display: grid;
+  gap: 0.6rem;
+  margin-top: 0.4rem;
+}
+
+.note {
+  margin-top: 0.9rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.note:empty {
+  display: none;
+}
+
+/* =========================================
+   LISTA DE TAREAS
    ========================================= */
 .task-list {
-  list-style: none;
-  margin-top: 1.5rem;
-  padding-top: 1.25rem;
-  border-top: 1.5px solid rgba(197, 215, 205, 0.6);
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  list-style: none;
 }
 
-.task-list:empty {
-  display: none;
+/* Estado vacío: solo CSS, aparece cuando la lista no tiene elementos */
+.task-list:empty::before {
+  content: "Aún no tienes tareas. Crea la primera con el formulario.";
+  padding: 2rem 1rem;
+  text-align: center;
+  color: var(--muted);
 }
 
 .task-item {
@@ -314,43 +273,39 @@ input[type="datetime-local"].input {
   flex-direction: column;
   gap: 0.4rem;
   padding: 0.85rem 1rem;
-  background: var(--glass-bg-soft);
-  border: 1.5px solid rgba(197, 215, 205, 0.7);
-  border-left: 4px solid var(--blue-main);
-  border-radius: var(--radius-input);
-  box-shadow: 0 3px 10px -3px rgba(10, 70, 53, 0.10),
-              inset 0 1px 1px rgba(255, 255, 255, 0.95);
-  transition: box-shadow 0.2s var(--ease), background 0.2s var(--ease);
+  background: var(--field);
+  border: 1px solid var(--bdr);
+  border-left: 5px solid var(--teal);
+  border-radius: 12px;
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .task-item:hover {
-  background: var(--glass-bg);
-  box-shadow: 0 8px 18px -4px rgba(10, 70, 53, 0.16),
-              inset 0 1px 1px rgba(255, 255, 255, 0.95);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
 }
 
 .task-item--done {
   opacity: 0.65;
-  border-left-color: var(--forest-border);
+  border-left-color: var(--bdr);
 }
 
 .task-item--done .task-title {
   text-decoration: line-through;
-  color: var(--text-muted);
+  color: var(--muted);
 }
 
 .task-title {
   font-weight: 700;
-  color: var(--text-main);
 }
 
 .task-time {
   font-size: 0.82rem;
-  color: var(--text-muted);
+  color: var(--muted);
 }
 
 /* =========================================
-   MODAL (cristal, centrado)
+   DIÁLOGO "NUEVA TAREA" DEL CALENDARIO
    ========================================= */
 .event-dialog {
   position: fixed;
@@ -360,33 +315,26 @@ input[type="datetime-local"].input {
   height: fit-content;
   max-height: calc(100dvh - 2rem);
   overflow-y: auto;
-  padding: 1.75rem;
-  color: var(--text-main);
-  background: var(--glass-bg-strong);
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
-  border: 1.5px solid var(--glass-border);
-  border-radius: 20px;
-  box-shadow:
-    0 32px 64px -12px rgba(10, 70, 53, 0.38),
-    0 4px 12px rgba(10, 70, 53, 0.10),
-    inset 0 1px 1px rgba(255, 255, 255, 0.95),
-    inset 1px 0 1px rgba(255, 255, 255, 0.5);
+  padding: 1.5rem;
+  color: var(--ink);
+  background: var(--solid);
+  border: 0;
+  border-radius: 18px;
+  box-shadow: 0 30px 70px -10px rgba(0, 0, 0, 0.45);
 }
 
 .event-dialog[open] {
-  animation: dialog-in 0.22s var(--ease);
+  animation: pop 0.35s cubic-bezier(0.3, 1.4, 0.5, 1);
 }
 
 .event-dialog::backdrop {
-  background: rgba(10, 70, 53, 0.45);
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
+  background: rgba(6, 25, 30, 0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }
 
-@keyframes dialog-in {
-  from { opacity: 0; transform: translateY(8px) scale(0.98); }
-  to   { opacity: 1; transform: none; }
+@keyframes pop {
+  from { opacity: 0; transform: scale(0.96); }
 }
 
 .event-dialog__header {
@@ -394,17 +342,15 @@ input[type="datetime-local"].input {
   justify-content: space-between;
   align-items: center;
   gap: 1rem;
-  margin-bottom: 1.25rem;
+  margin-bottom: 1rem;
 }
 
 .event-dialog__title {
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: var(--forest-dark);
+  font-size: 1.35rem;
+  font-weight: 800;
 }
 
 .event-title-input {
-  font-size: 1.05rem;
   font-weight: 600;
 }
 
@@ -418,17 +364,13 @@ input[type="datetime-local"].input {
   min-width: 0;
 }
 
-.optional-label {
-  font-weight: 400;
-  color: var(--text-muted);
-  font-size: 0.78rem;
-}
-
 .event-dialog__actions {
   display: flex;
   justify-content: flex-end;
-  gap: 0.75rem;
-  margin-top: 0.75rem;
+  gap: 0.6rem;
+  margin-top: 0.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--bdr);
 }
 
 @media (max-width: 480px) {
@@ -438,239 +380,265 @@ input[type="datetime-local"].input {
 }
 
 /* =========================================
-   CALENDARIO DE CRISTAL (FullCalendar)
+   CALENDARIO (FullCalendar)
    ========================================= */
-/* El calendario es una lámina de vidrio dentro de la tarjeta */
 .calendar {
-  margin-top: 0.5rem;
-  padding: 1rem;
-  font-size: 0.88rem;
-  background: var(--glass-bg-soft);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1.5px solid rgba(197, 215, 205, 0.75);
-  border-radius: 14px;
-  box-shadow:
-    0 6px 16px -6px rgba(10, 70, 53, 0.12),
-    inset 0 1px 1px rgba(255, 255, 255, 0.95),
-    inset 0 -1px 1px rgba(10, 70, 53, 0.05);
+  padding: 0.5rem;
+  font-size: 0.85rem;
 
-  --fc-border-color: rgba(10, 70, 53, 0.10);
   --fc-page-bg-color: transparent;
-  --fc-neutral-bg-color: rgba(255, 255, 255, 0.35);
-  --fc-neutral-text-color: var(--text-muted);
-  --fc-button-bg-color: var(--forest-dark);
-  --fc-button-border-color: var(--forest-dark);
-  --fc-button-hover-bg-color: var(--forest-hover);
-  --fc-button-hover-border-color: var(--forest-hover);
-  --fc-button-active-bg-color: var(--blue-main);
-  --fc-button-active-border-color: var(--blue-main);
-  --fc-event-bg-color: var(--blue-main);
-  --fc-event-border-color: var(--blue-main);
-  --fc-event-text-color: #FFFFFF;
-  --fc-today-bg-color: rgba(10, 70, 53, 0.09);
-  --fc-highlight-color: rgba(42, 116, 224, 0.24);
-  --fc-non-business-color: rgba(10, 70, 53, 0.04);
+  --fc-border-color: var(--line);
+  --fc-neutral-bg-color: var(--field);
+  --fc-neutral-text-color: var(--muted);
+  --fc-today-bg-color: rgba(22, 224, 138, 0.1);
+  --fc-highlight-color: rgba(22, 224, 138, 0.22);
+  --fc-now-indicator-color: #E5484D;
+  --fc-button-bg-color: var(--teal);
+  --fc-button-border-color: var(--teal);
+  --fc-button-text-color: var(--on-teal);
+  --fc-button-hover-bg-color: var(--teal-hover);
+  --fc-button-hover-border-color: var(--teal-hover);
+  --fc-button-active-bg-color: var(--teal-hover);
+  --fc-button-active-border-color: var(--teal-hover);
+  --fc-event-bg-color: var(--teal);
+  --fc-event-border-color: var(--teal);
+  --fc-event-text-color: var(--on-teal);
+}
+
+.calendar .fc {
+  color: var(--ink);
+}
+
+.calendar a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.calendar .fc-toolbar {
+  flex-wrap: wrap;
+  gap: 0.6rem;
 }
 
 .calendar .fc-toolbar-title {
   font-size: 1.1rem !important;
-  font-weight: 700;
-  color: var(--forest-dark);
+  font-weight: 800;
   text-transform: capitalize;
 }
 
 .calendar .fc-button {
-  font-family: inherit;
-  font-weight: 600;
-  border-radius: var(--radius-input);
-  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0) 55%);
-  box-shadow: 0 3px 10px rgba(10, 70, 53, 0.22),
-              inset 0 1px 0 rgba(255, 255, 255, 0.25);
-  transition: background-color 0.2s var(--ease), transform 0.2s var(--ease);
+  font-weight: 700;
+  border-radius: 9px;
+  box-shadow: none !important;
 }
 
-.calendar .fc-button:focus {
-  box-shadow: var(--focus-ring);
-}
-
-.calendar .fc-button-primary:not(:disabled).fc-button-active,
-.calendar .fc-button-primary:not(:disabled):active {
-  color: #FFFFFF;
-}
-
-.calendar .fc-button-primary:disabled {
+.calendar .fc-button:disabled {
   opacity: 0.5;
 }
 
-/* Rejilla: marco tipo vidrio y celdas translúcidas */
-.calendar .fc-scrollgrid {
-  border-radius: 12px;
-  overflow: hidden;
-  border: 1.5px solid rgba(197, 215, 205, 0.8);
-  background: rgba(255, 255, 255, 0.28);
-}
-
-.calendar .fc-scrollgrid td:last-child,
-.calendar .fc-scrollgrid th:last-child {
-  border-right-color: transparent;
-}
-
-.calendar .fc-col-header-cell {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.75), rgba(235, 243, 238, 0.55));
-}
-
-/* ⚠️ REVISIÓN PENDIENTE (D-07): las reglas .fc-daygrid-* de este archivo no se aplican: la app solo usa vistas
-   timeGrid (semana/día). Inofensivas; eliminarlas o conservarlas es decisión de diseño. */
-.calendar .fc-col-header-cell-cushion,
-.calendar .fc-daygrid-day-number {
-  color: var(--text-main);
-  text-decoration: none;
-  font-weight: 600;
-}
-
-.calendar .fc-daygrid-day,
-.calendar .fc-timegrid-slot,
-.calendar .fc-timegrid-col {
-  transition: background-color 0.15s var(--ease);
-}
-
-.calendar .fc-daygrid-day:hover,
-.calendar .fc-timegrid-col:hover {
-  background-color: rgba(255, 255, 255, 0.45);
-}
-
-.calendar .fc-day-today {
-  background-color: var(--fc-today-bg-color) !important;
-  box-shadow: inset 0 0 0 1.5px rgba(10, 70, 53, 0.14);
-}
-
-.calendar .fc-day-today .fc-daygrid-day-number {
-  background-color: var(--forest-dark);
-  color: #FFFFFF;
-  border-radius: 50%;
-  width: 28px;
-  height: 28px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin: 2px;
-  box-shadow: 0 3px 8px rgba(10, 70, 53, 0.3);
-}
-
-.calendar .fc-timegrid-axis-cushion,
-.calendar .fc-timegrid-slot-label-cushion {
-  color: var(--text-muted);
-  font-weight: 600;
-}
-
-/* Eventos: gotas de azul con brillo de cristal */
-/* ⚠️ REVISIÓN PENDIENTE (D-04): cada evento recibe .event--pending / .event--in_progress / .event--done
-   (presentation/calendar/calendar.mapper.js), pero no hay estilos: en el calendario una tarea
-   completada se ve igual que una pendiente, mientras que en la lista sí aparece tachada.
-   Sugerencia: .calendar .event--done { opacity: 0.6; text-decoration: line-through; } */
 .calendar .fc-event {
-  border-radius: 7px;
+  border: 0;
+  border-radius: 8px;
   font-weight: 600;
-  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0) 60%);
-  box-shadow: 0 3px 8px rgba(42, 116, 224, 0.38),
-              inset 0 1px 0 rgba(255, 255, 255, 0.55);
-  cursor: pointer;
-  transition: transform 0.15s var(--ease), box-shadow 0.15s var(--ease);
+  cursor: grab;
+  box-shadow: 0 2px 6px -2px rgba(15, 38, 58, 0.25);
 }
 
-.calendar .fc-event:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 14px rgba(42, 116, 224, 0.45),
-              inset 0 1px 0 rgba(255, 255, 255, 0.55);
+.calendar .fc-event:active {
+  cursor: grabbing;
 }
 
-.calendar .fc-highlight {
-  border-radius: 6px;
-  box-shadow: inset 0 0 0 1.5px rgba(42, 116, 224, 0.55);
+/* Estado de la tarea en el calendario (clases que pone presentation/calendar/calendar.mapper.js) */
+.calendar .event--in_progress {
+  --fc-event-bg-color: var(--amber);
+  --fc-event-border-color: var(--amber);
 }
 
-.calendar .fc-timegrid-now-indicator-line {
-  border-color: var(--blue-main);
-}
-
-.calendar .fc-timegrid-now-indicator-arrow {
-  border-color: var(--blue-main);
-  border-top-color: transparent;
-  border-bottom-color: transparent;
+.calendar .event--done {
+  opacity: 0.6;
+  text-decoration: line-through;
+  --fc-event-bg-color: var(--bdr);
+  --fc-event-border-color: var(--bdr);
+  --fc-event-text-color: var(--muted);
 }
 
 .calendar-hint {
   margin-top: 0.85rem;
   font-size: 0.82rem;
-  color: var(--text-muted);
-}
-
-/* ⚠️ REVISIÓN PENDIENTE (D-07): .move-log no se usa en ningún HTML ni JS (resto de una versión anterior).
-   Sugerencia: eliminar el bloque si el equipo de diseño confirma que no se va a usar. */
-.move-log {
-  margin-top: 1rem;
-  padding: 0.75rem 1rem;
-  background: var(--glass-bg-soft);
-  border: 1.5px dashed var(--forest-border);
-  border-radius: var(--radius-input);
-  font-size: 0.85rem;
-  color: var(--text-muted);
+  color: var(--muted);
 }
 
 /* =========================================
-   MENSAJES
+   POMODORO
+   ========================================= */
+.pomodoro {
+  position: relative;
+  overflow: hidden;
+  padding: 2rem 1rem 2.4rem;
+  text-align: center;
+  background: var(--solid);
+  border: 1.5px solid var(--line);
+  border-radius: 24px;
+  box-shadow: var(--shadow);
+  transition: background 1s;
+}
+
+.pomodoro--break {
+  background: #EEF8FF;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .pomodoro--break { background: #0E2A3A; }
+}
+:root[data-theme="dark"] .pomodoro--break { background: #0E2A3A; }
+
+.pomodoro-mode {
+  display: inline-block;
+  margin-bottom: 1.4rem;
+  padding: 0.35rem 1.1rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--on-teal);
+  background: var(--teal);
+  border-radius: var(--radius-pill);
+}
+
+.pomodoro--break .pomodoro-mode {
+  color: #FFFFFF;
+  background: var(--ocean);
+}
+
+.pomodoro-ring {
+  position: relative;
+  width: min(300px, 76vw);
+  aspect-ratio: 1;
+  margin: 0 auto 1.4rem;
+}
+
+.pomodoro-ring svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.pomodoro-ring circle {
+  fill: none;
+  stroke-width: 10;
+}
+
+.pomodoro-ring__track {
+  stroke: var(--bdr);
+}
+
+/* pathLength="1" en el HTML: el trazo mide 1, así el avance es simplemente un número entre 0 y 1 */
+.pomodoro-ring__progress {
+  stroke: var(--teal);
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 1s linear;
+}
+
+.pomodoro--break .pomodoro-ring__progress {
+  stroke: #38B6FF;
+}
+
+/* "Respiración": un halo que late mientras el temporizador corre */
+.pomodoro-ring::after {
+  content: "";
+  position: absolute;
+  inset: 14%;
+  border-radius: 50%;
+  background: rgba(22, 224, 138, 0.12);
+  animation: breathe 4s ease-in-out infinite paused;
+}
+
+.pomodoro--running .pomodoro-ring::after {
+  animation-play-state: running;
+}
+
+.pomodoro--break.pomodoro--running .pomodoro-ring::after {
+  animation-duration: 8s;
+}
+
+@keyframes breathe {
+  50% { transform: scale(1.14); background: rgba(22, 224, 138, 0.26); }
+}
+
+.pomodoro-time {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  place-content: center;
+  font-size: 3.6rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.pomodoro .btn-row {
+  justify-content: center;
+}
+
+.pomodoro .btn--primary {
+  padding: 0.8rem 2rem;
+  font-size: 1rem;
+}
+
+/* =========================================
+   MENSAJES Y CARGA (los escribe shared/feedback.js)
    ========================================= */
 .message,
 .loading {
-  margin-bottom: 1.25rem;
-  padding: 0.85rem 1.25rem;
-  border-radius: var(--radius-input);
+  padding: 0.7rem 1rem;
+  font-size: 0.9rem;
   font-weight: 600;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  box-shadow: 0 4px 14px -4px rgba(10, 70, 53, 0.14),
-              inset 0 1px 1px rgba(255, 255, 255, 0.7);
+  border: 1px solid transparent;
+  border-radius: 10px;
 }
 
-/* ⚠️ REVISIÓN PENDIENTE (D-03): JavaScript usa también .message--error (shared/feedback.js) y NO tiene estilo:
-   los errores se ven sin fondo ni borde de color, menos visibles que los avisos informativos.
-   Sugerencia (siguiendo el patrón de .message--info):
-     .message--error { background: rgba(254, 226, 226, 0.85); color: #991B1B; border-left: 4px solid #DC2626; }
-   Ídem .btn--danger (botón "Eliminar" de la lista, sin estilo propio; D-10):
-     .btn--danger { color: #B91C1C; border-color: #F3C4C4; }  .btn--danger:hover { background: #FEF2F2; border-color: #DC2626; } */
 .message--info {
-  background: rgba(219, 234, 254, 0.85);
-  color: #1E3A8A;
-  border-left: 4px solid var(--blue-main);
+  color: var(--info-ink);
+  background: var(--info-bg);
+  border-color: rgba(2, 119, 189, 0.3);
+}
+
+.message--error {
+  color: var(--danger-ink);
+  background: var(--danger-bg);
+  border-color: var(--danger-line);
+  animation: shake 0.4s;
+}
+
+.message--error::before {
+  content: "⚠ ";
 }
 
 .loading {
-  background: rgba(209, 250, 229, 0.85);
-  color: var(--forest-dark);
-  border-left: 4px solid var(--forest-dark);
+  color: var(--on-teal);
+  background: rgba(22, 224, 138, 0.2);
+  border-color: rgba(22, 224, 138, 0.5);
 }
 
-.note {
-  margin-top: 0.75rem;
-  font-size: 0.85rem;
-  color: var(--text-muted);
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .loading { color: #9BE3CB; }
+}
+:root[data-theme="dark"] .loading { color: #9BE3CB; }
+
+@keyframes shake {
+  20% { translate: -6px; }
+  40% { translate: 6px; }
+  60% { translate: -4px; }
+  80% { translate: 4px; }
 }
 
 @media (max-width: 520px) {
   .card {
-    padding: 1.25rem;
-  }
-
-  .card .form {
-    padding: 1rem;
-  }
-
-  .calendar {
-    padding: 0.6rem;
+    padding: 1.1rem;
   }
 
   .pomodoro-time {
-    font-size: 3.6rem;
+    font-size: 3rem;
   }
 }

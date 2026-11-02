@@ -10,10 +10,10 @@ public/src/
 ├── domain/            QUÉ ES. Modelo, validación y reglas de estado. Sin imports.
 ├── application/       QUÉ SE PUEDE HACER. Casos de uso, contrato de persistencia, coordinación de sesión, temporizador.
 ├── infrastructure/    DÓNDE Y CON QUÉ. Firebase (SDK, auth, Firestore) y almacenamiento en memoria.
-├── presentation/      CÓMO SE VE. Formularios, lista, adaptador de FullCalendar, Pomodoro y cuenta.
+├── presentation/      CÓMO SE VE. Formularios, lista, adaptador de FullCalendar, Pomodoro, cuenta y navegación entre pantallas (shell/).
 ├── shared/            Utilidades transversales: fechas, acceso al DOM, mensajes.
 ├── config/            Configuración de Firebase (la real es local y no está en Git).
-└── styles/            CSS del equipo de diseño.
+└── styles/            CSS del equipo de diseño (base, layout, landing, components).
 ```
 
 | Capa | Puede importar | No debe | Comprobado por |
@@ -26,6 +26,12 @@ public/src/
 | `main.js` | todas | lógica propia más allá de conectar | revisión |
 
 La presentación recibe los casos de uso **como parámetro** desde `main.js`; no los importa. Por eso no hay flechas de `presentation` a `application` en el grafo (las referencias en JSDoc son solo tipos).
+
+## Pantallas (solo apariencia)
+
+`index.html` tiene tres pantallas: **inicio** (landing), **cuenta** y **app** (pestañas Tareas, Calendario y Pomodoro). `presentation/shell/navigation.ui.js` solo muestra y oculta secciones según el hash (`#inicio`, `#cuenta`, `#tareas`, `#calendario`, `#pomodoro`); no toca tareas, Firebase ni reglas. Todos los ids de las pantallas anteriores se conservan, así que formularios, lista, calendario, Pomodoro y cuenta siguen conectados igual en `main.js`. La app sigue arrancando en modo demo: "Probar el demo" solo lleva a la pestaña Tareas.
+
+Tras un cambio de sesión, `main.js` avisa también a la navegación (`navigation.setUser`): al iniciar sesión desde la pantalla de cuenta lleva a Tareas, y al cerrarla dentro de la app vuelve al inicio.
 
 ## Flujos principales
 

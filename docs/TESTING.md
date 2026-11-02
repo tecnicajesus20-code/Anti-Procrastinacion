@@ -76,6 +76,9 @@ Leyenda: ✅ ejecutada y aprobada · ❌ ejecutada y fallida · ⏳ pendiente ·
 
 **Ninguna prueba ejecutada falló.**
 
+## Nota sobre el rediseño visual
+Con el diseño nuevo (landing, pantallas con pestañas, estilos) `index.html` y los CSS **ya no son idénticos** a `Desarrollo`, por lo que la fila 15 de la matriz y la frase "HTML y CSS no cambiaron" de abajo describen la versión anterior. Los ids, los textos de botones, las clases que usa el JavaScript (`task-item`, `message--error`, `event--<estado>`…) y las opciones de FullCalendar se conservaron, así que la regresión de comportamiento debe seguir dando "idéntico". `tests/unit/navigation.test.js` comprueba las rutas y que cada `data-go` de `index.html` apunte a una ruta real.
+
 ## Límites honestos
 - **jsdom no maqueta:** no verifica colores, tamaños, responsive ni animaciones. La garantía visual procede de que HTML y CSS no cambiaron, salvo comentarios.
 - **Los gestos de FullCalendar no se simulan:** se invocan sus callbacks (`select`, `eventDrop`, `eventResize`) con los mismos argumentos que pasa la librería.
