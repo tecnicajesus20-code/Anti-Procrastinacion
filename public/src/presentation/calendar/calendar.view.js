@@ -4,26 +4,31 @@
  * No guarda datos ni aplica reglas de negocio: dibuja tareas y comunica acciones.
  *
  * API pública:
- *   mount(element, { onEventChanged, onDateSelected })
+ *   mount(element, { onEventChanged, onDateSelected, onEventSelected })
  *     onDateSelected({ start: Date, end: Date })  al seleccionar un hueco libre
- *     onEventChanged({ id, start, end })           al mover o redimensionar (ISO 8601). Puede ser async;
+ *     onEventSelected({ taskId, blockIndex })      al hacer clic en un bloque existente
+ *     onEventChanged({ id, blockIndex, start, end }) al mover o redimensionar (ISO 8601). Puede ser async;
  *                                                  si lanza un error, el evento vuelve a su posición.
  *   render(tasks)  Dibuja las tareas como eventos (reemplaza los anteriores)
  *   refresh()      Recalcula el tamaño. Hace falta al mostrar la pestaña Calendario: se monta mientras está oculta
  */
-import { taskToEvent, eventToBlock } from "./calendar.mapper.js";
+import { taskToEvents, eventToBlock } from "./calendar.mapper.js";
 
 
 export function createCalendarView() {
   let calendar = null;
 
-  function mount(element, { onEventChanged, onDateSelected }) {
+  function mount(element, { onEventChanged, onDateSelected, onEventSelected }) {
     const { Calendar } = window.FullCalendar ?? {};
     if (!Calendar) throw new Error("FullCalendar no se cargó. Revisa tu conexión a internet.");
 
     async function saveEventChange(info) {
       try {
-        await onEventChanged({ id: info.event.id, ...eventToBlock(info.event, info.oldEvent) });
+        await onEventChanged({
+          id: info.event.extendedProps.taskId,
+          blockIndex: info.event.extendedProps.blockIndex,
+          ...eventToBlock(info.event, info.oldEvent),
+        });
       } catch {
         info.revert(); // si falla, el evento vuelve a su sitio
       }
@@ -54,6 +59,10 @@ export function createCalendarView() {
         onDateSelected({ start: info.start, end: info.end });
         calendar.unselect();
       },
+      eventClick: (info) => onEventSelected({
+        taskId: info.event.extendedProps.taskId,
+        blockIndex: info.event.extendedProps.blockIndex,
+      }),
       eventDrop: saveEventChange,
       eventResize: saveEventChange,
     });
@@ -65,7 +74,7 @@ export function createCalendarView() {
     if (!calendar) return;
     calendar.batchRendering(() => {
       calendar.removeAllEvents();
-      tasks.forEach((task) => calendar.addEvent(taskToEvent(task)));
+      tasks.forEach((task) => taskToEvents(task).forEach((event) => calendar.addEvent(event)));
     });
   }
 

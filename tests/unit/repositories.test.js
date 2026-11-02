@@ -68,3 +68,20 @@ test("mapper", () => {
   assert.deepEqual(taskFromDocument("i", { title: "x" }), { id: "i", title: "x" });
   assert.deepEqual(taskToDocument({ id: "i", title: "x" }), { title: "x" });
 });
+
+test("firestore: conserva los bloques adicionales sin compartir referencias", async () => {
+  const fb = fakeFirebase();
+  const repo = createFirestoreTaskRepository("u1", { getFirebase: fb.getFirebase });
+  const blocks = [
+    { start: data.start, end: data.end },
+    { start: "2026-11-03T09:00:00.000Z", end: "2026-11-03T10:00:00.000Z" },
+  ];
+  const created = await repo.create({ ...data, blocks });
+  blocks[1].start = "mutado";
+
+  const [loaded] = await repo.list();
+  assert.equal(loaded.blocks[1].start, "2026-11-03T09:00:00.000Z");
+  const updatedBlocks = [...loaded.blocks, { start: "2026-11-04T09:00:00.000Z", end: "2026-11-04T10:00:00.000Z" }];
+  const saved = await repo.update(created.id, { blocks: updatedBlocks });
+  assert.equal(saved.blocks.length, 3);
+});
