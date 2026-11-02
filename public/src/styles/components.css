@@ -1,39 +1,644 @@
-/* Componentes reutilizables: tarjetas, formularios, botones, mensajes, tareas, Pomodoro, calendario. */
-.card { background: var(--color-surface); border: 1px solid var(--color-line); border-radius: 8px; padding: var(--space); }
-.card-title { font-size: 1.05rem; margin-bottom: .75rem; }
+/* src/styles/components.css - Botones, tarjetas, formularios, lista de tareas, diálogo, calendario, Pomodoro y mensajes.
+   Los estilos usan SOLO clases (nunca ids de JavaScript ni :has()). */
 
-.form { display: grid; gap: .6rem; }
-.field { display: grid; gap: .25rem; font-size: .85rem; color: var(--color-muted); }
-.input { width: 100%; padding: .55rem; border: 1px solid #c5ccc8; border-radius: 6px; font: inherit; color: var(--color-text); }
+/* =========================================
+   TARJETAS
+   ========================================= */
+.card {
+  padding: 1.4rem;
+  background: var(--glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow);
+}
 
-.btn { padding: .55rem .9rem; border: 1px solid var(--color-line); border-radius: 6px; font: inherit; cursor: pointer; background: #eef1ee; color: var(--color-text); }
-.btn--primary { background: var(--color-primary); border-color: var(--color-primary); color: #fff; }
-.btn--danger { color: var(--color-danger); }
-.btn:disabled, .input:disabled { opacity: .5; cursor: not-allowed; }
-.btn-row { display: flex; flex-wrap: wrap; gap: .5rem; }
+.card-title {
+  margin-bottom: 1rem;
+  font-size: 1.05rem;
+  font-weight: 800;
+}
 
-.message { margin: 0; padding: .6rem var(--space); font-size: .9rem; }
-.message--info { background: #d7ece9; }
-.message--error { background: #fbe1e1; color: #7f1d1d; }
-.loading { margin: 0; padding: .4rem var(--space); font-size: .85rem; color: var(--color-muted); }
-.note { margin: .75rem 0 0; font-size: .8rem; color: var(--color-muted); }
+.page-title {
+  font-size: 1.4rem;
+  font-weight: 800;
+}
 
-.task-list { list-style: none; margin: 1rem 0 0; padding: 0; display: grid; gap: .5rem; }
-.task-item { display: grid; gap: .3rem; padding: .6rem; border: 1px solid var(--color-line); border-radius: 6px; }
-.task-item--done .task-title { text-decoration: line-through; color: var(--color-muted); }
-.task-title { font-weight: 600; }
-.task-time { font-size: .8rem; color: var(--color-muted); }
+.muted {
+  color: var(--muted);
+}
 
-.pomodoro-mode { margin: 0; color: var(--color-muted); }
-.pomodoro-time { font-size: 2.75rem; font-weight: 700; margin: .1rem 0 .6rem; font-variant-numeric: tabular-nums; }
+/* =========================================
+   BOTONES
+   ========================================= */
+.btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 0.5rem;
+}
 
-.move-log { margin: .75rem 0 0; padding: .6rem; background: #eef1ee; border-radius: 6px; font-size: .8rem; overflow-x: auto; white-space: pre-wrap; }
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.65rem 1.1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  background: var(--field);
+  border: 1px solid var(--bdr);
+  border-radius: var(--radius-input);
+  cursor: pointer;
+  transition: transform 0.15s, background 0.15s, border-color 0.15s;
+}
 
-/* FullCalendar: clases que agrega calendar.mapper.js según el estado de la tarea */
-.fc { font-size: .85rem; }
-.fc .fc-toolbar { flex-wrap: wrap; gap: .5rem; }
-.fc .fc-toolbar-title { font-size: 1.05rem; }
-.fc .fc-highlight { background: rgb(15 118 110 / 14%); }
-.fc .fc-timegrid-slot { cursor: crosshair; }
-.fc-event.event--done { opacity: .55; }
-.fc-event.event--in_progress { border-style: dashed; }
+.btn:hover {
+  transform: translateY(-1px);
+  background: var(--solid);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+.btn--primary {
+  color: var(--on-teal);
+  background: var(--teal);
+  border-color: var(--teal);
+}
+
+.btn--primary:hover {
+  background: var(--teal-hover);
+  border-color: var(--teal-hover);
+}
+
+.btn--big {
+  padding: 0.9rem 1.5rem;
+  font-size: 1rem;
+  border-radius: 12px;
+}
+
+.btn--sm {
+  padding: 0.3rem 0.65rem;
+  font-size: 0.78rem;
+}
+
+.btn--block {
+  width: 100%;
+}
+
+/* "Eliminar" (lista de tareas) */
+.btn--danger {
+  color: var(--danger-text);
+  border-color: var(--danger-line);
+}
+
+.btn--danger:hover {
+  background: var(--danger-bg);
+  border-color: var(--danger);
+}
+
+.link {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--link);
+  background: none;
+  border: 0;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.icon-button {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 34px;
+  height: 34px;
+  font-size: 1.1rem;
+  line-height: 1;
+  background: var(--field);
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.2s var(--ease), background 0.2s;
+}
+
+.icon-button:hover {
+  transform: rotate(90deg);
+  background: var(--bdr);
+}
+
+/* =========================================
+   NAVEGACIÓN DE LA APP (pestañas de la cabecera)
+   ========================================= */
+.nav-tab {
+  padding: 0.5rem 0.9rem;
+  font-weight: 700;
+  color: var(--muted);
+  background: none;
+  border: 0;
+  border-radius: 9px;
+  cursor: pointer;
+}
+
+.nav-tab[aria-current="page"] {
+  color: var(--on-teal);
+  background: var(--teal);
+}
+
+.user {
+  padding: 0.3rem 0.8rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: var(--field);
+  border: 1px solid var(--bdr);
+  border-radius: var(--radius-pill);
+}
+
+.demo-banner .link {
+  color: var(--ocean);
+}
+
+.demo-banner {
+  margin-bottom: 1rem;
+  padding: 0.6rem 1rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #5B3D00;
+  background: #FFF4D9;
+  border-radius: 10px;
+}
+
+/* Contenido solo para visitantes / solo para sesión iniciada (lo alterna presentation/shell con una clase en <body>) */
+.is-signed-in .guest-only,
+body:not(.is-signed-in) .user-only {
+  display: none !important;
+}
+
+/* =========================================
+   FORMULARIOS
+   ========================================= */
+.form,
+.event-form {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.field {
+  display: grid;
+  gap: 0.25rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.input,
+select.input,
+textarea.input {
+  width: 100%;
+  padding: 0.65rem 0.8rem;
+  background: var(--field);
+  border: 1.5px solid var(--bdr);
+  border-radius: 9px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--teal);
+  box-shadow: 0 0 0 3px rgba(22, 224, 138, 0.25);
+}
+
+.input::placeholder {
+  color: var(--muted);
+  opacity: 0.8;
+}
+
+textarea.input {
+  resize: vertical;
+  min-height: 4.5rem;
+  line-height: 1.45;
+}
+
+.optional-label {
+  font-weight: 400;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+/* Pestaña "Cuenta": título y texto de apoyo */
+.auth-title {
+  margin-bottom: 0.3rem;
+  font-size: 1.4rem;
+  font-weight: 800;
+}
+
+.auth-actions {
+  display: grid;
+  gap: 0.6rem;
+  margin-top: 0.4rem;
+}
+
+.note {
+  margin-top: 0.9rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.note:empty {
+  display: none;
+}
+
+/* =========================================
+   LISTA DE TAREAS
+   ========================================= */
+.task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  list-style: none;
+}
+
+/* Estado vacío: solo CSS, aparece cuando la lista no tiene elementos */
+.task-list:empty::before {
+  content: "Aún no tienes tareas. Crea la primera con el formulario.";
+  padding: 2rem 1rem;
+  text-align: center;
+  color: var(--muted);
+}
+
+.task-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.85rem 1rem;
+  background: var(--field);
+  border: 1px solid var(--bdr);
+  border-left: 5px solid var(--teal);
+  border-radius: 12px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.task-item:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+.task-item--done {
+  opacity: 0.65;
+  border-left-color: var(--bdr);
+}
+
+.task-item--done .task-title {
+  text-decoration: line-through;
+  color: var(--muted);
+}
+
+.task-title {
+  font-weight: 700;
+}
+
+.task-time {
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+/* =========================================
+   DIÁLOGO "NUEVA TAREA" DEL CALENDARIO
+   ========================================= */
+.event-dialog {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  width: min(480px, calc(100% - 2rem));
+  height: fit-content;
+  max-height: calc(100dvh - 2rem);
+  overflow-y: auto;
+  padding: 1.5rem;
+  color: var(--ink);
+  background: var(--solid);
+  border: 0;
+  border-radius: 18px;
+  box-shadow: 0 30px 70px -10px rgba(0, 0, 0, 0.45);
+}
+
+.event-dialog[open] {
+  animation: pop 0.35s cubic-bezier(0.3, 1.4, 0.5, 1);
+}
+
+.event-dialog::backdrop {
+  background: rgba(6, 25, 30, 0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+@keyframes pop {
+  from { opacity: 0; transform: scale(0.96); }
+}
+
+.event-dialog__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.event-dialog__title {
+  font-size: 1.35rem;
+  font-weight: 800;
+}
+
+.event-title-input {
+  font-weight: 600;
+}
+
+.event-time-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.event-time-fields .field {
+  min-width: 0;
+}
+
+.event-dialog__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  margin-top: 0.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--bdr);
+}
+
+@media (max-width: 480px) {
+  .event-time-fields {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* =========================================
+   CALENDARIO (FullCalendar)
+   ========================================= */
+.calendar {
+  padding: 0.5rem;
+  font-size: 0.85rem;
+
+  --fc-page-bg-color: transparent;
+  --fc-border-color: var(--line);
+  --fc-neutral-bg-color: var(--field);
+  --fc-neutral-text-color: var(--muted);
+  --fc-today-bg-color: rgba(22, 224, 138, 0.1);
+  --fc-highlight-color: rgba(22, 224, 138, 0.22);
+  --fc-now-indicator-color: #E5484D;
+  --fc-button-bg-color: var(--teal);
+  --fc-button-border-color: var(--teal);
+  --fc-button-text-color: var(--on-teal);
+  --fc-button-hover-bg-color: var(--teal-hover);
+  --fc-button-hover-border-color: var(--teal-hover);
+  --fc-button-active-bg-color: var(--teal-hover);
+  --fc-button-active-border-color: var(--teal-hover);
+  --fc-event-bg-color: var(--teal);
+  --fc-event-border-color: var(--teal);
+  --fc-event-text-color: var(--on-teal);
+}
+
+.calendar .fc {
+  color: var(--ink);
+}
+
+.calendar a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.calendar .fc-toolbar {
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.calendar .fc-toolbar-title {
+  font-size: 1.1rem !important;
+  font-weight: 800;
+  text-transform: capitalize;
+}
+
+.calendar .fc-button {
+  font-weight: 700;
+  border-radius: 9px;
+  box-shadow: none !important;
+}
+
+.calendar .fc-button:disabled {
+  opacity: 0.5;
+}
+
+.calendar .fc-event {
+  border: 0;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: grab;
+  box-shadow: 0 2px 6px -2px rgba(15, 38, 58, 0.25);
+}
+
+.calendar .fc-event:active {
+  cursor: grabbing;
+}
+
+/* Estado de la tarea en el calendario (clases que pone presentation/calendar/calendar.mapper.js) */
+.calendar .event--in_progress {
+  --fc-event-bg-color: var(--amber);
+  --fc-event-border-color: var(--amber);
+}
+
+.calendar .event--done {
+  opacity: 0.6;
+  text-decoration: line-through;
+  --fc-event-bg-color: var(--bdr);
+  --fc-event-border-color: var(--bdr);
+  --fc-event-text-color: var(--muted);
+}
+
+.calendar-hint {
+  margin-top: 0.85rem;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+/* =========================================
+   POMODORO
+   ========================================= */
+.pomodoro {
+  position: relative;
+  overflow: hidden;
+  padding: 2rem 1rem 2.4rem;
+  text-align: center;
+  background: var(--solid);
+  border: 1.5px solid var(--line);
+  border-radius: 24px;
+  box-shadow: var(--shadow);
+  transition: background 1s;
+}
+
+.pomodoro--break {
+  background: #EEF8FF;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .pomodoro--break { background: #0E2A3A; }
+}
+:root[data-theme="dark"] .pomodoro--break { background: #0E2A3A; }
+
+.pomodoro-mode {
+  display: inline-block;
+  margin-bottom: 1.4rem;
+  padding: 0.35rem 1.1rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--on-teal);
+  background: var(--teal);
+  border-radius: var(--radius-pill);
+}
+
+.pomodoro--break .pomodoro-mode {
+  color: #FFFFFF;
+  background: var(--ocean);
+}
+
+.pomodoro-ring {
+  position: relative;
+  width: min(300px, 76vw);
+  aspect-ratio: 1;
+  margin: 0 auto 1.4rem;
+}
+
+.pomodoro-ring svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.pomodoro-ring circle {
+  fill: none;
+  stroke-width: 10;
+}
+
+.pomodoro-ring__track {
+  stroke: var(--bdr);
+}
+
+/* pathLength="1" en el HTML: el trazo mide 1, así el avance es simplemente un número entre 0 y 1 */
+.pomodoro-ring__progress {
+  stroke: var(--teal);
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 1s linear;
+}
+
+.pomodoro--break .pomodoro-ring__progress {
+  stroke: #38B6FF;
+}
+
+/* "Respiración": un halo que late mientras el temporizador corre */
+.pomodoro-ring::after {
+  content: "";
+  position: absolute;
+  inset: 14%;
+  border-radius: 50%;
+  background: rgba(22, 224, 138, 0.12);
+  animation: breathe 4s ease-in-out infinite paused;
+}
+
+.pomodoro--running .pomodoro-ring::after {
+  animation-play-state: running;
+}
+
+.pomodoro--break.pomodoro--running .pomodoro-ring::after {
+  animation-duration: 8s;
+}
+
+@keyframes breathe {
+  50% { transform: scale(1.14); background: rgba(22, 224, 138, 0.26); }
+}
+
+.pomodoro-time {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  place-content: center;
+  font-size: 3.6rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.pomodoro .btn-row {
+  justify-content: center;
+}
+
+.pomodoro .btn--primary {
+  padding: 0.8rem 2rem;
+  font-size: 1rem;
+}
+
+/* =========================================
+   MENSAJES Y CARGA (los escribe shared/feedback.js)
+   ========================================= */
+.message,
+.loading {
+  padding: 0.7rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: 1px solid transparent;
+  border-radius: 10px;
+}
+
+.message--info {
+  color: var(--info-ink);
+  background: var(--info-bg);
+  border-color: rgba(2, 119, 189, 0.3);
+}
+
+.message--error {
+  color: var(--danger-ink);
+  background: var(--danger-bg);
+  border-color: var(--danger-line);
+  animation: shake 0.4s;
+}
+
+.message--error::before {
+  content: "⚠ ";
+}
+
+.loading {
+  color: var(--on-teal);
+  background: rgba(22, 224, 138, 0.2);
+  border-color: rgba(22, 224, 138, 0.5);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .loading { color: #9BE3CB; }
+}
+:root[data-theme="dark"] .loading { color: #9BE3CB; }
+
+@keyframes shake {
+  20% { translate: -6px; }
+  40% { translate: 6px; }
+  60% { translate: -4px; }
+  80% { translate: 4px; }
+}
+
+@media (max-width: 520px) {
+  .card {
+    padding: 1.1rem;
+  }
+
+  .pomodoro-time {
+    font-size: 3rem;
+  }
+}

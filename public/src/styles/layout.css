@@ -1,83 +1,96 @@
-/* src/styles/layout.css - Corregido (Compacto y sin huecos gigantes) */
+/* src/styles/layout.css - Estructura de página: pantallas, cabecera de la app, rejillas y adaptación a móvil */
 
-.app-header {
-  max-width: 1320px;
-  margin: 0 auto 1.25rem;
-  padding: 0.85rem 1.5rem;
-  background: var(--glass-bg-strong);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border: 1.5px solid var(--glass-border);
-  border-radius: 14px;
-  box-shadow: var(--glass-shadow);
+.wrap {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.2rem 1.5rem 3rem;
+}
+
+/* Avisos globales (#message y #loading): visibles en cualquier pantalla, centrados con el ancho de la página */
+.message,
+.loading {
+  width: calc(100% - 3rem);
+  max-width: 1152px;
+  margin: 1rem auto 0;
+}
+
+/* ---------- Pantalla de cuenta ---------- */
+.auth-box {
+  max-width: 430px;
+  margin: 6vh auto 0;
+}
+
+.auth-box .form {
+  margin-top: 1.1rem;
+}
+
+/* ---------- Cabecera de la app ---------- */
+.top {
   display: flex;
-  justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
   gap: 1rem;
+  margin-bottom: 1.2rem;
+  padding: 0.6rem 1rem;
+  background: var(--solid);
+  border: 1px solid var(--bdr);
+  border-radius: 14px;
 }
 
-.app-title {
-  font-size: 1.2rem;
-  font-weight: 800;
-  color: var(--text-slate);
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
+.top .logo {
+  margin-right: auto;
 }
 
-.app-user {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--teal-primary);
-  background: rgba(13, 138, 123, 0.1);
-  padding: 0.35rem 0.9rem;
-  border-radius: var(--radius-pill);
-  border: 1px solid rgba(13, 138, 123, 0.25);
+.nav-tabs {
+  display: flex;
+  gap: 0.3rem;
 }
 
-/* Cuadrícula de 2 columnas balanceadas sin estirar tarjetas */
-.app-main {
-  max-width: 1320px;
-  margin: 0 auto;
+.page-head {
+  margin-bottom: 1rem;
+}
+
+/* ---------- Pantalla Tareas: formulario a la izquierda, lista a la derecha ---------- */
+.tasks-layout {
   display: grid;
-  grid-template-columns: 1.15fr 1fr;
-  grid-template-rows: auto auto 1fr;
-  grid-template-areas:
-    "pomodoro tasks"
-    "calendar tasks"
-    "auth     tasks";
-  gap: 1.25rem;
-  align-items: start; /* CLAVE: Evita que el Pomodoro se estire */
+  grid-template-columns: minmax(280px, 0.85fr) 1.15fr;
+  gap: 1.2rem;
+  align-items: start;
 }
 
-.card:has(#pomodoro-time) {
-  grid-area: pomodoro;
+.tasks-layout > * {
+  min-width: 0;
 }
 
-.card:has(#task-form) {
-  grid-area: tasks;
+/* ---------- Pantalla Pomodoro: una sola tarjeta centrada ---------- */
+.pomodoro-wrap {
+  max-width: 520px;
+  margin: 0 auto;
 }
 
-.card--calendar {
-  grid-area: calendar;
-}
-
-.card:has(#auth-form) {
-  grid-area: auth;
-}
-
-/* Vista Responsiva (Tablet y Móvil) */
-@media (max-width: 980px) {
-  body {
-    padding: 1rem;
+@media (max-width: 860px) {
+  .tasks-layout {
+    grid-template-columns: 1fr;
   }
 
-  .app-main {
-    grid-template-columns: 1fr;
-    grid-template-areas:
-      "pomodoro"
-      "tasks"
-      "calendar"
-      "auth";
+  .top .logo {
+    width: 100%;
+  }
+}
+
+@media (max-width: 520px) {
+  .nav-tabs {
+    order: 3;
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .wrap {
+    padding: 1rem 1rem 2.5rem;
+  }
+
+  .message,
+  .loading {
+    width: calc(100% - 2rem);
   }
 }

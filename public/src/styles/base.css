@@ -1,33 +1,81 @@
-/* src/styles/base.css - Cristal Esmeralda con Fondo y Transparencia Real */
+/* src/styles/base.css - Tokens, reset y fondo. Diseño de la propuesta (verde menta + azul océano) con modo oscuro automático. */
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
 :root {
-  /* Fondo diagonal menta a azul hielo (igual a la referencia) */
-  --bg-gradient: linear-gradient(125deg, #D4F3E7 0%, #E3F2FD 50%, #CDE7F8 100%);
-  
-  /* CRISTAL REAL (Baja opacidad para que se vea el fondo a través de las tarjetas) */
-  --glass-bg: rgba(255, 255, 255, 0.42);
-  --glass-bg-strong: rgba(255, 255, 255, 0.48);
-  --glass-input: rgba(255, 255, 255, 0.45);
-  --glass-border: rgba(255, 255, 255, 0.85);
-  --glass-shadow: 0 12px 32px -4px rgba(15, 38, 58, 0.1), inset 0 1px 1px rgba(255, 255, 255, 0.9);
-  --glass-blur: blur(18px) saturate(160%);
+  --bg: linear-gradient(180deg, #FBFFFD, #F1FAF6);
+  --glass: #FFFFFF;
+  --solid: #FFFFFF;
+  --field: #F4FAF7;
+  --line: #E3EEE8;
+  --bdr: #D5E6DD;
+  --ink: #0F1E2E;
+  --muted: #5A6B7C;
+  --forest: #0A4635;
+  --teal: #16E08A;
+  --teal-hover: #0FC878;
+  --on-teal: #04301B;
+  --ocean: #0277BD;
+  --amber: #E59819;
+  --danger: #B3261E;
+  --danger-text: #B3261E;
+  --link: #0277BD;
+  --danger-bg: #FDECEA;
+  --danger-line: #F3B7B2;
+  --danger-ink: #8C1D18;
+  --info-bg: #E6F3FB;
+  --info-ink: #0B4A6F;
+  --shadow: 0 8px 24px -8px rgba(15, 38, 58, 0.12);
 
-  /* Colores de Acento */
-  --teal-primary: #0D8A7B;
-  --teal-hover: #096E62;
-  --ocean-badge: #0277BD;
-  
-  /* Textos */
-  --text-slate: #0F1E2E;
-  --text-body: #1E293B;
-  --text-muted: #5A6B7C;
-
-  /* Bordes */
-  --radius-card: 18px;
-  --radius-btn: 10px;
+  --radius-card: 16px;
+  --radius-input: 10px;
   --radius-pill: 999px;
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
   --font-main: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Modo oscuro: sigue la preferencia del sistema; data-theme en <html> permite forzarlo si algún día se añade un selector */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: linear-gradient(125deg, #06231C, #0B2233 50%, #0A2B3D);
+    --glass: rgba(20, 44, 54, 0.6);
+    --solid: #10242C;
+    --field: rgba(255, 255, 255, 0.08);
+    --line: rgba(255, 255, 255, 0.12);
+    --bdr: #2C4654;
+    --ink: #E8F1F5;
+    --muted: #9FB3C2;
+    --info-bg: rgba(2, 119, 189, 0.22);
+    --info-ink: #BFE3F8;
+    --danger-bg: rgba(179, 38, 30, 0.25);
+    --danger-line: rgba(243, 183, 178, 0.45);
+    --danger-ink: #FFC9C4;
+    --danger-text: #FF9C94;
+    --link: #7CC8F5;
+    --shadow: 0 12px 32px -4px rgba(0, 0, 0, 0.4);
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: linear-gradient(125deg, #06231C, #0B2233 50%, #0A2B3D);
+  --glass: rgba(20, 44, 54, 0.6);
+  --solid: #10242C;
+  --field: rgba(255, 255, 255, 0.08);
+  --line: rgba(255, 255, 255, 0.12);
+  --bdr: #2C4654;
+  --ink: #E8F1F5;
+  --muted: #9FB3C2;
+  --info-bg: rgba(2, 119, 189, 0.22);
+  --info-ink: #BFE3F8;
+  --danger-bg: rgba(179, 38, 30, 0.25);
+  --danger-line: rgba(243, 183, 178, 0.45);
+  --danger-ink: #FFC9C4;
+  --danger-text: #FF9C94;
+  --link: #7CC8F5;
+  --shadow: 0 12px 32px -4px rgba(0, 0, 0, 0.4);
 }
 
 *,
@@ -39,55 +87,85 @@
 }
 
 html {
-  background: var(--bg-gradient);
-  min-height: 100%;
+  height: 100%;
+  background: var(--bg) fixed;
+  scroll-padding-top: env(safe-area-inset-top, 0px);
 }
 
 body {
+  min-height: 100%;
   font-family: var(--font-main);
-  background: transparent; /* Clave para no tapar las figuras */
-  color: var(--text-body);
-  min-height: 100vh;
-  padding: 1.75rem 2.25rem 3rem;
-  position: relative;
-  z-index: 1;
+  color: var(--ink);
+  background: transparent;
+  line-height: 1.45;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
 }
 
-/* Figuras geométricas/orgánicas del fondo (visibles a través del cristal) */
-body::before,
-body::after {
-  content: "";
+[hidden] {
+  display: none !important;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 3px solid var(--teal);
+  outline-offset: 2px;
+}
+
+/* ---------- FONDO: dos manchas suaves que flotan (solo decoración) ---------- */
+.blob {
   position: fixed;
   z-index: -1;
   pointer-events: none;
+  filter: blur(14px);
+  animation: drift 14s ease-in-out infinite alternate;
 }
 
-/* 1. Forma de hoja verde esmeralda inclinada (Izquierda / Centro) */
-body::before {
-  width: 380px;
-  height: 520px;
-  top: 14%;
-  left: 15%;
-  background: linear-gradient(160deg, rgba(67, 160, 71, 0.65) 0%, rgba(27, 94, 32, 0.45) 100%);
+.blob--leaf {
+  width: 420px;
+  height: 480px;
+  top: 8%;
+  left: 6%;
+  background: linear-gradient(160deg, rgba(25, 230, 140, 0.28), rgba(0, 200, 120, 0.1));
   border-radius: 80% 15% 80% 15%;
-  transform: rotate(-18deg);
-  filter: blur(8px); /* Borde suave pero forma definida como en la imagen */
+  transform: rotate(-15deg);
 }
 
-/* 2. Círculo grande azul celeste/océano (Centro / Derecha) */
-body::after {
-  width: 540px;
-  height: 540px;
-  top: 18%;
-  left: 42%;
-  background: linear-gradient(135deg, rgba(100, 181, 246, 0.65) 0%, rgba(30, 136, 229, 0.42) 100%);
+.blob--sky {
+  width: 460px;
+  height: 460px;
+  top: 20%;
+  right: 6%;
+  background: linear-gradient(135deg, rgba(100, 181, 246, 0.22), rgba(30, 136, 229, 0.08));
   border-radius: 50%;
-  filter: blur(10px);
+  animation-delay: -6s;
 }
 
-/* Respetar atributo hidden de JS */
-[hidden] {
-  display: none !important;
+@keyframes drift {
+  to { translate: 30px -40px; }
+}
+
+/* Cada pantalla entra con un ligero deslizamiento */
+.view {
+  animation: enter 0.5s var(--ease);
+}
+
+@keyframes enter {
+  from { opacity: 0; transform: translateY(14px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
 }

@@ -1,0 +1,183 @@
+/* src/styles/landing.css - SOLO la pantalla de inicio (#view-home). Decoración y texto; no contiene lógica.
+   Está separado de components.css para que la landing se pueda cambiar o quitar sin tocar la app. */
+
+.nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 3rem;
+}
+
+.logo {
+  font-weight: 800;
+  font-size: 1.1rem;
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 3rem;
+  align-items: center;
+  min-height: 62vh;
+}
+
+.hero__title {
+  font-size: clamp(2.2rem, 5vw, 3.8rem);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+
+.hero__lead {
+  margin: 1.2rem 0 1.8rem;
+  max-width: 34rem;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .hero__title { color: #9BE3CB; }
+}
+:root[data-theme="dark"] .hero__title { color: #9BE3CB; }
+
+.cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+}
+
+/* ---------- Ilustración: temporizador con "pastillas" flotantes (aria-hidden en el HTML) ---------- */
+.stage {
+  position: relative;
+  height: 420px;
+}
+
+.orb {
+  position: absolute;
+  inset: 30px 50px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #3DF5A5, #00C26E);
+  box-shadow: 0 30px 60px -12px rgba(0, 194, 110, 0.55);
+  animation: float 6s ease-in-out infinite;
+}
+
+.orb svg {
+  width: 84%;
+  height: 84%;
+  transform: rotate(-90deg);
+}
+
+.orb__track {
+  fill: none;
+  stroke: rgba(4, 48, 27, 0.18);
+  stroke-width: 10;
+}
+
+.orb__arc {
+  fill: none;
+  stroke: #FFFFFF;
+  stroke-width: 10;
+  stroke-linecap: round;
+  stroke-dasharray: 728;
+  animation: sweep 9s linear infinite;
+}
+
+.orb__time {
+  position: absolute;
+  color: var(--on-teal);
+  font-size: 3.2rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes sweep {
+  from { stroke-dashoffset: 0; }
+  to { stroke-dashoffset: 728; }
+}
+
+@keyframes float {
+  50% { translate: 0 -12px; }
+}
+
+.pill {
+  position: absolute;
+  padding: 0.55rem 0.9rem;
+  border-radius: 12px;
+  background: var(--solid);
+  box-shadow: var(--shadow);
+  font-size: 0.82rem;
+  font-weight: 700;
+  animation: float 5s ease-in-out infinite;
+}
+
+.pill::before {
+  content: "";
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  margin-right: 0.45rem;
+  border-radius: 50%;
+  background: var(--dot, var(--teal));
+}
+
+.pill--done { top: 6%; left: -2%; --dot: #16E08A; animation-delay: -1s; }
+.pill--now { top: 46%; right: -4%; --dot: var(--amber); animation-delay: -2.5s; }
+.pill--next { bottom: 4%; left: 8%; --dot: var(--ocean); animation-delay: -4s; }
+
+/* ---------- Ventajas y pasos ---------- */
+.feats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.2rem;
+  margin-top: 3rem;
+}
+
+.feat__icon {
+  margin-bottom: 0.6rem;
+  font-size: 1.6rem;
+}
+
+.feat__title {
+  margin-bottom: 0.4rem;
+}
+
+.feat__text {
+  font-size: 0.92rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.flow {
+  margin-top: 3rem;
+  text-align: center;
+}
+
+.flow__steps {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 2rem;
+  margin-top: 1rem;
+  list-style: none;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.flow__steps b {
+  color: var(--ink);
+}
+
+@media (max-width: 860px) {
+  .hero,
+  .feats {
+    grid-template-columns: 1fr;
+  }
+
+  .stage {
+    height: 340px;
+  }
+}
