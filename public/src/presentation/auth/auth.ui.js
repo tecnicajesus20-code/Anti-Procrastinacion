@@ -10,7 +10,7 @@ import { buildProfileData, validateProfile } from "../../domain/profile.js";
 const authErrorText = (error) => error.code ?? error.message;
 
 /** @param {ReturnType<import("../../infrastructure/firebase/firebase-auth.js").createFirebaseAuth>} authService */
-export function initAuthUi(authService) {
+export function initAuthUi(authService, profileService) {
   const email = byId("auth-email");
   const password = byId("auth-password");
   const logout = byId("auth-logout");

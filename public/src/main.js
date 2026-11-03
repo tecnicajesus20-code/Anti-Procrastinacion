@@ -40,7 +40,7 @@ const auth = createFirebaseAuth();
 const createDemoRepository = () => createMemoryTaskRepository(buildSeedTasks());
 
 /** Conecta la sesión con el repositorio de tareas. Si Firebase no está configurado, se queda en modo demo. */
-async function connectSession(authUi, taskService, navigation) {
+async function connectSession(authUi, taskService, navigation, profileService, profileUi) {
   const session = createSessionCoordinator({
     auth,
     taskService,
@@ -116,7 +116,7 @@ async function startApp() {
 
     await taskService.load();
     setLoading(false);
-    connectSession(authUi, taskService, navigation);
+    connectSession(authUi, taskService, navigation, profileService, profileUi);
   } catch (error) {
     setLoading(false);
     showMessage(error.message, "error");
