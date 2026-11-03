@@ -32,6 +32,9 @@ import { initPomodoroUi } from "./presentation/pomodoro/pomodoro.ui.js";
 import { initAuthUi } from "./presentation/auth/auth.ui.js";
 import { initNavigation } from "./presentation/shell/navigation.ui.js";
 import { initTaskReminderUi } from "./presentation/tasks/task-reminder.ui.js";
+import { createProfileService } from "./application/profile.service.js";
+import { createFirestoreProfileRepository } from "./infrastructure/firebase/profile.firestore.repository.js";
+import { initProfileUi } from "./presentation/profile/profile.ui.js";
 
 const auth = createFirebaseAuth();
 const createDemoRepository = () => createMemoryTaskRepository(buildSeedTasks());
@@ -45,7 +48,11 @@ async function connectSession(authUi, taskService, navigation) {
     createGuestRepository: createDemoRepository,
     onUserChanged: (user) => {
       authUi.setUser(user);
-      navigation.setUser(user); // solo apariencia y destino de pantalla
+      navigation.setUser(user);
+         profileUi.setUser(user);
+       profileService
+     .useRepository(user ? createFirestoreProfileRepository(user.uid) : null)
+     .catch((error) => showMessage(`No se pudo cargar tu perfil: ${error.message}`, "error"));
     },
     onLoadingChange: setLoading,
     onLoadError: (error) => showMessage(`No se pudieron cargar las tareas: ${error.message}`, "error"),
@@ -102,7 +109,10 @@ async function startApp() {
     }
 
     taskService.subscribe(calendar.render);
-    const authUi = initAuthUi(auth);
+  const profileService = createProfileService();
+   const authUi = initAuthUi(auth, profileService);
+   const profileUi = initProfileUi(profileService);
+   profileService.subscribe(authUi.setProfile);
 
     await taskService.load();
     setLoading(false);

@@ -48,7 +48,7 @@ export function routeAfterUserChange(previousUser, user, currentRoute) {
 
 export function initNavigation({ onPanelShown = {} } = {}) {
   const views = { home: byId("view-home"), auth: byId("view-auth"), app: byId("view-app") };
-  const panels = { tasks: byId("panel-tasks"), calendar: byId("panel-calendar"), pomodoro: byId("panel-pomodoro") ,profile: byId("panel-profile"),};
+  const panels = { tasks: byId("panel-tasks"), calendar: byId("panel-calendar"), pomodoro: byId("panel-pomodoro") ,profile: byId("panel-profile")};
   let user = null;
 
   const currentRoute = () => resolveRoute(window.location.hash);

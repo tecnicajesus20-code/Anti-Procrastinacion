@@ -41,7 +41,7 @@ test("cada data-go de index.html apunta a una ruta que existe", () => {
 test("las pantallas y pestañas de ROUTES existen en index.html", () => {
   const ids = new Set([...html.matchAll(/\sid="([^"]+)"/g)].map((m) => m[1]));
   const views = { home: "view-home", auth: "view-auth", app: "view-app" };
-  const panels = { tasks: "panel-tasks", calendar: "panel-calendar", pomodoro: "panel-pomodoro" , profile: "panel-profile",};
+  const panels = { tasks: "panel-tasks", calendar: "panel-calendar", pomodoro: "panel-pomodoro" , profile: "panel-profile"};
   for (const { view, panel } of Object.values(ROUTES)) {
     assert.ok(ids.has(views[view]), `falta #${views[view]}`);
     if (panel) assert.ok(ids.has(panels[panel]), `falta #${panels[panel]}`);
