@@ -1,6 +1,6 @@
 export class TaskFirestoreMapper {
   static toDomain(id, data) {
-    return {
+    return cloneTask({ 
       id: id,
       title: data.title || '',
       description: data.description || null,
@@ -8,7 +8,7 @@ export class TaskFirestoreMapper {
       dueDate: data.dueDate || null,
       start: data.start, // Obligatorio según tu dominio
       end: data.end      // Obligatorio según tu dominio
-    };
+    });
   }
 
   static toFirestore(task) {
@@ -19,6 +19,7 @@ export class TaskFirestoreMapper {
       dueDate: task.dueDate || null,
       start: task.start,
       end: task.end,
+      ...(Array.isArray(task.blocks) ? { blocks: task.blocks } : {}), 
       userId: task.userId,
       createdAt: task.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString()
