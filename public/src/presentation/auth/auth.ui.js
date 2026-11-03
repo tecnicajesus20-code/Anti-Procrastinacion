@@ -2,8 +2,16 @@
 import { byId } from "../../shared/dom.js";
 import { runAction } from "../../shared/feedback.js";
 
-/** Los errores de Firebase traen un código (auth/...); se muestra tal cual (ver README_PROVISIONAL_DISENO.md, D-06). */
-const authErrorText = (error) => error.code ?? error.message;
+/** Convierte errores frecuentes de Firebase en mensajes accionables para la interfaz. */
+const authErrorText = (error) => ({
+  "auth/invalid-credential": "Correo o contraseña incorrectos.",
+  "auth/invalid-email": "Escribe un correo válido.",
+  "auth/email-already-in-use": "Ese correo ya tiene una cuenta.",
+  "auth/weak-password": "La contraseña debe tener al menos 6 caracteres.",
+  "auth/operation-not-allowed": "El acceso con correo y contraseña no está habilitado en Firebase.",
+  "auth/too-many-requests": "Demasiados intentos. Espera unos minutos e inténtalo de nuevo.",
+  "auth/network-request-failed": "No se pudo conectar con Firebase. Comprueba tu conexión.",
+}[error.code] ?? error.message ?? "No se pudo completar la autenticación.");
 
 /** @param {ReturnType<import("../../infrastructure/firebase/firebase-auth.js").createFirebaseAuth>} authService */
 export function initAuthUi(authService) {
