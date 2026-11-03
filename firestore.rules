@@ -27,5 +27,17 @@ service cloud.firestore {
 
     // NOTA: Se eliminó la regla abierta "match /{document=**}" para evitar que
     // cualquier usuario no autenticado acceda a tus colecciones de forma pública.
+        match /users/{uid} {
+      allow read: if isOwner(uid);
+      allow create, update: if isOwner(uid) && isValidProfile(request.resource.data);
+    }
+
+    function isValidProfile(p) {
+      return p.keys().hasAll(['displayName', 'createdAt'])
+        && p.keys().hasOnly(['displayName', 'photo', 'createdAt', 'updatedAt'])
+        && p.displayName is string && p.displayName.size() > 0 && p.displayName.size() <= 50
+        && p.createdAt is string
+        && (!p.keys().hasAny(['photo']) || p.photo == null || (p.photo is string && p.photo.size() <= 100000));
+    }
   }
 }

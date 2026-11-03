@@ -1,13 +1,5 @@
-/**
- * DOMINIO DEL PERFIL: contrato de datos y validación. Sin dependencias (no conoce DOM ni Firebase).
- *
- * @typedef {Object} ProfileData
- * @property {string} displayName   Obligatorio, máximo PROFILE_LIMITS.nameMax caracteres
- * @property {string|null} photo    Opcional: imagen como texto (data URL), ya reducida
- */
 export const PROFILE_LIMITS = Object.freeze({ nameMax: 50, photoMax: 100_000 });
 
-/** @returns {string[]} Lista de errores; vacía si todo está bien. */
 export function validateProfile(data) {
   const errors = [];
   if (typeof data.displayName !== "string" || !data.displayName.trim()) {
@@ -22,7 +14,6 @@ export function validateProfile(data) {
   return errors;
 }
 
-/** Normaliza lo que llega del formulario al contrato. */
 export function buildProfileData(input) {
   return {
     displayName: typeof input.displayName === "string" ? input.displayName.trim() : "",

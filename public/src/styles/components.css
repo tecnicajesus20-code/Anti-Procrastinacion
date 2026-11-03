@@ -878,3 +878,8 @@ textarea.input {
     font-size: 3rem;
   }
 }
+.avatar { width: 28px; height: 28px; border-radius: var(--radius-pill); object-fit: cover; }
+.avatar--lg { width: 72px; height: 72px; }
+.profile-head { display: flex; align-items: center; gap: 1rem; }
+.auth-extra { margin-top: 0.5rem; }
+.auth-extra summary { margin-bottom: 0.6rem; font-weight: 600; cursor: pointer; }
