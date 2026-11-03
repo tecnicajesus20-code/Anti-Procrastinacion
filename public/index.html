@@ -157,7 +157,11 @@
       <section class="card">
         <h2 class="card-title">Calendario</h2>
         <div class="calendar" id="calendar"></div>
-        <p class="calendar-hint">Arrastra sobre un espacio libre para crear una tarea. También puedes mover las tareas existentes.</p>
+        <div class="calendar-legend" aria-label="Leyenda de sesiones Pomodoro">
+          <span class="calendar-legend__item"><span class="calendar-legend__swatch calendar-legend__swatch--focus"></span>Enfoque · 25 min</span>
+          <span class="calendar-legend__item"><span class="calendar-legend__swatch calendar-legend__swatch--break"></span>Descanso · 5 min</span>
+          <p class="calendar-hint">La franja gris al pie de cada enfoque marca el descanso de 5 min. Haz clic en un bloque verde para iniciarlo; para cambiar horarios, edita el bloque desde Tareas.</p>
+        </div>
       </section>
     </div>
 
@@ -174,10 +178,15 @@
             <p class="pomodoro-time" id="pomodoro-time">25:00</p>
           </div>
           <p class="pomodoro-task" id="pomodoro-task">Sin tarea seleccionada</p>
+          <p class="pomodoro-session-status" id="pomodoro-session-status" role="status"></p>
           <div class="btn-row">
             <button class="btn btn--primary" id="pomodoro-start" type="button">Iniciar</button>
             <button class="btn" id="pomodoro-pause" type="button">Pausar</button>
             <button class="btn" id="pomodoro-reset" type="button">Reiniciar</button>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn--primary" id="pomodoro-confirm" type="button" hidden>Confirmar sesión completada</button>
+            <button class="btn btn--danger" id="pomodoro-fail" type="button" hidden>Registrar incumplimiento</button>
           </div>
         </section>
       </div>

@@ -6,6 +6,7 @@ import { byId } from "../../shared/dom.js";
 import { runAction } from "../../shared/feedback.js";
 import { formatShortDateTime } from "../../shared/date-time.js";
 import { getTaskBlocks, isDone, byStart } from "../../domain/task.js";
+import { POMODORO_SESSION_STATUS, summarizePomodoroTask } from "../../domain/pomodoro.js";
 import { getTaskColor } from "./task-color.js";
 
 function createButton(className, text, onClick, { disabled = false, title = "" } = {}) {
@@ -24,9 +25,10 @@ function createButton(className, text, onClick, { disabled = false, title = "" }
  * @param {(selection: {taskId: string, blockIndex: number}) => void} editBlockDialog
  * @param {(taskId: string) => void} editTaskDialog
  * @param {(taskId: string) => void} addBlockDialog
- * @param {(taskTitle: string, block: {start: string, end: string}) => void} startPomodoro
+ * @param {(taskId: string, taskTitle: string, block: {start: string, end: string}) => Promise<void>} startPomodoro
+ * @param {ReturnType<import("../../application/pomodoro-session.service.js").createPomodoroSessionService>} pomodoroSessions
  */
-export function initTaskList(taskService, editBlockDialog, editTaskDialog, addBlockDialog, startPomodoro) {
+export function initTaskList(taskService, editBlockDialog, editTaskDialog, addBlockDialog, startPomodoro, pomodoroSessions) {
   const list = byId("task-list");
 
   function renderItem(task) {
@@ -53,7 +55,9 @@ export function initTaskList(taskService, editBlockDialog, editTaskDialog, addBl
       blockActions.className = "btn-row task-block-actions";
       blockActions.append(
         createButton("btn", "Editar bloque", () => editBlockDialog({ taskId: task.id, blockIndex })),
-        createButton("btn btn--pomodoro", "Iniciar Pomodoro", () => startPomodoro(task.title, block)),
+        createButton("btn btn--pomodoro", "Iniciar siguiente enfoque", () => runAction(
+          () => startPomodoro(task.id, task.title, block)
+        )),
         createButton(
           "btn btn--danger",
           "Eliminar bloque",
@@ -82,7 +86,75 @@ export function initTaskList(taskService, editBlockDialog, editTaskDialog, addBl
       createButton("btn btn--danger", "Eliminar", () => runAction(() => taskService.remove(task.id)))
     );
 
-    item.append(title, blockList);
+    const pomodoroSection = document.createElement("section");
+    pomodoroSection.className = "task-pomodoro";
+    const summary = summarizePomodoroTask(task);
+    const statusLabels = {
+      not_applicable: "Sin sesiones: el bloque es menor a 25 minutos",
+      pending: "En curso",
+      fulfilled: "Cumplida",
+      unfulfilled: "Incumplida",
+    };
+    const summaryText = document.createElement("p");
+    summaryText.className = `task-pomodoro-summary task-pomodoro-summary--${summary.status}`;
+    summaryText.textContent = summary.total
+      ? `Enfoque: ${summary.completed}/${summary.total} sesiones · ${summary.completionRate}% · ${statusLabels[summary.status]}`
+      : statusLabels[summary.status];
+    pomodoroSection.append(summaryText);
+
+    const sessionList = document.createElement("ul");
+    sessionList.className = "task-pomodoro-sessions";
+    const sessionStatusLabels = {
+      pending: "Pendiente de confirmación",
+      completed: "Completada",
+      unfulfilled: "Incumplida",
+    };
+    const active = pomodoroSessions.getState().currentSession;
+    for (const session of task.pomodoroSessions ?? []) {
+      const sessionItem = document.createElement("li");
+      sessionItem.className = `task-pomodoro-session task-pomodoro-session--${session.status}`;
+      const details = document.createElement("span");
+      const actual = Math.round(session.actualDurationSeconds / 60);
+      details.textContent = `${sessionStatusLabels[session.status]} · ${formatShortDateTime(session.scheduledStart)} · ${actual}/${Math.ceil(session.plannedDurationSeconds / 60)} min`;
+      sessionItem.append(details);
+
+      if (session.status === POMODORO_SESSION_STATUS.PENDING) {
+        const sessionActions = document.createElement("div");
+        sessionActions.className = "btn-row";
+        const isCurrent = active?.id === session.id && active.taskId === task.id;
+        if (session.endedAt) {
+          sessionActions.append(
+            createButton("btn btn--primary", "Confirmar completada", () => runAction(
+              () => pomodoroSessions.confirm(task.id, session.id)
+            )),
+            createButton("btn btn--danger", "Marcar incumplida", () => {
+              const reason = window.prompt("Motivo de incumplimiento (opcional):");
+              if (reason !== null) runAction(() => pomodoroSessions.markUnfulfilled(task.id, session.id, reason));
+            })
+          );
+        } else {
+          sessionActions.append(
+            createButton("btn", isCurrent && pomodoroSessions.getState().timer?.running ? "Sesión en curso" : "Reanudar sesión", () => runAction(
+              () => pomodoroSessions.resume(task.id, session.id)
+            ), { disabled: Boolean(active && !isCurrent) }),
+            createButton("btn btn--danger", "Marcar incumplida", () => {
+              const reason = window.prompt("Motivo de incumplimiento (opcional):");
+              if (reason !== null) runAction(() => pomodoroSessions.markUnfulfilled(task.id, session.id, reason));
+            }, { disabled: Boolean(active && !isCurrent) })
+          );
+        }
+        sessionItem.append(sessionActions);
+      } else if (session.failureReason) {
+        const reason = document.createElement("small");
+        reason.textContent = `Motivo: ${session.failureReason}`;
+        sessionItem.append(reason);
+      }
+
+      sessionList.append(sessionItem);
+    }
+    if (sessionList.childElementCount) pomodoroSection.append(sessionList);
+
+    item.append(title, blockList, pomodoroSection);
     if (blockHint) item.append(blockHint);
     item.append(actions);
     return item;
@@ -93,4 +165,5 @@ export function initTaskList(taskService, editBlockDialog, editTaskDialog, addBl
   }
 
   taskService.subscribe(render);
+  pomodoroSessions.subscribe(() => render(taskService.getAll()));
 }

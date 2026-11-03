@@ -9,11 +9,14 @@ function isOwner(uid) { return fake.current && fake.current.uid === uid; }
 function isValidTask(t) {
   const k = Object.keys(t);
   return ["title", "status", "start", "end"].every((x) => k.includes(x))
-    && k.every((x) => ["title", "description", "status", "dueDate", "start", "end", "blocks"].includes(x))
+    && k.every((x) => ["title", "description", "status", "dueDate", "start", "end", "blocks", "pomodoroSessions", "pomodoroStatus", "pomodoroCompletionRate", "userId", "createdAt", "updatedAt"].includes(x))
     && typeof t.title === "string" && t.title.length > 0 && t.title.length <= 120
     && ["pending", "in_progress", "done"].includes(t.status)
     && typeof t.start === "string" && typeof t.end === "string" && t.end > t.start
-    && (t.blocks === undefined || (Array.isArray(t.blocks) && t.blocks.length > 0));
+    && (t.blocks === undefined || (Array.isArray(t.blocks) && t.blocks.length > 0))
+    && (t.pomodoroSessions === undefined || (Array.isArray(t.pomodoroSessions) && t.pomodoroSessions.length <= 1000))
+    && (t.pomodoroStatus === undefined || ["not_applicable", "pending", "fulfilled", "unfulfilled"].includes(t.pomodoroStatus))
+    && (t.pomodoroCompletionRate === undefined || (Number.isInteger(t.pomodoroCompletionRate) && t.pomodoroCompletionRate >= 0 && t.pomodoroCompletionRate <= 100));
 }
 async function gate(op, segs) {
   const uid = segs[1];

@@ -15,7 +15,7 @@ Requiere Node 22 (verificado con 22.22.2).
 
 | Nivel | Archivos | Qué demuestra |
 |---|---|---|
-| Unitarias | `tests/unit/{domain,date-time,repositories,application,calendar,task-reminder}.test.js` | Reglas, conversiones, contrato de repositorios, casos de uso, calendario, avisos, carreras de sesión y Pomodoro |
+| Unitarias | `tests/unit/{domain,date-time,repositories,application,calendar,task-reminder,pomodoro-session}.test.js` | Reglas, conversiones, contrato de repositorios, casos de uso, calendario, avisos, carreras de sesión y trazabilidad Pomodoro |
 | Arquitectura | `tests/unit/{architecture,deploy-config}.test.js` | Capas permitidas, sin ciclos, Firebase/FullCalendar/DOM solo donde corresponde, sin `console.log`, ids existentes en `index.html`, `firebase.json` apunta a archivos reales y `public/` no expone reglas ni docs |
 | Regresión | `tests/regression/` | La app completa se comporta igual que `Desarrollo` |
 
@@ -93,3 +93,4 @@ Con el diseño nuevo (landing, pantallas con pestañas, estilos) `index.html` y 
 5. `firebase emulators:start --only firestore` o, en un proyecto de pruebas, `firebase deploy --only firestore:rules` para validar que las reglas se encuentran en su nueva ruta.
 6. Repetir 2–3 en un móvil (ancho < 600 px) y en escritorio.
 7. Servir la app por `localhost` o HTTPS, pulsar "Activar notificaciones" y aceptar el permiso del navegador. Si aparece "Notificaciones bloqueadas", permitirlas en la configuración del sitio y recargar. Pulsar "Activar alarma sonora" y confirmar el tono de prueba; crear un bloque que empiece en el siguiente minuto y comprobar el aviso y la alarma. La página debe permanecer abierta. Usar "Silenciar alarma" para detener el sonido. Si se cierra la página, las notificaciones requieren un backend de push y un service worker, que no forman parte de esta app.
+8. Crear una tarea con un bloque de al menos 55 minutos, iniciar un enfoque desde la lista o el calendario y comprobar pausa/reanudación, confirmación manual, incumplimiento y descanso. Con una cuenta autenticada, recargar y verificar que el historial y el porcentaje Pomodoro siguen guardados en la tarea.

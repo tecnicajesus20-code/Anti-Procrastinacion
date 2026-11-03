@@ -1,7 +1,13 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { TASK_STATUS, validateTask, buildTaskData, getTaskBlocks, toggledStatus, isDone, byStart } from "../../public/src/domain/task.js";
-import { POMODORO_MODE, POMODORO_DEFAULTS, nextMode } from "../../public/src/domain/pomodoro.js";
+import {
+  POMODORO_MODE,
+  POMODORO_DEFAULTS,
+  nextMode,
+  planPomodoroBlock,
+  summarizePomodoroTask,
+} from "../../public/src/domain/pomodoro.js";
 
 const valid = { title: "A", status: "pending", start: "2026-11-02T09:00:00.000Z", end: "2026-11-02T10:00:00.000Z" };
 
@@ -53,6 +59,45 @@ test("pomodoro: modos y duraciones", () => {
   assert.equal(nextMode(POMODORO_MODE.WORK), POMODORO_MODE.BREAK);
   assert.equal(nextMode(POMODORO_MODE.BREAK), POMODORO_MODE.WORK);
   assert.deepEqual({ ...POMODORO_DEFAULTS }, { workSeconds: 1500, breakSeconds: 300 });
+});
+
+test("plan Pomodoro: sesiones completas y descansos solo entre enfoques", () => {
+  const plan = planPomodoroBlock({
+    start: "2026-11-02T09:00:00.000Z",
+    end: "2026-11-02T10:00:00.000Z",
+  }, 0);
+
+  assert.deepEqual(plan.map(({ kind, start, end }) => [kind, start, end]), [
+    ["focus", "2026-11-02T09:00:00.000Z", "2026-11-02T09:25:00.000Z"],
+    ["break", "2026-11-02T09:25:00.000Z", "2026-11-02T09:30:00.000Z"],
+    ["focus", "2026-11-02T09:30:00.000Z", "2026-11-02T09:55:00.000Z"],
+  ]);
+  assert.equal(planPomodoroBlock({
+    start: "2026-11-02T09:00:00.000Z",
+    end: "2026-11-02T09:40:00.000Z",
+  }, 0).filter((slot) => slot.kind === "focus").length, 1, "no crea una sesión parcial para el resto");
+});
+
+test("cumplimiento Pomodoro requiere al menos 80% de sesiones verificadas", () => {
+  const task = {
+    id: "task-80",
+    start: "2026-11-02T09:00:00.000Z",
+    end: "2026-11-02T11:30:00.000Z",
+  };
+  const plan = planPomodoroBlock({ start: task.start, end: task.end }, 0).filter((slot) => slot.kind === "focus");
+  const sessions = (completed, failed = 0) => [
+    ...plan.slice(0, completed).map((slot, index) => ({ id: `c${index}`, scheduleKey: slot.scheduleKey, status: "completed" })),
+    ...plan.slice(completed, completed + failed).map((slot, index) => ({ id: `f${index}`, scheduleKey: slot.scheduleKey, status: "unfulfilled" })),
+  ];
+
+  assert.equal(plan.length, 5);
+  assert.deepEqual(summarizePomodoroTask(task, sessions(4, 1)), {
+    total: 5, completed: 4, completionRate: 80, status: "fulfilled",
+  });
+  assert.deepEqual(summarizePomodoroTask(task, sessions(3, 2)), {
+    total: 5, completed: 3, completionRate: 60, status: "unfulfilled",
+  });
+  assert.equal(summarizePomodoroTask(task, sessions(3)).status, "pending");
 });
 
 test("el dominio no importa nada externo", async () => {

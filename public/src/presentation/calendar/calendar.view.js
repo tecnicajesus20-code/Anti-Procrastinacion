@@ -18,7 +18,7 @@ import { taskToEvents, eventToBlock } from "./calendar.mapper.js";
 export function createCalendarView() {
   let calendar = null;
 
-  function mount(element, { onEventChanged, onDateSelected, onEventSelected }) {
+  function mount(element, { onEventChanged, onDateSelected, onEventSelected, onPomodoroEventSelected }) {
     const { Calendar } = window.FullCalendar ?? {};
     if (!Calendar) throw new Error("FullCalendar no se cargó. Revisa tu conexión a internet.");
 
@@ -59,10 +59,64 @@ export function createCalendarView() {
         onDateSelected({ start: info.start, end: info.end });
         calendar.unselect();
       },
-      eventClick: (info) => onEventSelected({
-        taskId: info.event.extendedProps.taskId,
-        blockIndex: info.event.extendedProps.blockIndex,
-      }),
+      eventClick: (info) => {
+        const props = info.event.extendedProps;
+        if (props.kind?.startsWith("pomodoro-")) {
+          onPomodoroEventSelected?.({
+            taskId: props.taskId,
+            blockIndex: props.blockIndex,
+            kind: props.kind,
+            scheduleKey: props.scheduleKey,
+          });
+          return;
+        }
+        onEventSelected({ taskId: props.taskId, blockIndex: props.blockIndex });
+      },
+      eventContent: (info) => {
+        const { kind } = info.event.extendedProps;
+
+        const frame = document.createElement("div");
+        frame.className = "fc-event-main-frame";
+        if (kind === "pomodoro-focus") {
+          const { focusStart, focusEnd } = info.event.extendedProps;
+          const formatTime = (value) => new Intl.DateTimeFormat("es", {
+            hour: "2-digit",
+            minute: "2-digit",
+            hourCycle: "h23",
+          }).format(new Date(value));
+          const label = document.createElement("span");
+          label.className = "calendar-pomodoro-label";
+          label.textContent = `${formatTime(focusStart)}–${formatTime(focusEnd)}`;
+          frame.append(label);
+          return { domNodes: [frame] };
+        }
+
+        if (info.timeText) {
+          const time = document.createElement("div");
+          time.className = "fc-event-time";
+          time.textContent = info.timeText;
+          frame.append(time);
+        }
+        const titleContainer = document.createElement("div");
+        titleContainer.className = "fc-event-title-container";
+        const title = document.createElement("div");
+        title.className = "fc-event-title";
+        title.textContent = info.event.title;
+        titleContainer.append(title);
+        frame.append(titleContainer);
+        return { domNodes: [frame] };
+      },
+      eventDidMount: (info) => {
+        const { taskTitle, kind, focusStart, focusEnd, breakStart, breakEnd } = info.event.extendedProps;
+        if (kind?.startsWith("pomodoro-")) {
+          const focusLabel = `${new Date(focusStart).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}–${new Date(focusEnd).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} enfoque`;
+          const breakLabel = breakStart && breakEnd
+            ? ` · ${new Date(breakStart).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}–${new Date(breakEnd).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} descanso de 5 min`
+            : "";
+          info.el.title = `${focusLabel}${breakLabel} · ${taskTitle}`;
+          info.el.setAttribute("aria-label", info.el.title);
+        }
+      },
       eventDrop: saveEventChange,
       eventResize: saveEventChange,
     });

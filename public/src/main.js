@@ -12,11 +12,12 @@
  * La navegación entre pantallas (solo mostrar/ocultar) se inicia al principio, antes de las vistas de tareas.
  */
 import { byId } from "./shared/dom.js";
-import { setLoading, showMessage } from "./shared/feedback.js";
+import { runAction, setLoading, showMessage } from "./shared/feedback.js";
 
 import { createTaskService } from "./application/task.service.js";
 import { createSessionCoordinator } from "./application/session.coordinator.js";
 import { createPomodoroService } from "./application/pomodoro.service.js";
+import { createPomodoroSessionService } from "./application/pomodoro-session.service.js";
 import { createTaskReminderService } from "./application/task-reminder.service.js";
 
 import { createFirebaseAuth } from "./infrastructure/firebase/firebase-auth.js";
@@ -65,16 +66,22 @@ async function startApp() {
     // El calendario se monta con su pestaña oculta; al mostrarla recalcula su tamaño.
     const navigation = initNavigation({ onPanelShown: { calendar: calendar.refresh } });
     const pomodoro = createPomodoroService();
+    const pomodoroSessions = createPomodoroSessionService({
+      taskService,
+      pomodoro,
+      onError: (error) => showMessage(`No se pudo guardar la sesión Pomodoro: ${error.message}`, "error"),
+    });
 
     initTaskForm(taskService);
-    const startPomodoroForTask = initPomodoroUi(pomodoro);
+    const startPomodoroForTask = initPomodoroUi(pomodoro, pomodoroSessions, navigation);
     const calendarDialog = initCalendarTaskDialog(taskService, startPomodoroForTask);
     initTaskList(
       taskService,
       calendarDialog.editBlock,
       calendarDialog.editTask,
       calendarDialog.addBlockToTask,
-      startPomodoroForTask
+      startPomodoroForTask,
+      pomodoroSessions
     );
     const reminderUi = initTaskReminderUi(startPomodoroForTask);
     const reminders = createTaskReminderService({
@@ -87,6 +94,19 @@ async function startApp() {
       calendar.mount(byId("calendar"), {
         onDateSelected: calendarDialog.open,
         onEventSelected: calendarDialog.openTask,
+        onPomodoroEventSelected: ({ taskId, blockIndex, kind, scheduleKey }) => {
+          if (kind === "pomodoro-break") {
+            showMessage("Este bloque corresponde a un descanso Pomodoro de 5 minutos.");
+            return;
+          }
+          const task = taskService.getAll().find((candidate) => candidate.id === taskId);
+          const block = task && (Array.isArray(task.blocks) && task.blocks.length ? task.blocks : [task])[blockIndex];
+          if (!task || !block) {
+            showMessage("No se encontró la tarea del bloque Pomodoro.", "error");
+            return;
+          }
+          runAction(() => startPomodoroForTask(task.id, task.title, block, scheduleKey));
+        },
         // Al mover o redimensionar, el caso de uso actualiza el bloque y el calendario se redibuja.
         onEventChanged: async ({ id, blockIndex, start, end }) => {
           try {

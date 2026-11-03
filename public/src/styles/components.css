@@ -421,6 +421,53 @@ textarea.input {
   font-size: 0.85rem;
 }
 
+.task-pomodoro {
+  display: grid;
+  gap: 0.45rem;
+  padding-top: 0.55rem;
+  border-top: 1px solid var(--bdr);
+}
+
+.task-pomodoro-summary {
+  margin: 0;
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.task-pomodoro-summary--fulfilled,
+.task-pomodoro-session--completed {
+  color: #19734e;
+}
+
+.task-pomodoro-summary--unfulfilled,
+.task-pomodoro-session--unfulfilled {
+  color: #b42318;
+}
+
+.task-pomodoro-sessions {
+  display: grid;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.task-pomodoro-session {
+  display: grid;
+  gap: 0.4rem;
+  padding: 0.5rem 0.65rem;
+  background: var(--glass-bg-soft);
+  border-radius: 8px;
+  font-size: 0.82rem;
+}
+
+.pomodoro-session-status {
+  min-height: 1.4rem;
+  margin: 0.35rem 0;
+  color: #DCE7E1;
+  font-size: 0.9rem;
+}
+
 .btn--pomodoro {
   color: #FFFFFF;
   background: var(--task-color, var(--forest-dark));
@@ -659,6 +706,60 @@ textarea.input {
   cursor: grabbing;
 }
 
+.calendar .fc-event.event--pomodoro-focus {
+  cursor: pointer;
+  padding: 0;
+  border-radius: 7px;
+  box-shadow: 0 2px 6px rgba(18, 54, 41, 0.22);
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.calendar .fc-event.event--pomodoro-cycle-with-break::after {
+  position: absolute;
+  right: 4px;
+  bottom: 1px;
+  left: 4px;
+  display: flex;
+  height: 8px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  background: #bac4d2;
+  color: #233044;
+  content: "5 minutos";
+  font-size: 0.48rem;
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+  text-shadow: none;
+}
+
+.calendar .calendar-pomodoro-label {
+  position: absolute;
+  top: 1px;
+  right: 4px;
+  left: 4px;
+  display: block;
+  height: 8px;
+  overflow: hidden;
+  color: #fff;
+  font-size: 0.52rem;
+  font-weight: 700;
+  line-height: 8px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.calendar .fc-event.event--pomodoro-completed {
+  opacity: 0.72;
+}
+
+.calendar .fc-event.event--pomodoro-unfulfilled {
+  --fc-event-bg-color: #b42318;
+  --fc-event-border-color: #b42318;
+}
+
 /* Estado de la tarea en el calendario (clases que pone presentation/calendar/calendar.mapper.js) */
 .calendar .event--in_progress {
   --fc-event-bg-color: var(--amber);
@@ -673,10 +774,46 @@ textarea.input {
   --fc-event-text-color: var(--muted);
 }
 
+.calendar-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.55rem 1rem;
+  margin-top: 0.9rem;
+}
+
+.calendar-legend__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--ink);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.calendar-legend__swatch {
+  width: 0.68rem;
+  height: 0.68rem;
+  border-radius: 0.22rem;
+}
+
+.calendar-legend__swatch--focus {
+  background: #237a57;
+}
+
+.calendar-legend__swatch--break {
+  background: #718096;
+}
+
 .calendar-hint {
   margin-top: 0.85rem;
   font-size: 0.82rem;
   color: var(--muted);
+}
+
+.calendar-legend .calendar-hint {
+  flex-basis: 100%;
+  margin-top: 0;
 }
 
 /* =========================================

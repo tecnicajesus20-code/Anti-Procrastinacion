@@ -1,10 +1,10 @@
 import { byId } from "../../shared/dom.js";
-import { showMessage } from "../../shared/feedback.js";
+import { runAction, showMessage } from "../../shared/feedback.js";
 import { formatShortDateTime } from "../../shared/date-time.js";
 
 /**
  * Connects scheduled task reminders to browser notifications and the alarm decision dialog.
- * @param {(taskTitle: string, block: {start: string, end: string}) => void} startPomodoro
+ * @param {(taskId: string, taskTitle: string, block: {start: string, end: string}) => Promise<void>} startPomodoro
  */
 export function initTaskReminderUi(startPomodoro) {
   const enableButton = byId("notifications-enable");
@@ -131,7 +131,7 @@ export function initTaskReminderUi(startPomodoro) {
 
   doPomodoroButton.addEventListener("click", () => {
     const reminder = resolveReminder();
-    if (reminder) startPomodoro(reminder.task.title, reminder.block);
+    if (reminder) runAction(() => startPomodoro(reminder.task.id, reminder.task.title, reminder.block));
   });
 
   rejectButton.addEventListener("click", resolveReminder);

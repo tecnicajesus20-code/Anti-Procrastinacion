@@ -12,7 +12,7 @@ const modes = { CREATE: "create", VIEW: "view", EDIT: "edit", ADD_BLOCK: "add-bl
 
 /**
  * @param {ReturnType<import("../../application/task.service.js").createTaskService>} taskService
- * @param {(taskTitle: string, block: {start: string, end: string}) => void} startPomodoro
+ * @param {(taskId: string, taskTitle: string, block: {start: string, end: string}) => Promise<void>} startPomodoro
  * @returns {{
  *   open: (slot: { start: Date, end: Date }) => void,
  *   openTask: (selection: { taskId: string, blockIndex: number }) => void,
@@ -151,8 +151,10 @@ export function initCalendarTaskDialog(taskService, startPomodoro) {
     }
 
     const block = getTaskBlocks(task)[selected.blockIndex];
-    startPomodoro(task.title, block);
-    dialog.close();
+    runAction(async () => {
+      await startPomodoro(task.id, task.title, block);
+      dialog.close();
+    });
   });
 
   editButton.addEventListener("click", () => setMode(modes.EDIT));
