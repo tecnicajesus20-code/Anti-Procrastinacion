@@ -28,8 +28,11 @@ export function initAuthUi(authService) {
   return {
     /** @param {{uid: string, email: string}|null} user */
     setUser(user) {
-      byId("user-label").textContent = user ? user.email : "Modo demo (sin sesión)";
-      logout.hidden = !user;
+      const label = byId("user-label");
+      label.textContent = user ? user.email : "Modo demo (sin sesión)";
+      label.title = user ? "Ver mi perfil" : "";
+      if (user) label.dataset.go = "perfil";
+      else delete label.dataset.go;
     },
     /** Desactiva el formulario y explica por qué (ej. Firebase sin configurar). */
     disable(reason) {

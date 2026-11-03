@@ -23,6 +23,7 @@ export const ROUTES = Object.freeze({
   tareas: { view: "app", panel: "tasks" },
   calendario: { view: "app", panel: "calendar" },
   pomodoro: { view: "app", panel: "pomodoro" },
+    perfil: { view: "app", panel: "profile" },
 });
 
 export const DEFAULT_ROUTE = "inicio";
@@ -47,7 +48,7 @@ export function routeAfterUserChange(previousUser, user, currentRoute) {
 
 export function initNavigation({ onPanelShown = {} } = {}) {
   const views = { home: byId("view-home"), auth: byId("view-auth"), app: byId("view-app") };
-  const panels = { tasks: byId("panel-tasks"), calendar: byId("panel-calendar"), pomodoro: byId("panel-pomodoro") };
+  const panels = { tasks: byId("panel-tasks"), calendar: byId("panel-calendar"), pomodoro: byId("panel-pomodoro") ,profile: byId("panel-profile"),};
   let user = null;
 
   const currentRoute = () => resolveRoute(window.location.hash);
