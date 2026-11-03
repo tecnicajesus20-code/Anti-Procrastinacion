@@ -17,6 +17,63 @@
 .card-title {
   margin-bottom: 1rem;
   font-size: 1.05rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-main);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 1.25rem;
+}
+
+/* =========================================
+   POMODORO (bosque profundo + cristal)
+   ========================================= */
+/* ⚠️ REVISIÓN PENDIENTE (D-05): estilo enganchado a un id de JS mediante :has(). Ver layout.css.
+   Sugerencia: .card--pomodoro en lugar de .card:has(#pomodoro-time) en todo este bloque. */
+.card:has(#pomodoro-time) {
+  background:
+    radial-gradient(18rem 10rem at 12% 0%, rgba(255, 255, 255, 0.14), transparent 70%),
+    linear-gradient(145deg, rgba(10, 70, 53, 0.95) 0%, rgba(6, 45, 34, 0.98) 100%);
+  backdrop-filter: blur(16px) saturate(150%);
+  -webkit-backdrop-filter: blur(16px) saturate(150%);
+  color: var(--text-light);
+  padding: 2.25rem 1.75rem;
+  border: 1.5px solid rgba(255, 255, 255, 0.16);
+  box-shadow:
+    0 20px 44px -10px rgba(10, 70, 53, 0.5),
+    0 2px 6px rgba(6, 45, 34, 0.25),
+    inset 0 1px 1px rgba(255, 255, 255, 0.28),
+    inset 0 -1px 1px rgba(0, 0, 0, 0.2);
+}
+
+.card:has(#pomodoro-time) .card-title {
+  color: #DCE7E1;
+}
+
+.pomodoro-mode {
+  display: inline-block;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #9CC8FF;
+  background: rgba(42, 116, 224, 0.22);
+  padding: 0.25rem 0.85rem;
+  border-radius: var(--radius-pill);
+  border: 1px solid rgba(120, 175, 255, 0.45);
+  margin-bottom: 0.25rem;
+}
+
+.pomodoro-task {
+  min-height: 1.4rem;
+  margin: 0.35rem 0 0.15rem;
+  color: #DCE7E1;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.pomodoro-time {
+  font-size: 4.5rem;
   font-weight: 800;
 }
 
@@ -60,6 +117,33 @@
 }
 
 .btn:active {
+  transform: translateY(1px);
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn--primary {
+  background: linear-gradient(180deg, #0F5A45 0%, var(--forest-dark) 100%);
+  color: #FFFFFF;
+  border-color: var(--forest-dark);
+  font-weight: 700;
+  box-shadow: 0 5px 14px rgba(10, 70, 53, 0.32),
+              inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+.btn--primary:hover {
+  background: linear-gradient(180deg, #0A4635 0%, var(--forest-hover) 100%);
+  border-color: var(--forest-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(10, 70, 53, 0.36),
+              inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+.btn--primary:active {
   transform: translateY(0);
 }
 
@@ -278,6 +362,13 @@ textarea.input {
   border-left: 5px solid var(--teal);
   border-radius: 12px;
   transition: transform 0.2s, box-shadow 0.2s;
+  background: var(--glass-bg-soft);
+  border: 1.5px solid rgba(197, 215, 205, 0.7);
+  border-left: 4px solid var(--task-color, var(--blue-main));
+  border-radius: var(--radius-input);
+  box-shadow: 0 3px 10px -3px rgba(10, 70, 53, 0.10),
+              inset 0 1px 1px rgba(255, 255, 255, 0.95);
+  transition: box-shadow 0.2s var(--ease), background 0.2s var(--ease);
 }
 
 .task-item:hover {
@@ -302,6 +393,44 @@ textarea.input {
 .task-time {
   font-size: 0.82rem;
   color: var(--muted);
+}
+
+.task-block-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.task-block-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.75rem;
+}
+
+.task-block-actions {
+  margin-top: 0;
+}
+
+.task-block-actions .btn {
+  padding: 0.45rem 0.75rem;
+  font-size: 0.85rem;
+}
+
+.btn--pomodoro {
+  color: #FFFFFF;
+  background: var(--task-color, var(--forest-dark));
+  border-color: var(--task-color, var(--forest-dark));
+}
+
+.task-block-hint {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--text-muted);
 }
 
 /* =========================================
@@ -366,6 +495,7 @@ textarea.input {
 
 .event-dialog__actions {
   display: flex;
+  flex-wrap: wrap;
   justify-content: flex-end;
   gap: 0.6rem;
   margin-top: 0.5rem;
@@ -373,9 +503,91 @@ textarea.input {
   border-top: 1px solid var(--bdr);
 }
 
+.event-dialog__block-hint {
+  margin: 0;
+  align-self: center;
+}
+
+.event-dialog__actions [hidden] {
+  display: none;
+}
+
+.alarm-dialog {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  width: min(440px, calc(100% - 2rem));
+  height: fit-content;
+  max-height: calc(100dvh - 2rem);
+  overflow-y: auto;
+  color: var(--text-main);
+  background: var(--glass-bg-strong);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1.5px solid var(--glass-border);
+  border-radius: 22px;
+  box-shadow: 0 32px 80px rgba(10, 70, 53, 0.4);
+}
+
+.alarm-dialog[open] {
+  animation: dialog-in 0.22s var(--ease);
+}
+
+.alarm-dialog::backdrop {
+  background: rgba(5, 25, 18, 0.72);
+  backdrop-filter: blur(7px);
+  -webkit-backdrop-filter: blur(7px);
+}
+
+.alarm-dialog__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 2rem;
+  text-align: center;
+}
+
+.alarm-dialog__eyebrow {
+  color: var(--blue-main);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.alarm-dialog__title {
+  color: var(--forest-dark);
+  font-size: 1.5rem;
+  line-height: 1.2;
+}
+
+.alarm-dialog__task {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.alarm-dialog__time {
+  color: var(--text-muted);
+}
+
+.alarm-dialog__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.7rem;
+  margin-top: 0.5rem;
+}
+
 @media (max-width: 480px) {
   .event-time-fields {
     grid-template-columns: 1fr;
+  }
+
+  .alarm-dialog__content {
+    padding: 1.5rem 1.2rem;
   }
 }
 

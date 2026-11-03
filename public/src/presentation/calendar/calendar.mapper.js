@@ -1,4 +1,6 @@
 import { MS_PER_HOUR, dateToIso } from "../../shared/date-time.js";
+import { getTaskBlocks } from "../../domain/task.js";
+import { getTaskColor } from "../tasks/task-color.js";
 
 /**
  * Traduce entre el contrato de Task y los eventos de FullCalendar.
@@ -6,17 +8,21 @@ import { MS_PER_HOUR, dateToIso } from "../../shared/date-time.js";
  */
 
 /**
- * Task → evento de FullCalendar.
+ * Task → eventos de FullCalendar (uno por cada bloque).
  * La clase event--<estado> permite dar estilo por estado (ver README_PROVISIONAL_DISENO.md, D-04).
  */
-export function taskToEvent(task) {
-  return {
-    id: task.id,
+export function taskToEvents(task) {
+  const color = getTaskColor(task.id);
+  return getTaskBlocks(task).map((block, blockIndex) => ({
+    id: `${task.id}:block:${blockIndex}`,
     title: task.title,
-    start: task.start,
-    end: task.end,
+    start: block.start,
+    end: block.end,
     classNames: [`event--${task.status}`],
-  };
+    backgroundColor: color,
+    borderColor: color,
+    extendedProps: { taskId: task.id, blockIndex },
+  }));
 }
 
 /**

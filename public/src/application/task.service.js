@@ -10,14 +10,16 @@
  *   add(input)                  Crea una tarea (normaliza y valida con el dominio)
  *   update(id, changes)         Modifica campos de una tarea
  *   toggleDone(id)              Completar / reabrir
- *   moveBlock(id, start, end)   Mueve o redimensiona el bloque horario
+ *   moveBlock(id, start, end, blockIndex) Mueve o redimensiona un bloque horario
+ *   addBlock(id, start, end)    Añade un bloque a una tarea existente
+ *   removeBlock(id, blockIndex) Elimina un bloque sin dejar la tarea sin horario
  *   remove(id)                  Elimina una tarea
  *   subscribe(callback)         Avisa con una copia de la lista en cada cambio; devuelve función para cancelar
  *
  * Aislamiento entre sesiones: si el repositorio cambia mientras una operación está en curso
  * (p. ej. se cierra sesión), su resultado NO se mezcla con el estado de la nueva sesión.
  */
-import { validateTask, buildTaskData, toggledStatus } from "../domain/task.js";
+import { validateTask, buildTaskData, cloneTask, getTaskBlocks, toggledStatus } from "../domain/task.js";
 import { assertTaskRepository } from "./task-repository.js";
 
 /** @param {import("./task-repository.js").TaskRepository} initialRepository */
@@ -28,7 +30,7 @@ export function createTaskService(initialRepository) {
   let loadTicket = 0;
   const listeners = new Set();
 
-  const copy = () => tasks.map((task) => ({ ...task }));
+  const copy = () => tasks.map(cloneTask);
 
   function notify() {
     const snapshot = copy();
@@ -102,7 +104,70 @@ export function createTaskService(initialRepository) {
 
   const toggleDone = async (id) => update(id, { status: toggledStatus(findOrThrow(id).status) });
 
-  const moveBlock = (id, start, end) => update(id, { start, end });
+  async function updateBlock(id, blockIndex, changes) {
+    const task = findOrThrow(id);
+    const blocks = getTaskBlocks(task);
+    if (!Number.isInteger(blockIndex) || blockIndex < 0 || blockIndex >= blocks.length) {
+      throw new Error("El bloque horario seleccionado no existe.");
+    }
+
+    blocks[blockIndex] = { start: changes.start, end: changes.end };
+    const updated = {
+      ...changes,
+      blocks,
+      start: blocks[0].start,
+      end: blocks[0].end,
+    };
+    assertValid({ ...task, ...updated });
+    return write(
+      (target) => target.update(id, updated),
+      (saved) => { tasks = tasks.map((candidate) => (candidate.id === id ? saved : candidate)); }
+    );
+  }
+
+  const moveBlock = (id, start, end, blockIndex = 0) => {
+    const task = findOrThrow(id);
+    const blocks = getTaskBlocks(task);
+    if (!Number.isInteger(blockIndex) || blockIndex < 0 || blockIndex >= blocks.length) {
+      throw new Error("El bloque horario seleccionado no existe.");
+    }
+    return updateBlock(id, blockIndex, { start, end });
+  };
+
+  async function addBlock(id, start, end) {
+    const task = findOrThrow(id);
+    const blocks = getTaskBlocks(task);
+    blocks.push({ start, end });
+    const updated = { blocks };
+    assertValid({ ...task, ...updated });
+    return write(
+      (target) => target.update(id, updated),
+      (saved) => { tasks = tasks.map((candidate) => (candidate.id === id ? saved : candidate)); }
+    );
+  }
+
+  async function removeBlock(id, blockIndex) {
+    const task = findOrThrow(id);
+    const blocks = getTaskBlocks(task);
+    if (!Number.isInteger(blockIndex) || blockIndex < 0 || blockIndex >= blocks.length) {
+      throw new Error("El bloque horario seleccionado no existe.");
+    }
+    if (blocks.length === 1) {
+      throw new Error("No puedes eliminar el único bloque. Agrega otro bloque o elimina la tarea.");
+    }
+
+    blocks.splice(blockIndex, 1);
+    const updated = {
+      blocks,
+      start: blocks[0].start,
+      end: blocks[0].end,
+    };
+    assertValid({ ...task, ...updated });
+    return write(
+      (target) => target.update(id, updated),
+      (saved) => { tasks = tasks.map((candidate) => (candidate.id === id ? saved : candidate)); }
+    );
+  }
 
   async function remove(id) {
     return write((target) => target.remove(id), () => { tasks = tasks.filter((task) => task.id !== id); });
@@ -113,5 +178,5 @@ export function createTaskService(initialRepository) {
     return () => listeners.delete(callback);
   }
 
-  return { load, useRepository, getAll: copy, add, update, toggleDone, moveBlock, remove, subscribe };
+  return { load, useRepository, getAll: copy, add, update, updateBlock, addBlock, removeBlock, toggleDone, moveBlock, remove, subscribe };
 }

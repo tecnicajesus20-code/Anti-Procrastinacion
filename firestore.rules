@@ -17,11 +17,12 @@ service cloud.firestore {
     // Valida el contrato de datos de la tarea
     function isValidTask(t) {
       return t.keys().hasAll(['title', 'status', 'start', 'end'])
-        && t.keys().hasOnly(['title', 'description', 'status', 'dueDate', 'start', 'end'])
+        && t.keys().hasOnly(['title', 'description', 'status', 'dueDate', 'start', 'end', 'blocks','userId', 'createdAt', 'updatedAt' ])
         && t.title is string && t.title.size() > 0 && t.title.size() <= 120
         && t.status in ['pending', 'in_progress', 'done']
         && t.start is string && t.end is string
-        && t.end > t.start;
+        && t.end > t.start
+        && (!t.keys().hasAny(['blocks']) || (t.blocks is list && t.blocks.size() > 0));
     }
 
     // NOTA: Se eliminó la regla abierta "match /{document=**}" para evitar que
