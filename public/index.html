@@ -15,7 +15,7 @@
   </header>
 
   <!-- ⚠️ REVISIÓN PENDIENTE (D-08): los errores también usan este elemento con role="status" (lectores de pantalla los
-       anuncian con baja prioridad). Sugerencia: role="alert" para errores, o un segundo elemento para ellos. -->
+        anuncian con baja prioridad). Sugerencia: role="alert" para errores, o un segundo elemento para ellos. -->
   <p class="message" id="message" role="status" hidden></p>
   <p class="loading" id="loading" hidden>Cargando…</p>
 
@@ -68,7 +68,7 @@
         </label>
         <label class="field">Contraseña
           <!-- ⚠️ REVISIÓN PENDIENTE (D-09): el mismo campo sirve para "Crear cuenta"; con current-password el navegador no
-               propone una contraseña nueva al registrarse. Opcional: cambiar a "new-password" al pulsar "Crear cuenta". -->
+                propone una contraseña nueva al registrarse. Opcional: cambiar a "new-password" al pulsar "Crear cuenta". -->
           <input class="input" id="auth-password" type="password" autocomplete="current-password" />
         </label>
         <div class="btn-row">
@@ -102,6 +102,19 @@
       <label class="field">Descripción <span class="optional-label">(opcional)</span>
         <textarea class="input event-description-input" id="event-description" rows="2"></textarea>
       </label>
+      
+      <!-- Selector de Nivel de Dificultad -->
+      <label class="field">Nivel de Dificultad
+        <select class="input" id="event-category" required>
+          <option value="" disabled selected>Selecciona un nivel...</option>
+          <option value="1">Nivel 1: Fácil · Rápida (Máx. 30 min)</option>
+          <option value="2">Nivel 2: Moderada · Ligera (Máx. 60 min)</option>
+          <option value="3">Nivel 3: Intermedia · Concentración (Máx. 90 min)</option>
+          <option value="4">Nivel 4: Desafío (Máx. 120 min)</option>
+          <option value="5">Nivel 5: Hardcore (Sin límite)</option>
+        </select>
+      </label>
+
       <div class="event-dialog__actions">
         <button class="btn" id="event-dialog-cancel" type="button">Cancelar</button>
         <button class="btn btn--primary" type="submit">Guardar</button>

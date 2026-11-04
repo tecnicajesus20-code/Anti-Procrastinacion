@@ -440,7 +440,6 @@ input[type="datetime-local"].input {
 /* =========================================
    CALENDARIO DE CRISTAL (FullCalendar)
    ========================================= */
-/* El calendario es una lámina de vidrio dentro de la tarjeta */
 .calendar {
   margin-top: 0.5rem;
   padding: 1rem;
@@ -503,7 +502,6 @@ input[type="datetime-local"].input {
   opacity: 0.5;
 }
 
-/* Rejilla: marco tipo vidrio y celdas translúcidas */
 .calendar .fc-scrollgrid {
   border-radius: 12px;
   overflow: hidden;
@@ -520,8 +518,6 @@ input[type="datetime-local"].input {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.75), rgba(235, 243, 238, 0.55));
 }
 
-/* ⚠️ REVISIÓN PENDIENTE (D-07): las reglas .fc-daygrid-* de este archivo no se aplican: la app solo usa vistas
-   timeGrid (semana/día). Inofensivas; eliminarlas o conservarlas es decisión de diseño. */
 .calendar .fc-col-header-cell-cushion,
 .calendar .fc-daygrid-day-number {
   color: var(--text-main);
@@ -564,8 +560,6 @@ input[type="datetime-local"].input {
   font-weight: 600;
 }
 
-/* D-04: Estilos según el estado del evento */
-
 .event--done {
     opacity: 0.65;
     text-decoration: line-through;
@@ -579,7 +573,7 @@ input[type="datetime-local"].input {
 .event--in_progress {
     border-left: 3px solid #06b6d4;
 }
-/* D-10: Botón de peligro / eliminar */
+
 .btn--danger {
   color: #dc2626;
   border: 1px solid #dc2626;
@@ -591,6 +585,7 @@ input[type="datetime-local"].input {
   background-color: #fef2f2;
   color: #b91c1c;
 }
+
 .calendar .fc-event {
   border-radius: 7px;
   font-weight: 600;
@@ -628,8 +623,6 @@ input[type="datetime-local"].input {
   color: var(--text-muted);
 }
 
-/* ⚠️ REVISIÓN PENDIENTE (D-07): .move-log no se usa en ningún HTML ni JS (resto de una versión anterior).
-   Sugerencia: eliminar el bloque si el equipo de diseño confirma que no se va a usar. */
 .move-log {
   margin-top: 1rem;
   padding: 0.75rem 1rem;
@@ -641,7 +634,7 @@ input[type="datetime-local"].input {
 }
 
 /* =========================================
-   MENSAJES
+   MENSAJES Y NOTIFICACIONES
    ========================================= */
 .message,
 .loading {
@@ -655,7 +648,6 @@ input[type="datetime-local"].input {
               inset 0 1px 1px rgba(255, 255, 255, 0.7);
 }
 
-//* D-03: Mensajes de error */
 .message--error {
     background: rgba(254, 226, 226, 0.85);
     color: #991B1B;
@@ -663,6 +655,7 @@ input[type="datetime-local"].input {
     padding: 10px 14px;
     border-radius: 4px;
 }
+
 .message--info {
   background: rgba(219, 234, 254, 0.85);
   color: #1E3A8A;
@@ -697,4 +690,82 @@ input[type="datetime-local"].input {
   .pomodoro-time {
     font-size: 3.6rem;
   }
+}
+
+/* ==========================================
+   ESTILOS DE CATEGORÍAS Y ESTADOS VISUALES
+   ========================================== */
+.tarea-item {
+  padding: 10px 14px;
+  margin: 6px 0;
+  border-radius: 6px;
+  border: 2px solid transparent;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.tarea-pendiente {
+  border-color: transparent;
+}
+
+.tarea-completada {
+  border: 2px solid gold !important;
+  background-color: rgba(255, 215, 0, 0.1) !important;
+}
+
+.tarea-incumplida {
+  border: 2px solid red !important;
+  background-color: rgba(255, 0, 0, 0.1) !important;
+}
+
+.badge-dificultad {
+  display: inline-block;
+  font-size: 0.8rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-top: 4px;
+  font-weight: bold;
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* =========================================
+   ESTILO MODERNO PARA ERRORES (MENSAJE FLOTANTE TIPO TOAST)
+   ========================================= */
+#message {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 99999;
+  min-width: 320px;
+  max-width: 450px;
+  padding: 1rem 1.25rem;
+  background: rgba(254, 226, 226, 0.95);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  color: #991B1B;
+  border: 1.5px solid rgba(220, 38, 38, 0.35);
+  border-left: 6px solid #DC2626;
+  border-radius: 12px;
+  box-shadow: 0 20px 40px -10px rgba(153, 27, 27, 0.25),
+              0 4px 12px rgba(0, 0, 0, 0.1);
+  font-size: 0.95rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  animation: slideInToast 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes slideInToast {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+#message[hidden] {
+  display: none !important;
 }
