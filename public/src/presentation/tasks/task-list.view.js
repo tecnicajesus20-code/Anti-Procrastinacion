@@ -9,6 +9,7 @@ import { getTaskBlocks, isDone, byStart } from "../../domain/task.js";
 import { POMODORO_SESSION_STATUS, summarizePomodoroTask } from "../../domain/pomodoro.js";
 import { getTaskColor } from "./task-color.js";
 import { initTaskDetailDialog } from "./task-detail-dialog.ui.js";
+import { resolveTaskCategory } from "../../domain/category.js";
 
 function createButton(className, text, onClick, { disabled = false, title = "" } = {}) {
   const button = document.createElement("button");
@@ -28,10 +29,13 @@ function createButton(className, text, onClick, { disabled = false, title = "" }
  * @param {(taskId: string) => void} addBlockDialog
  * @param {(taskId: string, taskTitle: string, block: {start: string, end: string}, scheduleKey?: string) => Promise<void>} startPomodoro
  * @param {ReturnType<import("../../application/pomodoro-session.service.js").createPomodoroSessionService>} pomodoroSessions
+ * @param {{ blockOutcomes?: object, getCategories?: () => import("../../domain/category.js").Category[], subscribeCategories?: (cb: () => void) => void }} [extras]
+ *   Opcional (categorías y resultado por bloque). Último parámetro para no alterar los anteriores.
  */
-export function initTaskList(taskService, editBlockDialog, editTaskDialog, addBlockDialog, startPomodoro, pomodoroSessions) {
+export function initTaskList(taskService, editBlockDialog, editTaskDialog, addBlockDialog, startPomodoro, pomodoroSessions, extras = {}) {
   const list = byId("task-list");
-  const detail = initTaskDetailDialog(taskService, { editBlockDialog, editTaskDialog, addBlockDialog, startPomodoro });
+  const { blockOutcomes = null, getCategories = () => [] } = extras;
+  const detail = initTaskDetailDialog(taskService, { editBlockDialog, editTaskDialog, addBlockDialog, startPomodoro, blockOutcomes, getCategories });
 
   const DUE_FORMAT = { weekday: "short", day: "numeric", month: "short" };
   const formatDue = (iso) => new Date(iso).toLocaleDateString("es", DUE_FORMAT).replace(/\./g, "");
@@ -75,7 +79,16 @@ export function initTaskList(taskService, editBlockDialog, editTaskDialog, addBl
     const hint = document.createElement("span");
     hint.className = "task-open-hint";
     hint.textContent = "Ver bloques →";
-    meta.append(count, due, hint);
+    const category = resolveTaskCategory(task, getCategories());
+    if (category) {
+      const chip = document.createElement("span");
+      chip.className = "task-chip task-chip--category";
+      chip.style.setProperty("--category-color", category.color);
+      chip.textContent = `${category.icon} ${category.name}`;
+      meta.append(count, due, chip, hint);
+    } else {
+      meta.append(count, due, hint);
+    }
 
     item.tabIndex = 0;
     item.setAttribute("aria-label", `Ver detalle de ${task.title}`);
@@ -215,4 +228,6 @@ export function initTaskList(taskService, editBlockDialog, editTaskDialog, addBl
 
   taskService.subscribe(render);
   pomodoroSessions.subscribe(() => render(taskService.getAll()));
+  // Las categorías propias se cargan aparte: al llegar (o cambiar) se redibujan las etiquetas.
+  extras.subscribeCategories?.(() => render(taskService.getAll()));
 }

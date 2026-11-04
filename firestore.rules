@@ -15,6 +15,12 @@ service cloud.firestore {
       allow create, update: if isOwner(uid) && isValidProfile(request.resource.data);
     }
 
+    // Categorías propias de cada usuario (las 5 base no se guardan: viven en el código)
+    match /users/{uid}/categories/{categoryId} {
+      allow read, delete: if isOwner(uid);
+      allow create, update: if isOwner(uid) && isValidCategory(request.resource.data);
+    }
+
     // Verifica que el usuario autenticado sea el dueño de la información
     function isOwner(uid) {
       return request.auth != null && request.auth.uid == uid;
@@ -26,6 +32,7 @@ service cloud.firestore {
         && t.keys().hasOnly([
           'title', 'description', 'status', 'dueDate', 'start', 'end', 'blocks',
           'pomodoroSessions', 'pomodoroStatus', 'pomodoroCompletionRate',
+          'category',
           'userId', 'createdAt', 'updatedAt'
         ])
         && t.title is string && t.title.size() > 0 && t.title.size() <= 120
@@ -36,7 +43,17 @@ service cloud.firestore {
         && (!t.keys().hasAny(['pomodoroSessions']) || (t.pomodoroSessions is list && t.pomodoroSessions.size() <= 1000))
         && (!t.keys().hasAny(['pomodoroStatus']) || t.pomodoroStatus in ['not_applicable', 'pending', 'fulfilled', 'unfulfilled'])
         && (!t.keys().hasAny(['pomodoroCompletionRate'])
-          || (t.pomodoroCompletionRate is int && t.pomodoroCompletionRate >= 0 && t.pomodoroCompletionRate <= 100));
+          || (t.pomodoroCompletionRate is int && t.pomodoroCompletionRate >= 0 && t.pomodoroCompletionRate <= 100))
+        && (!t.keys().hasAny(['category']) || (t.category is string && t.category.size() > 0 && t.category.size() <= 64));
+    }
+
+    // Valida el contrato de datos de una categoría propia
+    function isValidCategory(c) {
+      return c.keys().hasAll(['name', 'createdAt'])
+        && c.keys().hasOnly(['name', 'color', 'userId', 'createdAt', 'updatedAt'])
+        && c.name is string && c.name.size() > 0 && c.name.size() <= 40
+        && (!c.keys().hasAny(['color']) || (c.color is string && c.color.size() <= 20))
+        && c.createdAt is string;
     }
 
     // Valida el contrato de datos del perfil

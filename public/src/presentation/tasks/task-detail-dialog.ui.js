@@ -11,6 +11,10 @@ import { getTaskBlocks, isDone } from "../../domain/task.js";
 import { POMODORO_SESSION_STATUS, planPomodoroTask } from "../../domain/pomodoro.js";
 import { buildWorkBlocks, BLOCK_DURATION_OPTIONS, WORK_BLOCK_DEFAULTS } from "../../domain/work-blocks.js";
 import { getTaskColor } from "./task-color.js";
+import { getDifficulty, pointsForBlock } from "../../domain/difficulty.js";
+import { BLOCK_OUTCOME, OUTCOME_SOURCE, usesBlockScoring, isAwaitingAnswer } from "../../domain/block-outcome.js";
+import { resolveTaskCategory } from "../../domain/category.js";
+import { pointsSummary } from "../../domain/stats.js";
 
 const day = (iso) => formatDayShort(iso).replace(/\./g, "");
 const sameDay = (a, b) => new Date(a).toDateString() === new Date(b).toDateString();
@@ -40,11 +44,13 @@ function button(className, text, onClick, { disabled = false, title = "" } = {})
  *   editBlockDialog: (selection: {taskId: string, blockIndex: number}) => void,
  *   editTaskDialog: (taskId: string) => void,
  *   addBlockDialog: (taskId: string) => void,
- *   startPomodoro: (taskId: string, taskTitle: string, block: {start: string, end: string}, scheduleKey?: string) => Promise<void>
- * }} actions
+ *   startPomodoro: (taskId: string, taskTitle: string, block: {start: string, end: string}, scheduleKey?: string) => Promise<void>,
+ *   blockOutcomes?: ReturnType<import("../../application/block-outcome.service.js").createBlockOutcomeService>,
+ *   getCategories?: () => import("../../domain/category.js").Category[]
+ * }} actions  blockOutcomes y getCategories son opcionales (sin ellos el detalle se ve como antes)
  * @returns {{ open: (taskId: string) => void }}
  */
-export function initTaskDetailDialog(taskService, { editBlockDialog, editTaskDialog, addBlockDialog, startPomodoro }) {
+export function initTaskDetailDialog(taskService, { editBlockDialog, editTaskDialog, addBlockDialog, startPomodoro, blockOutcomes = null, getCategories = () => [] }) {
   const dialog = byId("task-detail-dialog");
   const titleEl = byId("task-detail-title");
   const descriptionEl = byId("task-detail-description");
@@ -55,6 +61,8 @@ export function initTaskDetailDialog(taskService, { editBlockDialog, editTaskDia
   const noteEl = byId("task-detail-note");
   const timeline = byId("task-detail-blocks");
   const actionsEl = byId("task-detail-actions");
+  const categoryEl = byId("task-detail-category");
+  const pointsEl = byId("task-detail-points");
 
   const durations = new Map(); // taskId → minutos elegidos (solo apariencia, no se guarda)
   const reorganized = new Map(); // taskId → instante desde el que se reorganizó (solo apariencia)
@@ -126,6 +134,44 @@ export function initTaskDetailDialog(taskService, { editBlockDialog, editTaskDia
     return item;
   }
 
+  /** Estado del bloque: dificultad, tarea concreta, resultado y botón "Completar". */
+  function renderBlockStatus(task, scheduleBlock, now) {
+    const item = el("li", "block-status");
+    const info = el("span", "block-status__info");
+    const difficulty = getDifficulty(scheduleBlock.difficulty);
+    info.append(el("span", "block-status__chip", difficulty
+      ? `${difficulty.icon} ${difficulty.label} · ${pointsForBlock(scheduleBlock)} pts`
+      : "Sin dificultad"));
+    if (scheduleBlock.focusIntent) info.append(el("span", "block-status__intent", `🎯 ${scheduleBlock.focusIntent}`));
+
+    const { outcome } = scheduleBlock;
+    const start = Date.parse(scheduleBlock.start);
+    const end = Date.parse(scheduleBlock.end);
+    let state;
+    if (outcome?.status === BLOCK_OUTCOME.COMPLETED) state = `✓ Completado · +${outcome.points}`;
+    else if (outcome) state = `✗ No realizado · ${outcome.points}${outcome.source === OUTCOME_SOURCE.TIMEOUT ? " (sin respuesta)" : ""}`;
+    else if (now < start) state = "Programado";
+    else if (now < end) state = "En curso";
+    else if (isAwaitingAnswer(scheduleBlock, now)) state = "Pendiente de confirmar";
+    else state = "Terminado";
+    const stateEl = el("span", `block-status__state${outcome ? ` block-status__state--${outcome.status}` : ""}`, state);
+    item.append(info, stateEl);
+
+    if (!outcome && blockOutcomes) {
+      const ref = { start: scheduleBlock.start, end: scheduleBlock.end };
+      const actions = el("span", "work-group__actions");
+      actions.append(button("work-group__btn", "Completar", () => runAction(() => blockOutcomes.complete(task.id, ref)), {
+        disabled: now < start,
+        title: now < start ? "Disponible cuando empiece el bloque." : "",
+      }));
+      if (isAwaitingAnswer(scheduleBlock, now)) {
+        actions.append(button("work-group__btn work-group__btn--danger", "No lo completé", () => runAction(() => blockOutcomes.answer(task.id, ref, false))));
+      }
+      item.append(actions);
+    }
+    return item;
+  }
+
   function render() {
     const task = taskService.getAll().find((candidate) => candidate.id === currentId);
     if (!task) {
@@ -149,6 +195,12 @@ export function initTaskDetailDialog(taskService, { editBlockDialog, editTaskDia
       ? formatRange(blocks[0])
       : `${formatRange(blocks[0])} · ${blocks.length} horarios`;
     dueEl.textContent = task.dueDate ? `Vence ${day(task.dueDate)}` : "Sin fecha límite";
+    const category = resolveTaskCategory(task, getCategories());
+    categoryEl.hidden = !category;
+    categoryEl.textContent = category ? `${category.icon} ${category.name}` : "";
+    const points = pointsSummary([task]);
+    pointsEl.hidden = points.completedBlocks + points.failedBlocks === 0;
+    pointsEl.textContent = `${points.net >= 0 ? "+" : ""}${points.net} pts`;
     durationSelect.value = String(blockMinutes);
 
     // Bloques de trabajo de cada horario, numerados en orden cronológico.
@@ -167,6 +219,7 @@ export function initTaskDetailDialog(taskService, { editBlockDialog, editTaskDia
         header.append(groupActions);
         items.push(header);
       }
+      items.push(renderBlockStatus(task, scheduleBlock, now));
 
       const from = reorganizeFrom && reorganizeFrom > Date.parse(scheduleBlock.start) && reorganizeFrom < Date.parse(scheduleBlock.end)
         ? new Date(Math.ceil(reorganizeFrom / 300_000) * 300_000).toISOString() // siguiente múltiplo de 5 min
@@ -196,7 +249,10 @@ export function initTaskDetailDialog(taskService, { editBlockDialog, editTaskDia
       })),
       button("btn", "Agregar bloque", thenReturn(task.id, () => addBlockDialog(task.id))),
       button("btn", "Editar tarea", thenReturn(task.id, () => editTaskDialog(task.id))),
-      button("btn btn--primary", done ? "Reabrir" : "Completar", () => runAction(() => taskService.toggleDone(task.id)))
+      // Tareas con dificultad: se completan solas al completar todos sus bloques (sin botón de tarea).
+      ...(usesBlockScoring(task) ? [] : [
+        button("btn btn--primary", done ? "Reabrir" : "Completar", () => runAction(() => taskService.toggleDone(task.id))),
+      ])
     );
   }
 

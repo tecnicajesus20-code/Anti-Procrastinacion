@@ -19,6 +19,12 @@
  * @property {PomodoroSession[]} [pomodoroSessions] Historial de sesiones de enfoque verificadas
  * @property {"not_applicable"|"pending"|"fulfilled"|"unfulfilled"} [pomodoroStatus]
  * @property {number} [pomodoroCompletionRate] Porcentaje de sesiones de enfoque completadas
+ * @property {string} [category]         Id de la categoría (ver domain/category.js). Opcional: las tareas antiguas no la tienen
+ *
+ * Campos OPCIONALES de cada bloque (además de start/end), ver domain/difficulty.js y domain/block-outcome.js:
+ *   difficulty   "facil" | "moderada" | "intermedia" | "desafio" | "hardcore"
+ *   focusIntent  Tarea concreta definida al iniciar el bloque
+ *   outcome      { status, points, resolvedAt, source } — resultado registrado una sola vez
  *
  * @typedef {Omit<Task, "id">} TaskData  Tarea sin id (antes de guardarla)
  * @typedef {Object} PomodoroSession
@@ -110,6 +116,7 @@ export function validateTask(data) {
       || (session.failureReason !== null && typeof session.failureReason !== "string")
     ))
   )) errors.push("El historial de sesiones Pomodoro no es válido.");
+  // Los campos nuevos (categoría y campos por bloque) se validan en domain/task-extensions.js.
   return errors;
 }
 
@@ -125,7 +132,7 @@ export function getTaskBlocks(task) {
 export function cloneTask(task) {
   return {
     ...task,
-    ...(Array.isArray(task.blocks) ? { blocks: task.blocks.map((block) => ({ ...block })) } : {}),
+    ...(Array.isArray(task.blocks) ? { blocks: task.blocks.map((block) => ({ ...block, ...(block?.outcome ? { outcome: { ...block.outcome } } : {}) })) } : {}),
     ...(Array.isArray(task.pomodoroSessions) ? { pomodoroSessions: task.pomodoroSessions.map((session) => ({ ...session })) } : {}),
   };
 }
@@ -144,7 +151,9 @@ export function buildTaskData(input) {
     dueDate: input.dueDate || null,
     start: input.start,
     end: input.end,
-    blocks: [{ start: input.start, end: input.end }],
+    blocks: [{ start: input.start, end: input.end, ...(input.difficulty ? { difficulty: input.difficulty } : {}) }],
+    // Solo se añade si viene: así las tareas creadas sin categoría conservan exactamente el formato anterior.
+    ...(input.category ? { category: input.category } : {}),
   };
 }
 

@@ -6,6 +6,7 @@ import { showMessage, clearMessage, runAction } from "../../shared/feedback.js";
 import { dateToLocalInputValue } from "../../shared/date-time.js";
 import { getTaskBlocks } from "../../domain/task.js";
 import { readTaskInput } from "./task-input.js";
+import { initDifficultySelect } from "./difficulty-select.ui.js";
 
 const FIELDS = { title: "event-title", description: "event-description", start: "event-start", end: "event-end" };
 const modes = { CREATE: "create", VIEW: "view", EDIT: "edit", ADD_BLOCK: "add-block" };
@@ -35,6 +36,11 @@ export function initCalendarTaskDialog(taskService, startPomodoro) {
   const deleteTaskButton = byId("event-dialog-delete-task");
   const blockHint = byId("event-dialog-block-hint");
   const saveButton = byId("event-dialog-save");
+  // Categoría (de la tarea) y dificultad (del bloque). Opcionales al editar tareas antiguas.
+  const category = byId("event-category");
+  const difficultySelect = byId("event-difficulty");
+  const difficulty = initDifficultySelect({ select: "event-difficulty", start: "event-start", end: "event-end", hint: "event-difficulty-hint" });
+  let selectedFields = { hadCategory: false, hadDifficulty: false, resolved: false };
   // Si index.html no trae la caja de error (versión anterior), se crea aquí para que la app no se rompa.
   const errorBox = document.getElementById("event-dialog-error") ?? (() => {
     const box = document.createElement("p");
@@ -93,6 +99,11 @@ export function initCalendarTaskDialog(taskService, startPomodoro) {
     deleteTaskButton.hidden = mode !== modes.VIEW;
     blockHint.hidden = mode !== modes.VIEW || selectedBlockCount !== 1;
     saveButton.hidden = viewing;
+    category.disabled = viewing || addingBlock;
+    category.required = mode === modes.CREATE || (mode === modes.EDIT && selectedFields.hadCategory);
+    // Un bloque con resultado registrado conserva su dificultad (sus puntos ya se calcularon con ella).
+    difficultySelect.disabled = viewing || (mode === modes.EDIT && selectedFields.resolved);
+    difficultySelect.required = mode === modes.CREATE || addingBlock || (mode === modes.EDIT && selectedFields.hadDifficulty);
 
     byId("event-dialog-title").textContent = ({
       [modes.CREATE]: "Nueva tarea",
@@ -113,6 +124,9 @@ export function initCalendarTaskDialog(taskService, startPomodoro) {
     blockHint.hidden = true;
     start.value = dateToLocalInputValue(slotStart);
     end.value = dateToLocalInputValue(slotEnd);
+    selectedFields = { hadCategory: false, hadDifficulty: false, resolved: false };
+    category.value = "";
+    difficulty.setValue("");
     setMode(modes.CREATE);
     dialog.showModal();
     title.focus();
@@ -145,6 +159,13 @@ export function initCalendarTaskDialog(taskService, startPomodoro) {
       ? "Esta tarea tiene un solo bloque. Agrega otro antes de eliminarlo, o elimina la tarea completa."
       : "";
     blockHint.hidden = blocks.length !== 1;
+    selectedFields = {
+      hadCategory: Boolean(task.category),
+      hadDifficulty: Boolean(blocks[blockIndex].difficulty),
+      resolved: Boolean(blocks[blockIndex].outcome),
+    };
+    category.value = task.category ?? "";
+    difficulty.setValue(blocks[blockIndex].difficulty);
     setMode(initialMode);
     dialog.showModal();
   }
@@ -166,6 +187,9 @@ export function initCalendarTaskDialog(taskService, startPomodoro) {
     const suggestedEnd = new Date(suggestedStart.getTime() + 60 * 60 * 1000);
     start.value = dateToLocalInputValue(suggestedStart);
     end.value = dateToLocalInputValue(suggestedEnd);
+    selectedFields = { hadCategory: Boolean(task.category), hadDifficulty: false, resolved: false };
+    category.value = task.category ?? "";
+    difficulty.setValue("");
     setMode(modes.ADD_BLOCK);
   }
 
@@ -228,18 +252,20 @@ export function initCalendarTaskDialog(taskService, startPomodoro) {
     if (mode === modes.VIEW) return;
 
     runInDialog(async () => {
+      const blockFields = difficulty.value() ? { difficulty: difficulty.value() } : {};
       if (mode === modes.CREATE) {
-        await taskService.add(readTaskInput(FIELDS));
+        await taskService.add({ ...readTaskInput(FIELDS), category: category.value, difficulty: difficulty.value() });
       } else if (mode === modes.EDIT && selected) {
         const changes = readTaskInput(FIELDS);
         await taskService.updateBlock(selected.taskId, selected.blockIndex, {
           ...changes,
           title: changes.title.trim(),
           description: changes.description.trim() || null,
-        });
+          ...(category.value ? { category: category.value } : {}),
+        }, selectedFields.resolved ? {} : blockFields);
       } else if (mode === modes.ADD_BLOCK && selected) {
         const { start: blockStart, end: blockEnd } = readTaskInput({ start: FIELDS.start, end: FIELDS.end });
-        await taskService.addBlock(selected.taskId, blockStart, blockEnd);
+        await taskService.addBlock(selected.taskId, blockStart, blockEnd, blockFields);
       }
       dialog.close();
       form.reset();
