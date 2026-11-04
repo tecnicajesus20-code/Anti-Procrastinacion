@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="src/styles/base.css" />
   <link rel="stylesheet" href="src/styles/layout.css" />
   <link rel="stylesheet" href="src/styles/landing.css" />
-  <link rel="stylesheet" href="src/styles/components.css" />
+  <link rel="stylesheet" href="src/styles/components.css?v=20261104" />
 </head>
 <body>
   <!-- Decoración de fondo -->
@@ -69,7 +69,7 @@
 
     <!-- ================= CUENTA ================= -->
     <section class="view wrap" id="view-auth" hidden>
-      <button class="link" type="button" data-go="inicio">← Volver al inicio</button>
+      <button class="btn btn--sm back-btn" type="button" data-go="inicio">← Volver al inicio</button>
       <div class="card auth-box">
         <h2 class="auth-title">Tu cuenta</h2>
         <p class="muted">Inicia sesión para guardar tus tareas en la nube.</p>
@@ -85,7 +85,7 @@
           <div class="auth-actions">
             <button class="btn btn--primary btn--big" id="auth-login" type="submit">Iniciar sesión</button>
             <button class="btn" id="auth-register" type="submit">Crear cuenta</button>
-            <button class="link" id="auth-reset" type="button">Recuperar contraseña</button>
+            <button class="btn btn--soft" id="auth-reset" type="button">🔑 Recuperar contraseña</button>
           </div>
         </form>
         <p class="note" id="auth-note"></p>
@@ -101,54 +101,77 @@
         <button class="nav-tab" type="button" data-go="calendario">Calendario</button>
         <button class="nav-tab" type="button" data-go="pomodoro">Pomodoro</button>
       </nav>
+      <!-- Campana de recordatorios: se abre al pasar el cursor o al pulsar. Mismos botones e ids de siempre. -->
+      <div class="bell" id="bell">
+        <button class="bell__toggle" id="bell-toggle" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="bell-menu" aria-label="Recordatorios" title="Recordatorios">🔔<span class="bell__badge" id="bell-badge" hidden></span></button>
+        <div class="bell__menu" id="bell-menu" role="group" aria-label="Recordatorios">
+          <p class="bell__title">Recordatorios</p>
+          <button class="bell__item" id="notifications-enable" type="button">Activar notificaciones</button>
+          <button class="bell__item" id="alarm-enable" type="button">Activar alarma sonora</button>
+          <button class="bell__item bell__item--danger" id="alarm-stop" type="button" hidden>Silenciar alarma</button>
+          <!-- Bloques terminados sin respuesta a "¿Terminaste la tarea?" (block-end.ui.js) -->
+          <div class="bell__pending" id="bell-pending" hidden>
+            <p class="bell__title">Pendientes de confirmar</p>
+            <ul class="bell__pending-list" id="bell-pending-list"></ul>
+          </div>
+        </div>
+      </div>
       <span class="user" id="user-label">Modo demo (sin sesión)</span>
       <button class="btn btn--sm guest-only" type="button" data-go="inicio">Salir del demo</button>
       <button class="btn btn--sm" id="auth-logout" type="button" hidden>Cerrar sesión</button>
     </header>
 
     <div class="demo-banner guest-only">
-      Estás en modo demo: los cambios no se guardan.
+      Estás en modo demo: los cambios se guardan solo en este dispositivo y navegador.
       <button class="link" type="button" data-go="cuenta">Iniciar sesión o crear una cuenta</button>
     </div>
 
-    <section class="card">
-      <h2 class="card-title">Recordatorios</h2>
-      <div class="btn-row">
-        <button class="btn" id="notifications-enable" type="button">Activar notificaciones</button>
-        <button class="btn" id="alarm-enable" type="button">Activar alarma sonora</button>
-        <button class="btn btn--danger" id="alarm-stop" type="button" hidden>Silenciar alarma</button>
-      </div>
-    </section>
-
     <!-- Tareas -->
     <div id="panel-tasks">
-      <div class="tasks-layout">
-        <section class="card">
-          <h2 class="card-title">Nueva tarea</h2>
-          <form class="form" id="task-form">
-            <label class="field">Título
-              <input class="input" id="task-title" type="text" maxlength="120" required />
+      <div class="page-head tasks-head">
+        <h2 class="page-title">Mis tareas</h2>
+        <button class="btn btn--primary" id="task-new-open" type="button">+ Nueva tarea</button>
+      </div>
+      <ul class="task-list" id="task-list"></ul>
+
+      <!-- "Nueva tarea": el mismo formulario (mismos ids), ahora dentro de una ventana emergente -->
+      <dialog class="event-dialog task-dialog" id="task-dialog" aria-labelledby="task-dialog-title">
+        <div class="event-dialog__header">
+          <h2 class="event-dialog__title" id="task-dialog-title">Nueva tarea</h2>
+          <button class="icon-button" id="task-dialog-close" type="button" aria-label="Cerrar">×</button>
+        </div>
+        <form class="form" id="task-form">
+          <label class="field">Título
+            <input class="input" id="task-title" type="text" maxlength="120" required />
+          </label>
+          <label class="field">Descripción (opcional)
+            <input class="input" id="task-description" type="text" />
+          </label>
+          <div class="category-field">
+            <label class="field">Categoría
+              <select class="input" id="task-category" required></select>
             </label>
-            <label class="field">Descripción (opcional)
-              <input class="input" id="task-description" type="text" />
-            </label>
+            <button class="link category-field__manage" type="button" data-category-manage>Gestionar categorías</button>
+          </div>
+          <div class="event-time-fields">
             <label class="field">Inicio
               <input class="input" id="task-start" type="datetime-local" required />
             </label>
             <label class="field">Fin
               <input class="input" id="task-end" type="datetime-local" required />
             </label>
-            <label class="field">Fecha límite (opcional)
-              <input class="input" id="task-due" type="datetime-local" />
-            </label>
-            <button class="btn btn--primary btn--block" type="submit">Agregar tarea</button>
-          </form>
-        </section>
-            <section class="card">
-          <h2 class="card-title">Mis tareas</h2>
-          <ul class="task-list" id="task-list"></ul>
-        </section>
-      </div>
+          </div>
+          <label class="field">Dificultad del bloque
+            <select class="input" id="task-difficulty" required></select>
+          </label>
+          <p class="note difficulty-hint" id="task-difficulty-hint"></p>
+          <label class="field">Fecha límite (opcional)
+            <input class="input" id="task-due" type="datetime-local" />
+          </label>
+          <p class="message message--error task-dialog__error" id="task-dialog-error" role="alert" hidden></p>
+          <button class="btn btn--primary btn--block" type="submit">Agregar tarea</button>
+        </form>
+      </dialog>
     </div>
 
     <!-- Calendario -->
@@ -156,7 +179,11 @@
       <section class="card">
         <h2 class="card-title">Calendario</h2>
         <div class="calendar" id="calendar"></div>
-        <p class="calendar-hint">Arrastra sobre un espacio libre para crear una tarea. También puedes mover las tareas existentes.</p>
+        <div class="calendar-legend" aria-label="Leyenda de sesiones Pomodoro">
+          <span class="calendar-legend__item"><span class="calendar-legend__swatch calendar-legend__swatch--focus"></span>Enfoque · 25 min</span>
+          <span class="calendar-legend__item"><span class="calendar-legend__swatch calendar-legend__swatch--break"></span>Descanso · 5 min</span>
+          <p class="calendar-hint">La franja gris al pie de cada enfoque marca el descanso de 5 min. Haz clic en un bloque verde para iniciarlo; para cambiar horarios, edita el bloque desde Tareas.</p>
+        </div>
       </section>
     </div>
 
@@ -173,14 +200,22 @@
             <p class="pomodoro-time" id="pomodoro-time">25:00</p>
           </div>
           <p class="pomodoro-task" id="pomodoro-task">Sin tarea seleccionada</p>
+          <p class="pomodoro-cycle" id="pomodoro-cycle">Sin ciclo programado</p>
+          <progress class="pomodoro-progress" id="pomodoro-progress" max="1" value="0" aria-label="Progreso del ciclo"></progress>
+          <p class="pomodoro-session-status" id="pomodoro-session-status" role="status"></p>
           <div class="btn-row">
             <button class="btn btn--primary" id="pomodoro-start" type="button">Iniciar</button>
             <button class="btn" id="pomodoro-pause" type="button">Pausar</button>
             <button class="btn" id="pomodoro-reset" type="button">Reiniciar</button>
           </div>
+          <div class="btn-row">
+            <button class="btn btn--primary" id="pomodoro-confirm" type="button" hidden>Confirmar sesión completada</button>
+            <button class="btn btn--danger" id="pomodoro-fail" type="button" hidden>Registrar incumplimiento</button>
+          </div>
         </section>
       </div>
     </div>
+
     </section>
   </main>
 
@@ -201,10 +236,21 @@
           <input class="input" id="event-end" type="datetime-local" required />
         </label>
       </div>
+      <label class="field">Dificultad del bloque
+        <select class="input" id="event-difficulty"></select>
+      </label>
+      <p class="note difficulty-hint" id="event-difficulty-hint"></p>
       <label class="field">Descripción <span class="optional-label">(opcional)</span>
         <textarea class="input event-description-input" id="event-description" rows="2"></textarea>
       </label>
+      <div class="category-field">
+        <label class="field">Categoría
+          <select class="input" id="event-category"></select>
+        </label>
+        <button class="link category-field__manage" type="button" data-category-manage>Gestionar categorías</button>
+      </div>
       <p class="note event-dialog__block-hint" id="event-dialog-block-hint" hidden></p>
+      <p class="message message--error task-dialog__error" id="event-dialog-error" role="alert" hidden></p>
       <div class="event-dialog__actions">
         <button class="btn" id="event-dialog-cancel" type="button">Cancelar</button>
         <button class="btn" id="event-dialog-edit" type="button" hidden>Editar tarea</button>
@@ -215,6 +261,54 @@
         <button class="btn btn--primary" id="event-dialog-save" type="submit">Guardar</button>
       </div>
     </form>
+  </dialog>
+
+  <!-- Detalle de tarea: se abre al hacer clic en una tarjeta de "Mis tareas" (task-detail-dialog.ui.js) -->
+  <dialog class="task-detail" id="task-detail-dialog" aria-labelledby="task-detail-title">
+    <div class="task-detail__body">
+      <div class="task-detail__header">
+        <div class="task-detail__heading">
+          <h2 class="task-detail__title" id="task-detail-title"></h2>
+          <p class="task-detail__description" id="task-detail-description"></p>
+        </div>
+        <button class="icon-button" id="task-detail-close" type="button" aria-label="Cerrar">×</button>
+      </div>
+      <div class="task-detail__meta">
+        <span class="task-detail__chip"><span aria-hidden="true">🗓️</span> <span id="task-detail-when"></span></span>
+        <span class="task-detail__chip"><span aria-hidden="true">⚑</span> <span id="task-detail-due"></span></span>
+        <span class="task-detail__chip task-detail__chip--category" id="task-detail-category" hidden></span>
+        <span class="task-detail__chip task-detail__chip--points" id="task-detail-points" hidden></span>
+      </div>
+      <div class="task-detail__section-head">
+        <h3 class="task-detail__section-title">Bloques de trabajo</h3>
+        <div class="task-detail__controls">
+          <label class="task-detail__duration">Duración
+            <select class="input task-detail__select" id="task-detail-duration"></select>
+            min
+          </label>
+          <button class="task-detail__reorganize" id="task-detail-reorganize" type="button">Reorganizar</button>
+        </div>
+      </div>
+      <ol class="work-timeline" id="task-detail-blocks"></ol>
+      <p class="task-detail__note" id="task-detail-note"></p>
+      <p class="message message--error task-dialog__error task-detail__error" id="task-detail-error" role="alert" hidden></p>
+      <div class="task-detail__actions" id="task-detail-actions"></div>
+    </div>
+  </dialog>
+
+  <!-- Aviso tras "Recuperar contraseña": se abre como ventana flotante (auth.ui.js) -->
+  <dialog class="alarm-dialog reset-dialog" id="reset-dialog" aria-labelledby="reset-dialog-title">
+    <div class="alarm-dialog__content">
+      <div class="reset-dialog__icon" aria-hidden="true">✉️</div>
+      <p class="alarm-dialog__eyebrow">Recuperar contraseña</p>
+      <h2 class="alarm-dialog__title" id="reset-dialog-title">Revisa tu correo</h2>
+      <p class="reset-dialog__text">Te enviamos un enlace para restablecer la contraseña a <b id="reset-dialog-email"></b>.</p>
+      <p class="reset-dialog__hint">Si no lo ves en unos minutos, revisa la carpeta de spam o correo no deseado.</p>
+      <div class="alarm-dialog__actions">
+        <a class="btn btn--primary" id="reset-dialog-mail" href="https://mail.google.com/" target="_blank" rel="noopener noreferrer">Abrir Gmail</a>
+        <button class="btn" id="reset-dialog-close" type="button">Cerrar</button>
+      </div>
+    </div>
   </dialog>
 
   <dialog class="alarm-dialog" id="alarm-dialog" aria-labelledby="alarm-dialog-title">
@@ -230,9 +324,64 @@
     </div>
   </dialog>
 
+  <!-- Inicio de bloque: tarea concreta (block-intent.ui.js) -->
+  <dialog class="alarm-dialog block-intent-dialog" id="block-intent-dialog" aria-labelledby="block-intent-title">
+    <form class="alarm-dialog__content" id="block-intent-form">
+      <p class="alarm-dialog__eyebrow">Inicio de bloque</p>
+      <h2 class="alarm-dialog__title" id="block-intent-title">Define una tarea concreta para realizar en este bloque de tiempo</h2>
+      <p class="alarm-dialog__task" id="block-intent-task"></p>
+      <p class="alarm-dialog__time" id="block-intent-time"></p>
+      <textarea class="input block-intent__input" id="block-intent-text" rows="3" maxlength="200" required placeholder="Ej.: resolver los ejercicios 1 a 5 del taller"></textarea>
+      <div class="alarm-dialog__actions">
+        <button class="btn" id="block-intent-cancel" type="button">Cancelar</button>
+        <button class="btn btn--primary" id="block-intent-submit" type="submit">Comenzar bloque</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Fin de bloque: "¿Terminaste la tarea?" (block-end.ui.js). Sin respuesta en 3 min pasa a la campanita -->
+  <dialog class="alarm-dialog block-end-dialog" id="block-end-dialog" aria-labelledby="block-end-title">
+    <div class="alarm-dialog__content">
+      <p class="alarm-dialog__eyebrow">Fin del bloque</p>
+      <h2 class="alarm-dialog__title" id="block-end-title">¿Terminaste la tarea?</h2>
+      <p class="alarm-dialog__task" id="block-end-task"></p>
+      <p class="alarm-dialog__time" id="block-end-intent"></p>
+      <p class="note" id="block-end-countdown"></p>
+      <p class="message message--error task-dialog__error" id="block-end-error" role="alert" hidden></p>
+      <div class="alarm-dialog__actions">
+        <button class="btn btn--danger" id="block-end-no" type="button">No la terminé</button>
+        <button class="btn btn--primary" id="block-end-yes" type="button" autofocus>Sí, la terminé</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Gestión de categorías (category.ui.js) -->
+  <dialog class="event-dialog category-dialog" id="category-dialog" aria-labelledby="category-dialog-title">
+    <div class="event-dialog__header">
+      <h2 class="event-dialog__title" id="category-dialog-title">Categorías</h2>
+      <button class="icon-button" id="category-dialog-close" type="button" aria-label="Cerrar">×</button>
+    </div>
+    <p class="note">Las 5 categorías base no se pueden eliminar. Si eliminas una propia, sus tareas pasan a Ocio.</p>
+    <ul class="category-list" id="category-list"></ul>
+    <form class="form category-form" id="category-form">
+      <div class="category-form__row">
+        <label class="field">Nueva categoría
+          <input class="input" id="category-name" type="text" maxlength="40" required />
+        </label>
+        <label class="field category-form__color">Color
+          <input class="input" id="category-color" type="color" value="#7c8db5" />
+        </label>
+      </div>
+      <p class="message message--error task-dialog__error" id="category-dialog-error" role="alert" hidden></p>
+      <button class="btn btn--primary" type="submit">Crear categoría</button>
+    </form>
+  </dialog>
+
   <!-- FullCalendar 6.1.15 (paquete completo con vistas e interacción). Define window.FullCalendar -->
 
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+  <!-- Idioma español de FullCalendar (nombres de meses y días). Si no carga, calendar.view.js ya trae los textos de los botones. -->
+  <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.15/locales/es.global.min.js"></script>
   <script type="module" src="src/main.js"></script>
 </body>
 </html>

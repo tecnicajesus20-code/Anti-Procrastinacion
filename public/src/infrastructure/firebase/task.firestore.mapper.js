@@ -1,37 +1,24 @@
-export class TaskFirestoreMapper {
-  static toDomain(id, data) {
-    return {
-      id: id,
-      title: data.title || '',
-      description: data.description || null,
-      status: data.status || 'pending',
-      dueDate: data.dueDate || null,
-      start: data.start, // Obligatorio según tu dominio
-      end: data.end      // Obligatorio según tu dominio
-    };
-  }
-
-  static toFirestore(task) {
-    return {
-      title: task.title,
-      description: task.description || null,
-      status: task.status || 'pending',
-      dueDate: task.dueDate || null,
-      start: task.start,
-      end: task.end,
-      userId: task.userId,
-      createdAt: task.createdAt || new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-  }
-}
 import { cloneTask } from "../../domain/task.js";
 
 /**
- * Conversión entre documentos de Firestore y el modelo Task.
- * El esquema es 1:1 (mismos nombres y tipos; fechas como texto ISO 8601).
- * El id NO se guarda como campo: es el id del documento (las reglas rechazan un campo "id").
+ * Convierte entre documentos Firestore y el modelo Task sin perder bloques ni trazabilidad Pomodoro.
+ * El id del documento no se guarda dentro del documento.
  */
+export class TaskFirestoreMapper {
+  static toDomain(id, data) {
+    const { createdAt: _createdAt, updatedAt: _updatedAt, userId: _userId, ...taskData } = data;
+    return cloneTask({ id, ...taskData });
+  }
+
+  static toFirestore(task) {
+    const { id: _ignored, ...data } = cloneTask(task);
+    return {
+      ...data,
+      createdAt: task.createdAt || new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+  }
+}
 
 /** @returns {import("../../domain/task.js").Task} */
 export const taskFromDocument = (id, data) => cloneTask({ id, ...data });

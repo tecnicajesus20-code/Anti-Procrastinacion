@@ -194,3 +194,19 @@ test("pomodoro: ciclo completo con reloj inyectado", () => {
   assert.deepEqual(states.at(-1), { mode: "work", remaining: 1490, running: false });
   p.reset(); assert.deepEqual(states.at(-1), { mode: "work", remaining: 1500, running: false });
 });
+
+test("pomodoro vinculado espera confirmación antes de iniciar el descanso", () => {
+  const clock = fakeClock();
+  const pomodoro = createPomodoroService({ workSeconds: 2, breakSeconds: 1, clock });
+  const states = [];
+  pomodoro.onTick((state) => states.push(state));
+
+  pomodoro.startWorkSession();
+  clock.tick(2);
+  assert.deepEqual(states.at(-1), { mode: "work", remaining: 0, running: false, awaitingConfirmation: true });
+  pomodoro.start();
+  assert.equal(clock.count(), 0, "no reanuda una sesión que espera confirmación");
+  pomodoro.startBreak();
+  clock.tick();
+  assert.deepEqual(states.at(-1), { mode: "work", remaining: 2, running: false });
+});

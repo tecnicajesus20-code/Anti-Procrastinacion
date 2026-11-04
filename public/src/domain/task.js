@@ -14,9 +14,35 @@
  * @property {string|null} dueDate       Fecha límite opcional (ISO 8601)
  * @property {string} start              Inicio del bloque (ISO 8601), obligatorio
  * @property {string} end                Fin del bloque (ISO 8601), obligatorio y posterior a start
+ * @property {string} [userId]         Propietario autenticado en Firestore
  * @property {{start: string, end: string}[]} [blocks] Bloques horarios de la tarea
+ * @property {PomodoroSession[]} [pomodoroSessions] Historial de sesiones de enfoque verificadas
+ * @property {"not_applicable"|"pending"|"fulfilled"|"unfulfilled"} [pomodoroStatus]
+ * @property {number} [pomodoroCompletionRate] Porcentaje de sesiones de enfoque completadas
+ * @property {string} [category]         Id de la categoría (ver domain/category.js). Opcional: las tareas antiguas no la tienen
+ *
+ * Campos OPCIONALES de cada bloque (además de start/end), ver domain/difficulty.js y domain/block-outcome.js:
+ *   difficulty   "facil" | "moderada" | "intermedia" | "desafio" | "hardcore"
+ *   focusIntent  Tarea concreta definida al iniciar el bloque
+ *   outcome      { status, points, resolvedAt, source } — resultado registrado una sola vez
  *
  * @typedef {Omit<Task, "id">} TaskData  Tarea sin id (antes de guardarla)
+ * @typedef {Object} PomodoroSession
+ * @property {string} id
+ * @property {string} taskId
+ * @property {string|null} ownerUid
+ * @property {number} blockIndex
+ * @property {number} sessionIndex
+ * @property {string} scheduleKey
+ * @property {string} scheduledStart
+ * @property {string} scheduledEnd
+ * @property {number} plannedDurationSeconds
+ * @property {number} actualDurationSeconds
+ * @property {string} startedAt
+ * @property {string|null} endedAt
+ * @property {string|null} runningSince
+ * @property {"pending"|"completed"|"unfulfilled"} status
+ * @property {string|null} failureReason
  */
 
 export const TASK_STATUS = Object.freeze({
@@ -60,6 +86,37 @@ export function validateTask(data) {
     }
   }
   if (data.dueDate && Number.isNaN(Date.parse(data.dueDate))) errors.push("La fecha límite no es válida.");
+  if (data.pomodoroStatus !== undefined && !["not_applicable", "pending", "fulfilled", "unfulfilled"].includes(data.pomodoroStatus)) {
+    errors.push("El estado de cumplimiento Pomodoro no es válido.");
+  }
+  if (data.pomodoroCompletionRate !== undefined && (!Number.isInteger(data.pomodoroCompletionRate) || data.pomodoroCompletionRate < 0 || data.pomodoroCompletionRate > 100)) {
+    errors.push("El porcentaje de cumplimiento Pomodoro debe estar entre 0 y 100.");
+  }
+  if (data.pomodoroSessions !== undefined && (
+    !Array.isArray(data.pomodoroSessions)
+    || data.pomodoroSessions.some((session) => (
+      !session
+      || typeof session.id !== "string"
+      || typeof session.taskId !== "string"
+      || (data.id && session.taskId !== data.id)
+      || !Number.isInteger(session.blockIndex)
+      || !Number.isInteger(session.sessionIndex)
+      || typeof session.scheduleKey !== "string"
+      || Number.isNaN(Date.parse(session.scheduledStart))
+      || Number.isNaN(Date.parse(session.scheduledEnd))
+      || Date.parse(session.scheduledEnd) <= Date.parse(session.scheduledStart)
+      || !Number.isFinite(session.plannedDurationSeconds)
+      || session.plannedDurationSeconds <= 0
+      || !Number.isFinite(session.actualDurationSeconds)
+      || session.actualDurationSeconds < 0
+      || Number.isNaN(Date.parse(session.startedAt))
+      || (session.endedAt !== null && Number.isNaN(Date.parse(session.endedAt)))
+      || (session.runningSince !== null && Number.isNaN(Date.parse(session.runningSince)))
+      || !["pending", "completed", "unfulfilled"].includes(session.status)
+      || (session.failureReason !== null && typeof session.failureReason !== "string")
+    ))
+  )) errors.push("El historial de sesiones Pomodoro no es válido.");
+  // Los campos nuevos (categoría y campos por bloque) se validan en domain/task-extensions.js.
   return errors;
 }
 
@@ -75,7 +132,8 @@ export function getTaskBlocks(task) {
 export function cloneTask(task) {
   return {
     ...task,
-    ...(Array.isArray(task.blocks) ? { blocks: task.blocks.map((block) => ({ ...block })) } : {}),
+    ...(Array.isArray(task.blocks) ? { blocks: task.blocks.map((block) => ({ ...block, ...(block?.outcome ? { outcome: { ...block.outcome } } : {}) })) } : {}),
+    ...(Array.isArray(task.pomodoroSessions) ? { pomodoroSessions: task.pomodoroSessions.map((session) => ({ ...session })) } : {}),
   };
 }
 
@@ -93,7 +151,9 @@ export function buildTaskData(input) {
     dueDate: input.dueDate || null,
     start: input.start,
     end: input.end,
-    blocks: [{ start: input.start, end: input.end }],
+    blocks: [{ start: input.start, end: input.end, ...(input.difficulty ? { difficulty: input.difficulty } : {}) }],
+    // Solo se añade si viene: así las tareas creadas sin categoría conservan exactamente el formato anterior.
+    ...(input.category ? { category: input.category } : {}),
   };
 }
 

@@ -1,6 +1,6 @@
 # MUVENAPP — Sistema Antiprocrastinación
 
-Aplicación web para planificar tareas en bloques de tiempo, verlas en un calendario y trabajar con un temporizador Pomodoro. Las tareas se guardan en memoria (modo demo) o en Cloud Firestore por usuario (con sesión).
+Aplicación web para planificar tareas en bloques de tiempo, verlas en un calendario y trabajar con un temporizador Pomodoro. Las tareas se guardan localmente en modo demo o en Cloud Firestore por usuario (con sesión).
 
 **La app no usa npm ni build**: son archivos estáticos en `public/`. npm solo se usa para las pruebas.
 
@@ -16,7 +16,7 @@ firebase serve --only hosting                   # usa firebase.json
 ```
 Con VS Code: Live Server sobre `public/index.html`.
 
-Sin configurar Firebase la app funciona en **modo demo** (tres tareas de ejemplo, datos en memoria que se pierden al recargar) y el formulario de cuenta queda desactivado con un aviso.
+Sin configurar Firebase la app funciona en **modo demo** (tres tareas de ejemplo; las tareas y sesiones se guardan en el almacenamiento local de ese navegador y dispositivo) y el formulario de cuenta queda desactivado con un aviso.
 
 > Usa `localhost` o `https://`. Por IP local con `http://` (p. ej. `http://192.168.x.x`) la creación de tareas en modo demo falla porque `crypto.randomUUID` exige un contexto seguro.
 
@@ -57,7 +57,7 @@ public/                          Lo que se publica
   src/config/                    Configuración de Firebase (plantilla; la real no está en Git)
   src/domain/                    Modelo y reglas (tareas, Pomodoro). Sin dependencias
   src/application/               Casos de uso, contrato de repositorio, sesión, temporizador
-  src/infrastructure/            Firebase (auth, Firestore) y repositorio en memoria
+  src/infrastructure/            Firebase (auth, Firestore) y repositorio de demo local
   src/presentation/              Formularios, lista, calendario, Pomodoro, cuenta y navegación entre pantallas
   src/shared/                    Fechas, DOM y mensajes
   src/styles/                    CSS: base (tokens, modo oscuro), layout, landing (solo la pantalla de inicio) y components

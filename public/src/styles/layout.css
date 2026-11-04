@@ -62,6 +62,15 @@
   min-width: 0;
 }
 
+/* ---------- Encabezado de Tareas: título a la izquierda, botón "+ Nueva tarea" a la derecha ---------- */
+.tasks-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0.4rem 0 1.1rem;
+}
+
 /* ---------- Pantalla Pomodoro: una sola tarjeta centrada ---------- */
 .pomodoro-wrap {
   max-width: 520px;
