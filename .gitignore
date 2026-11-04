@@ -11,6 +11,7 @@ firebase-debug.*.log*
 .firebase/
 
 # Firebase config
+public/src/config/firebase.config.js
 # agents 
 /.agents
 

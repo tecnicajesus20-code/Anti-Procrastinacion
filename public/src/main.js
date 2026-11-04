@@ -26,12 +26,13 @@ import { createMemoryTaskRepository } from "./infrastructure/memory/task.memory.
 import { buildSeedTasks } from "./infrastructure/memory/demo-tasks.js";
 
 import { initTaskForm } from "./presentation/tasks/task-form.ui.js";
+import { initTaskDialog } from "./presentation/tasks/task-dialog.ui.js";
 import { initCalendarTaskDialog } from "./presentation/tasks/calendar-task-dialog.ui.js";
 import { initTaskList } from "./presentation/tasks/task-list.view.js";
 import { createCalendarView } from "./presentation/calendar/calendar.view.js";
 import { initPomodoroUi } from "./presentation/pomodoro/pomodoro.ui.js";
 import { initAuthUi } from "./presentation/auth/auth.ui.js";
-import { initNavigation } from "./presentation/shell/navigation.ui.js";
+import { initNavigation, initBellMenu } from "./presentation/shell/navigation.ui.js";
 import { initTaskReminderUi } from "./presentation/tasks/task-reminder.ui.js";
 
 const auth = createFirebaseAuth();
@@ -77,7 +78,9 @@ async function startApp() {
       onError: (error) => showMessage(`No se pudo guardar la sesión Pomodoro: ${error.message}`, "error"),
     });
 
+    initBellMenu(); // campana de recordatorios (solo presentación)
     initTaskForm(taskService);
+    initTaskDialog(); // ventana "+ Nueva tarea" (solo presentación)
     const startPomodoroForTask = initPomodoroUi(pomodoro, pomodoroSessions, navigation);
     const calendarDialog = initCalendarTaskDialog(taskService, startPomodoroForTask);
     initTaskList(

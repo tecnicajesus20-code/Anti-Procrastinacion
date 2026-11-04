@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="src/styles/base.css" />
   <link rel="stylesheet" href="src/styles/layout.css" />
   <link rel="stylesheet" href="src/styles/landing.css" />
-  <link rel="stylesheet" href="src/styles/components.css" />
+  <link rel="stylesheet" href="src/styles/components.css?v=20261103" />
 </head>
 <body>
   <!-- Decoración de fondo -->
@@ -69,7 +69,7 @@
 
     <!-- ================= CUENTA ================= -->
     <section class="view wrap" id="view-auth" hidden>
-      <button class="link" type="button" data-go="inicio">← Volver al inicio</button>
+      <button class="btn btn--sm back-btn" type="button" data-go="inicio">← Volver al inicio</button>
       <div class="card auth-box">
         <h2 class="auth-title">Tu cuenta</h2>
         <p class="muted">Inicia sesión para guardar tus tareas en la nube.</p>
@@ -85,7 +85,7 @@
           <div class="auth-actions">
             <button class="btn btn--primary btn--big" id="auth-login" type="submit">Iniciar sesión</button>
             <button class="btn" id="auth-register" type="submit">Crear cuenta</button>
-            <button class="link" id="auth-reset" type="button">Recuperar contraseña</button>
+            <button class="btn btn--soft" id="auth-reset" type="button">🔑 Recuperar contraseña</button>
           </div>
         </form>
         <p class="note" id="auth-note"></p>
@@ -101,6 +101,16 @@
         <button class="nav-tab" type="button" data-go="calendario">Calendario</button>
         <button class="nav-tab" type="button" data-go="pomodoro">Pomodoro</button>
       </nav>
+      <!-- Campana de recordatorios: se abre al pasar el cursor o al pulsar. Mismos botones e ids de siempre. -->
+      <div class="bell" id="bell">
+        <button class="bell__toggle" id="bell-toggle" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="bell-menu" aria-label="Recordatorios" title="Recordatorios">🔔</button>
+        <div class="bell__menu" id="bell-menu" role="group" aria-label="Recordatorios">
+          <p class="bell__title">Recordatorios</p>
+          <button class="bell__item" id="notifications-enable" type="button">Activar notificaciones</button>
+          <button class="bell__item" id="alarm-enable" type="button">Activar alarma sonora</button>
+          <button class="bell__item bell__item--danger" id="alarm-stop" type="button" hidden>Silenciar alarma</button>
+        </div>
+      </div>
       <span class="user" id="user-label">Modo demo (sin sesión)</span>
       <button class="btn btn--sm guest-only" type="button" data-go="inicio">Salir del demo</button>
       <button class="btn btn--sm" id="auth-logout" type="button" hidden>Cerrar sesión</button>
@@ -111,45 +121,42 @@
       <button class="link" type="button" data-go="cuenta">Iniciar sesión o crear una cuenta</button>
     </div>
 
-    <section class="card">
-      <h2 class="card-title">Recordatorios</h2>
-      <div class="btn-row">
-        <button class="btn" id="notifications-enable" type="button">Activar notificaciones</button>
-        <button class="btn" id="alarm-enable" type="button">Activar alarma sonora</button>
-        <button class="btn btn--danger" id="alarm-stop" type="button" hidden>Silenciar alarma</button>
-      </div>
-    </section>
-
     <!-- Tareas -->
     <div id="panel-tasks">
-      <div class="tasks-layout">
-        <section class="card">
-          <h2 class="card-title">Nueva tarea</h2>
-          <form class="form" id="task-form">
-            <label class="field">Título
-              <input class="input" id="task-title" type="text" maxlength="120" required />
-            </label>
-            <label class="field">Descripción (opcional)
-              <input class="input" id="task-description" type="text" />
-            </label>
+      <div class="page-head tasks-head">
+        <h2 class="page-title">Mis tareas</h2>
+        <button class="btn btn--primary" id="task-new-open" type="button">+ Nueva tarea</button>
+      </div>
+      <ul class="task-list" id="task-list"></ul>
+
+      <!-- "Nueva tarea": el mismo formulario (mismos ids), ahora dentro de una ventana emergente -->
+      <dialog class="event-dialog task-dialog" id="task-dialog" aria-labelledby="task-dialog-title">
+        <div class="event-dialog__header">
+          <h2 class="event-dialog__title" id="task-dialog-title">Nueva tarea</h2>
+          <button class="icon-button" id="task-dialog-close" type="button" aria-label="Cerrar">×</button>
+        </div>
+        <form class="form" id="task-form">
+          <label class="field">Título
+            <input class="input" id="task-title" type="text" maxlength="120" required />
+          </label>
+          <label class="field">Descripción (opcional)
+            <input class="input" id="task-description" type="text" />
+          </label>
+          <div class="event-time-fields">
             <label class="field">Inicio
               <input class="input" id="task-start" type="datetime-local" required />
             </label>
             <label class="field">Fin
               <input class="input" id="task-end" type="datetime-local" required />
             </label>
-            <label class="field">Fecha límite (opcional)
-              <input class="input" id="task-due" type="datetime-local" />
-            </label>
-            <button class="btn btn--primary btn--block" type="submit">Agregar tarea</button>
-          </form>
-        </section>
-
-            <section class="card">
-          <h2 class="card-title">Mis tareas</h2>
-          <ul class="task-list" id="task-list"></ul>
-        </section>
-      </div>
+          </div>
+          <label class="field">Fecha límite (opcional)
+            <input class="input" id="task-due" type="datetime-local" />
+          </label>
+          <p class="message message--error task-dialog__error" id="task-dialog-error" role="alert" hidden></p>
+          <button class="btn btn--primary btn--block" type="submit">Agregar tarea</button>
+        </form>
+      </dialog>
     </div>
 
     <!-- Calendario -->
@@ -193,6 +200,7 @@
         </section>
       </div>
     </div>
+
     </section>
   </main>
 
@@ -217,6 +225,7 @@
         <textarea class="input event-description-input" id="event-description" rows="2"></textarea>
       </label>
       <p class="note event-dialog__block-hint" id="event-dialog-block-hint" hidden></p>
+      <p class="message message--error task-dialog__error" id="event-dialog-error" role="alert" hidden></p>
       <div class="event-dialog__actions">
         <button class="btn" id="event-dialog-cancel" type="button">Cancelar</button>
         <button class="btn" id="event-dialog-edit" type="button" hidden>Editar tarea</button>
@@ -227,6 +236,52 @@
         <button class="btn btn--primary" id="event-dialog-save" type="submit">Guardar</button>
       </div>
     </form>
+  </dialog>
+
+  <!-- Detalle de tarea: se abre al hacer clic en una tarjeta de "Mis tareas" (task-detail-dialog.ui.js) -->
+  <dialog class="task-detail" id="task-detail-dialog" aria-labelledby="task-detail-title">
+    <div class="task-detail__body">
+      <div class="task-detail__header">
+        <div class="task-detail__heading">
+          <h2 class="task-detail__title" id="task-detail-title"></h2>
+          <p class="task-detail__description" id="task-detail-description"></p>
+        </div>
+        <button class="icon-button" id="task-detail-close" type="button" aria-label="Cerrar">×</button>
+      </div>
+      <div class="task-detail__meta">
+        <span class="task-detail__chip"><span aria-hidden="true">🗓️</span> <span id="task-detail-when"></span></span>
+        <span class="task-detail__chip"><span aria-hidden="true">⚑</span> <span id="task-detail-due"></span></span>
+      </div>
+      <div class="task-detail__section-head">
+        <h3 class="task-detail__section-title">Bloques de trabajo</h3>
+        <div class="task-detail__controls">
+          <label class="task-detail__duration">Duración
+            <select class="input task-detail__select" id="task-detail-duration"></select>
+            min
+          </label>
+          <button class="task-detail__reorganize" id="task-detail-reorganize" type="button">Reorganizar</button>
+        </div>
+      </div>
+      <ol class="work-timeline" id="task-detail-blocks"></ol>
+      <p class="task-detail__note" id="task-detail-note"></p>
+      <p class="message message--error task-dialog__error task-detail__error" id="task-detail-error" role="alert" hidden></p>
+      <div class="task-detail__actions" id="task-detail-actions"></div>
+    </div>
+  </dialog>
+
+  <!-- Aviso tras "Recuperar contraseña": se abre como ventana flotante (auth.ui.js) -->
+  <dialog class="alarm-dialog reset-dialog" id="reset-dialog" aria-labelledby="reset-dialog-title">
+    <div class="alarm-dialog__content">
+      <div class="reset-dialog__icon" aria-hidden="true">✉️</div>
+      <p class="alarm-dialog__eyebrow">Recuperar contraseña</p>
+      <h2 class="alarm-dialog__title" id="reset-dialog-title">Revisa tu correo</h2>
+      <p class="reset-dialog__text">Te enviamos un enlace para restablecer la contraseña a <b id="reset-dialog-email"></b>.</p>
+      <p class="reset-dialog__hint">Si no lo ves en unos minutos, revisa la carpeta de spam o correo no deseado.</p>
+      <div class="alarm-dialog__actions">
+        <a class="btn btn--primary" id="reset-dialog-mail" href="https://mail.google.com/" target="_blank" rel="noopener noreferrer">Abrir Gmail</a>
+        <button class="btn" id="reset-dialog-close" type="button">Cerrar</button>
+      </div>
+    </div>
   </dialog>
 
   <dialog class="alarm-dialog" id="alarm-dialog" aria-labelledby="alarm-dialog-title">
@@ -245,6 +300,8 @@
   <!-- FullCalendar 6.1.15 (paquete completo con vistas e interacción). Define window.FullCalendar -->
 
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+  <!-- Idioma español de FullCalendar (nombres de meses y días). Si no carga, calendar.view.js ya trae los textos de los botones. -->
+  <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.15/locales/es.global.min.js"></script>
   <script type="module" src="src/main.js"></script>
 </body>
 </html>

@@ -42,6 +42,16 @@ export function formatShortDateTime(iso) {
   return new Date(iso).toLocaleString("es", { dateStyle: "short", timeStyle: "short" });
 }
 
+/** ISO 8601 → hora local de 24 h (ej. "07:30"). @param {string} iso */
+export function formatClock(iso) {
+  return new Date(iso).toLocaleTimeString("es", { hour: "2-digit", minute: "2-digit", hour12: false });
+}
+
+/** ISO 8601 → día corto local en español (ej. "mar, 3 nov"). @param {string} iso */
+export function formatDayShort(iso) {
+  return new Date(iso).toLocaleDateString("es", { weekday: "short", day: "numeric", month: "short" });
+}
+
 /**
  * Segundos → "mm:ss".
  * @param {number} totalSeconds
