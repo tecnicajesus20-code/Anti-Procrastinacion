@@ -43,6 +43,7 @@ import { initTaskReminderUi } from "./presentation/tasks/task-reminder.ui.js";
 import { createProfileService } from "./application/profile.service.js";
 import { createFirestoreProfileRepository } from "./infrastructure/firebase/profile.firestore.repository.js";
 import { initProfileUi } from "./presentation/profile/profile.ui.js";
+import { initProgressUi } from "./presentation/profile/progress.ui.js";
 import { initCategoryUi } from "./presentation/tasks/category.ui.js";
 import { initBlockIntentDialog } from "./presentation/tasks/block-intent.ui.js";
 import { initBlockEndUi } from "./presentation/tasks/block-end.ui.js";
@@ -94,7 +95,8 @@ async function startApp() {
     const taskService = createTaskService(createDemoRepository());
     const calendar = createCalendarView();
     // El calendario se monta con su pestaña oculta; al mostrarla recalcula su tamaño.
-    const navigation = initNavigation({ onPanelShown: { calendar: calendar.refresh } });
+    const onPanelShown = { calendar: calendar.refresh }; // "profile" se añade al crear el progreso
+    const navigation = initNavigation({ onPanelShown });
     const pomodoro = createPomodoroService();
     const pomodoroSessions = createPomodoroSessionService({
       taskService,
@@ -181,10 +183,17 @@ async function startApp() {
     }
 
     taskService.subscribe(calendar.render);
-  const profileService = createProfileService();
-   const authUi = initAuthUi(auth, profileService);
-   const profileUi = initProfileUi(profileService);
-   profileService.subscribe(authUi.setProfile);
+    const profileService = createProfileService();
+    const authUi = initAuthUi(auth, profileService);
+    const profileUi = initProfileUi(profileService);
+    profileService.subscribe(authUi.setProfile);
+    // Perfil · Score, historial y estadísticas: se calculan de las MISMAS tareas del usuario (aisladas por UID).
+    const progressUi = initProgressUi({
+      taskService,
+      getCategories: categoryService.getAll,
+      subscribeCategories: categoryService.subscribe,
+    });
+    onPanelShown.profile = progressUi.refresh; // al abrir Perfil se recalcula con la hora actual
 
     await taskService.load();
     await categoryService.load().catch((error) => showMessage(`No se pudieron cargar las categorías: ${error.message}`, "error"));

@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="src/styles/base.css" />
   <link rel="stylesheet" href="src/styles/layout.css" />
   <link rel="stylesheet" href="src/styles/landing.css" />
-  <link rel="stylesheet" href="src/styles/components.css?v=20261104" />
+  <link rel="stylesheet" href="src/styles/components.css?v=20261104p" />
 </head>
 <body>
   <!-- Decoración de fondo -->
@@ -110,6 +110,7 @@
         <button class="nav-tab" type="button" data-go="tareas">Tareas</button>
         <button class="nav-tab" type="button" data-go="calendario">Calendario</button>
         <button class="nav-tab" type="button" data-go="pomodoro">Pomodoro</button>
+        <button class="nav-tab user-only" type="button" data-go="perfil">Perfil</button>
       </nav>
       <!-- Campana de recordatorios: se abre al pasar el cursor o al pulsar. Mismos botones e ids de siempre. -->
       <div class="bell" id="bell">
@@ -259,17 +260,81 @@
       </div>
     </div>
     <!-- Perfil -->
-     <div id="panel-profile" hidden>
-     <section class="card profile-head">
-       <img class="avatar avatar--lg" id="profile-avatar" alt="Foto de perfil" hidden />
-       <div>
-         <h2 class="card-title" id="profile-name">Sin nombre</h2>
-         <p class="muted" id="profile-email"></p>
-         <p class="muted" id="profile-since"></p>
-       </div>
-     </section>
-     <div id="profile-content"></div>
-   </div>
+    <!-- Perfil: datos personales + Score + historial + estadísticas (profile.ui.js / progress.ui.js) -->
+    <div id="panel-profile" hidden>
+      <div class="profile-grid">
+        <!-- 1 · Información personal -->
+        <section class="card profile-head">
+          <div class="profile-avatar">
+            <img class="avatar avatar--lg" id="profile-avatar" alt="Foto de perfil" hidden />
+            <span class="profile-avatar__initial" id="profile-initial" aria-hidden="true">?</span>
+          </div>
+          <div class="profile-head__info">
+            <h2 class="profile-head__name" id="profile-name">Sin nombre</h2>
+            <p class="muted" id="profile-email"></p>
+            <p class="muted profile-head__since" id="profile-since"></p>
+          </div>
+          <button class="btn btn--sm" id="profile-edit" type="button">Editar perfil</button>
+        </section>
+
+        <!-- 2 · Score y puntos -->
+        <section class="card score-card" aria-labelledby="score-title">
+          <p class="section-kicker" id="score-title">Tu Score</p>
+          <p class="score-card__value" id="score-value">0</p>
+          <div class="score-card__split">
+            <div class="score-pill score-pill--up">
+              <span class="score-pill__label">Impulsos</span>
+              <strong id="score-impulses">+0</strong>
+              <span class="score-pill__sub" id="score-impulses-count"></span>
+            </div>
+            <div class="score-pill score-pill--down">
+              <span class="score-pill__label">Desvíos</span>
+              <strong id="score-deviations">−0</strong>
+              <span class="score-pill__sub" id="score-deviations-count"></span>
+            </div>
+          </div>
+          <p class="score-card__rule">Cumplir un bloque suma su valor completo; no cumplirlo resta solo el 20 %.</p>
+        </section>
+
+        <!-- 3 · Historial de movimientos -->
+        <section class="card profile-section profile-section--history" aria-labelledby="history-title">
+          <h3 class="section-title" id="history-title">Historial de movimientos</h3>
+          <ul class="movements" id="history-list"></ul>
+          <button class="btn btn--sm movements__more" id="history-more" type="button" hidden>Ver más</button>
+        </section>
+
+        <!-- 4 · Distribución del tiempo -->
+        <section class="card profile-section" aria-labelledby="distribution-title">
+          <h3 class="section-title" id="distribution-title">Distribución del tiempo</h3>
+          <p class="section-sub">Tiempo de los bloques completados, por categoría.</p>
+          <div class="distribution" id="distribution"></div>
+        </section>
+
+        <!-- 5 · Productividad -->
+        <section class="card profile-section profile-section--wide" aria-labelledby="productivity-title">
+          <h3 class="section-title" id="productivity-title">Productividad</h3>
+          <div class="stat-tiles" id="productivity-tiles"></div>
+          <div class="productivity-split">
+            <div>
+              <h4 class="subsection-title">Horarios más productivos</h4>
+              <p class="section-sub" id="hours-summary"></p>
+              <div class="chart" id="hours-chart"></div>
+            </div>
+            <div>
+              <h4 class="subsection-title">Tiempo libre esta semana</h4>
+              <div id="free-time"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 6 · Evolución semanal -->
+        <section class="card profile-section profile-section--wide" aria-labelledby="evolution-title">
+          <h3 class="section-title" id="evolution-title">Evolución semanal</h3>
+          <p class="section-sub">Últimas 8 semanas. Cada gráfico tiene su propia escala.</p>
+          <div class="evolution" id="evolution"></div>
+        </section>
+      </div>
+    </div>
 
     </section>
   </main>
@@ -349,6 +414,37 @@
       <p class="message message--error task-dialog__error task-detail__error" id="task-detail-error" role="alert" hidden></p>
       <div class="task-detail__actions" id="task-detail-actions"></div>
     </div>
+  </dialog>
+
+  <!-- Editar perfil (profile.ui.js). El correo NO se edita aquí: pertenece a la cuenta de Firebase Auth. -->
+  <dialog class="event-dialog profile-dialog" id="profile-dialog" aria-labelledby="profile-dialog-title">
+    <form class="form" id="profile-form">
+      <div class="event-dialog__header">
+        <h2 class="event-dialog__title" id="profile-dialog-title">Editar perfil</h2>
+        <button class="icon-button" id="profile-dialog-close" type="button" aria-label="Cerrar">×</button>
+      </div>
+      <div class="profile-dialog__photo">
+        <img class="avatar avatar--lg" id="profile-form-preview" alt="Vista previa de la foto" hidden />
+        <span class="profile-avatar__initial" id="profile-form-initial" aria-hidden="true">?</span>
+        <div class="profile-dialog__photo-actions">
+          <label class="btn btn--sm" for="profile-form-photo">Cambiar foto</label>
+          <input class="sr-only" id="profile-form-photo" type="file" accept="image/*" />
+          <button class="btn btn--sm btn--danger" id="profile-form-remove-photo" type="button">Quitar foto</button>
+        </div>
+      </div>
+      <label class="field">Nombre
+        <input class="input" id="profile-form-name" type="text" maxlength="50" autocomplete="name" required />
+      </label>
+      <label class="field">Correo
+        <input class="input" id="profile-form-email" type="email" disabled />
+      </label>
+      <p class="note">El correo es el de tu cuenta y no se cambia desde el perfil.</p>
+      <p class="message message--error task-dialog__error" id="profile-form-error" role="alert" hidden></p>
+      <div class="event-dialog__actions">
+        <button class="btn" id="profile-form-cancel" type="button">Cancelar</button>
+        <button class="btn btn--primary" id="profile-form-save" type="submit">Guardar</button>
+      </div>
+    </form>
   </dialog>
 
   <!-- Aviso tras "Recuperar contraseña": se abre como ventana flotante (auth.ui.js) -->
