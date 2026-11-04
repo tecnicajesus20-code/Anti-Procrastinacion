@@ -26,6 +26,16 @@
   --info-ink: #0B4A6F;
   --shadow: 0 8px 24px -8px rgba(15, 38, 58, 0.12);
 
+  /* Alias de compatibilidad: components.css los usaba sin definirlos (botón Pomodoro, ventana de alarma, textos) */
+  --text-main: var(--ink);
+  --text-muted: var(--muted);
+  --text-light: #DCE7E1;
+  --forest-dark: var(--forest);
+  --forest-hover: #0D5A45;
+  --glass-bg-strong: var(--solid);
+  --glass-border: var(--line);
+  --blue-main: var(--ocean);
+
   --radius-card: 16px;
   --radius-input: 10px;
   --radius-pill: 999px;

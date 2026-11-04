@@ -34,6 +34,8 @@ import { cloneTask } from "../../domain/task.js";
  * El id NO se guarda como campo: es el id del documento (las reglas rechazan un campo "id").
  */
 
+import { cloneTask } from "../../domain/task.js";
+
 /** @returns {import("../../domain/task.js").Task} */
 export const taskFromDocument = (id, data) => cloneTask({ id, ...data });
 

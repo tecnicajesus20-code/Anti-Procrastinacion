@@ -36,11 +36,21 @@ export function createCalendarView() {
 
     calendar = new Calendar(element, {
       initialView: window.innerWidth < 600 ? "timeGridDay" : "timeGridWeek", // móvil: un día
-      // ⚠️ REVISIÓN PENDIENTE (ver README_PROVISIONAL_DISENO.md, D-01): "timeGridDays" no es una vista
-      // de FullCalendar; el botón aparece pero no lleva a ninguna vista válida. Además, en móvil no hay
-      // botón para volver a la vista de un día. Sugerencia: right: "timeGridWeek,timeGridDay".
-      headerToolbar: { left: "prev,next today", center: "title", right: "timeGridWeek,timeGridDays" },
+      // Botones de vista: Mes · Semana · Día (D-01 resuelto: antes había una vista inexistente "timeGridDays").
+      headerToolbar: { left: "prev,next today", center: "title", right: "dayGridMonth,timeGridWeek,timeGridDay" },
       locale: "es",
+      // Textos en español aunque el archivo de idioma de FullCalendar no llegue a cargarse.
+      buttonText: { today: "Hoy", month: "Mes", week: "Semana", day: "Día", list: "Agenda" },
+      buttonHints: { prev: "Anterior", next: "Siguiente", today: "Hoy", month: "Vista de mes", week: "Vista de semana", day: "Vista de día" },
+      viewHint: "Vista de $0",
+      navLinkHint: "Ir al $0",
+      allDayText: "Todo el día",
+      moreLinkText: "más",
+      noEventsText: "No hay tareas para mostrar",
+      weekText: "Sm",
+      navLinks: true, // en la vista de mes, clic en el número del día → abre ese día
+      dayMaxEvents: true, // en la vista de mes, si hay muchas tareas se agrupan en "+N más"
+      eventTimeFormat: { hour: "2-digit", minute: "2-digit", hour12: false },
       // ⚠️ REVISIÓN PENDIENTE (D-02): 2 = martes. Las tareas demo y el resto de la app asumen semanas
       // que empiezan en lunes. Si el martes no es intencionado, la sugerencia es firstDay: 1.
       firstDay: 2,
@@ -56,7 +66,16 @@ export function createCalendarView() {
       selectMirror: true,
       // La animación al revertir un cambio fallido es la de FullCalendar (dragRevertDuration, 500 ms por defecto).
       select: (info) => {
-        onDateSelected({ start: info.start, end: info.end });
+        if (info.allDay) {
+          // Vista de mes: se selecciona un día entero; se propone 09:00–10:00 del primer día elegido.
+          const start = new Date(info.start);
+          start.setHours(9, 0, 0, 0);
+          const end = new Date(start);
+          end.setHours(10);
+          onDateSelected({ start, end });
+        } else {
+          onDateSelected({ start: info.start, end: info.end });
+        }
         calendar.unselect();
       },
       eventClick: (info) => onEventSelected({

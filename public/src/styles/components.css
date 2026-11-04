@@ -338,47 +338,55 @@ textarea.input {
    LISTA DE TAREAS
    ========================================= */
 .task-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 1.1rem;
+  align-items: start;
   list-style: none;
 }
 
 /* Estado vacío: solo CSS, aparece cuando la lista no tiene elementos */
 .task-list:empty::before {
-  content: "Aún no tienes tareas. Crea la primera con el formulario.";
+  content: "Aún no tienes tareas. Pulsa «+ Nueva tarea» para crear la primera.";
+  grid-column: 1 / -1;
   padding: 2rem 1rem;
   text-align: center;
   color: var(--muted);
 }
 
+/* Tarjeta de tarea: blanca, esquinas redondeadas, sombra suave y franja lateral del color de la tarea */
 .task-item {
+  --accent: var(--task-color, var(--teal));
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
-  padding: 0.85rem 1rem;
-  background: var(--field);
-  border: 1px solid var(--bdr);
-  border-left: 5px solid var(--teal);
-  border-radius: 12px;
-  transition: transform 0.2s, box-shadow 0.2s;
-  background: var(--glass-bg-soft);
-  border: 1.5px solid rgba(197, 215, 205, 0.7);
-  border-left: 4px solid var(--task-color, var(--blue-main));
-  border-radius: var(--radius-input);
-  box-shadow: 0 3px 10px -3px rgba(10, 70, 53, 0.10),
-              inset 0 1px 1px rgba(255, 255, 255, 0.95);
-  transition: box-shadow 0.2s var(--ease), background 0.2s var(--ease);
+  gap: 0.35rem;
+  padding: 1.3rem 1.4rem 1.2rem;
+  background: var(--solid);
+  border: 1px solid var(--line);
+  border-left: 5px solid var(--accent);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease);
+}
+
+@supports (color: color-mix(in srgb, red, blue)) {
+  .task-item {
+    --accent: color-mix(in srgb, var(--task-color, var(--teal)) 80%, white);
+  }
 }
 
 .task-item:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow);
+  transform: translateY(-3px);
+}
+
+.task-item--open {
+  box-shadow: 0 14px 30px -10px rgba(15, 38, 58, 0.22);
 }
 
 .task-item--done {
-  opacity: 0.65;
-  border-left-color: var(--bdr);
+  opacity: 0.7;
+  --accent: var(--bdr);
 }
 
 .task-item--done .task-title {
@@ -387,7 +395,63 @@ textarea.input {
 }
 
 .task-title {
+  font-size: 1.3rem;
   font-weight: 700;
+  line-height: 1.2;
+}
+
+.task-description {
+  font-size: 0.95rem;
+  color: var(--muted);
+}
+
+.task-progress {
+  height: 10px;
+  margin: 0.7rem 0 0.3rem;
+  overflow: hidden;
+  background: var(--field);
+  border-radius: var(--radius-pill);
+}
+
+.task-progress__fill {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  border-radius: var(--radius-pill);
+  transition: width 0.6s var(--ease);
+}
+
+.task-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+}
+
+.task-count {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.task-chip {
+  padding: 0.25rem 0.8rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: var(--field);
+  border: 1px solid var(--bdr);
+  border-radius: var(--radius-pill);
+}
+
+/* Detalle plegable (bloques y acciones): se muestra al tocar la tarjeta */
+.task-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  margin-top: 0.7rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--line);
+  cursor: default;
+  animation: enter 0.3s var(--ease);
 }
 
 .task-time {
@@ -510,6 +574,10 @@ textarea.input {
 
 .event-dialog__actions [hidden] {
   display: none;
+}
+
+.task-dialog__error {
+  margin: 0;
 }
 
 .alarm-dialog {
@@ -853,4 +921,523 @@ textarea.input {
   .pomodoro-time {
     font-size: 3rem;
   }
+}
+
+/* =========================================
+   CAMPANA DE RECORDATORIOS (barra superior)
+   ========================================= */
+.top {
+  position: relative;
+  z-index: 10; /* el menú queda por encima de las tarjetas */
+}
+
+.bell {
+  position: relative;
+}
+
+.bell__toggle {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  font-size: 1.15rem;
+  line-height: 1;
+  background: var(--field);
+  border: 1px solid var(--bdr);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: transform 0.15s, background 0.15s, border-color 0.15s;
+}
+
+.bell__toggle:hover,
+.bell--open .bell__toggle {
+  background: var(--solid);
+  border-color: var(--teal);
+}
+
+.bell__menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 20;
+  display: none;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 240px;
+  margin-top: 0.4rem;
+  padding: 0.6rem;
+  background: var(--solid);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: 0 16px 36px -10px rgba(15, 38, 58, 0.28);
+}
+
+/* Puente invisible para que el menú no se cierre al bajar el cursor desde la campana */
+.bell__menu::before {
+  content: "";
+  position: absolute;
+  inset: -0.5rem 0 auto 0;
+  height: 0.5rem;
+}
+
+.bell--open .bell__menu {
+  display: flex;
+  animation: enter 0.2s var(--ease);
+}
+
+@media (hover: hover) {
+  .bell:hover .bell__menu {
+    display: flex;
+  }
+}
+
+.bell__title {
+  padding: 0.2rem 0.6rem 0.4rem;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.bell__item {
+  padding: 0.6rem 0.7rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-align: left;
+  background: none;
+  border: 0;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.bell__item:hover:not(:disabled) {
+  background: var(--field);
+}
+
+.bell__item:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.bell__item--danger {
+  color: var(--danger-text);
+}
+
+/* =========================================
+   INICIO Y FIN: cada fecha en su propia caja, separadas y sin desbordar
+   ========================================= */
+.event-time-fields {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--field);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+
+.event-time-fields .field {
+  min-width: 0;
+  gap: 0.4rem;
+}
+
+.event-time-fields .input {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  min-height: 2.9rem;
+  background: var(--solid);
+}
+
+.event-form .input {
+  min-width: 0;
+}
+
+.event-dialog {
+  overflow-x: hidden;
+}
+
+/* =========================================
+   DETALLE DE TAREA (overlay al hacer clic en una tarjeta)
+   ========================================= */
+.task-detail {
+  --accent: var(--task-color, var(--teal));
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  width: min(560px, calc(100% - 2rem));
+  height: fit-content;
+  max-height: calc(100dvh - 2rem);
+  padding: 0;
+  overflow: hidden;
+  color: var(--ink);
+  background: var(--solid);
+  border: 0;
+  border-top: 5px solid var(--accent);
+  border-radius: 20px;
+  box-shadow: 0 30px 70px -10px rgba(0, 0, 0, 0.45);
+}
+
+.task-detail[open] {
+  display: flex;
+  flex-direction: column;
+  animation: pop 0.35s cubic-bezier(0.3, 1.4, 0.5, 1);
+}
+
+.task-detail::backdrop {
+  background: rgba(6, 25, 30, 0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.task-detail__body {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  max-height: calc(100dvh - 2rem);
+  padding: 1.5rem 1.5rem 1.25rem;
+}
+
+.task-detail__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.task-detail__heading {
+  min-width: 0;
+}
+
+.task-detail__title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.task-detail--done .task-detail__title {
+  text-decoration: line-through;
+  color: var(--muted);
+}
+
+.task-detail__description {
+  margin-top: 0.25rem;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.task-detail__description--empty {
+  font-style: italic;
+  opacity: 0.8;
+}
+
+.task-detail__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.task-detail__chip {
+  padding: 0.3rem 0.8rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: var(--field);
+  border: 1px solid var(--bdr);
+  border-radius: var(--radius-pill);
+}
+
+.task-detail__section-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+}
+
+.task-detail__section-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.task-detail__controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.task-detail__duration {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.task-detail__select {
+  width: auto;
+  padding: 0.3rem 0.5rem;
+  font-size: 0.85rem;
+}
+
+.task-detail__reorganize {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--ink);
+  background: var(--field);
+  border: 1px solid var(--bdr);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+
+.task-detail__reorganize:hover {
+  border-color: var(--accent);
+}
+
+/* Lista cronológica de bloques: número en círculo unido por una línea vertical */
+.work-timeline {
+  flex: 1 1 auto;
+  min-height: 0;
+  margin: 0.75rem -0.5rem 0;
+  padding: 0 0.5rem;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.work-block {
+  position: relative;
+  display: grid;
+  grid-template-columns: 2.25rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.65rem 0;
+}
+
+.work-block + .work-block::before,
+.work-group + .work-block::before {
+  content: "";
+  position: absolute;
+  top: -0.65rem;
+  bottom: calc(50% + 1.125rem);
+  left: calc(1.125rem - 1px);
+  width: 2px;
+  background: var(--line);
+}
+
+.work-group + .work-block::before {
+  display: none;
+}
+
+.work-block__number {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  background: var(--solid);
+  border: 2px solid var(--bdr);
+  border-radius: 50%;
+}
+
+.work-block__info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.work-block__time {
+  font-weight: 700;
+}
+
+.work-block__sub {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.work-block__focus {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  white-space: nowrap;
+  color: var(--ink);
+  background: none;
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.work-block__focus:hover,
+.work-block__focus:focus-visible {
+  background: var(--field);
+  border-color: var(--accent);
+}
+
+.work-block--past .work-block__number {
+  color: #FFFFFF;
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.work-block--past .work-block__time {
+  color: var(--muted);
+}
+
+.work-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.3rem 0.75rem;
+  margin-top: 0.6rem;
+  padding: 0.45rem 0.7rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--muted);
+  background: var(--field);
+  border-radius: 10px;
+}
+
+.work-group:first-child {
+  margin-top: 0;
+}
+
+.work-group__actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.work-group__btn {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--link);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.work-group__btn--danger {
+  color: var(--danger-text);
+}
+
+.work-empty {
+  padding: 1rem 0;
+  color: var(--muted);
+  text-align: center;
+}
+
+.task-detail__note {
+  margin-top: 0.5rem;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.task-detail__note:empty {
+  display: none;
+}
+
+.task-detail__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+}
+
+.task-detail__actions .btn--danger {
+  margin-right: auto;
+}
+
+/* Pista en la tarjeta: invita a abrir el detalle */
+.task-open-hint {
+  margin-left: auto;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--muted);
+  transition: color 0.15s;
+}
+
+.task-item:hover .task-open-hint,
+.task-item:focus-visible .task-open-hint {
+  color: var(--ink);
+}
+
+@media (max-width: 480px) {
+  .task-detail__body {
+    padding: 1.2rem 1rem 1rem;
+  }
+
+  .work-block {
+    gap: 0.6rem;
+  }
+
+  .task-detail__actions .btn {
+    flex: 1 1 auto;
+  }
+}
+
+.task-detail__error {
+  margin-top: 0.75rem;
+}
+
+/* =========================================
+   CUENTA: botones "Volver al inicio" y "Recuperar contraseña"
+   ========================================= */
+.back-btn {
+  margin-bottom: 0.25rem;
+}
+
+.btn--soft {
+  color: var(--link);
+  background: transparent;
+  border-color: var(--bdr);
+}
+
+.btn--soft:hover {
+  border-color: var(--link);
+}
+
+a.btn {
+  color: inherit;
+  text-decoration: none;
+}
+
+a.btn--primary {
+  color: var(--on-teal);
+}
+
+/* Ventana flotante "Revisa tu correo" */
+.reset-dialog__icon {
+  display: grid;
+  place-items: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  font-size: 1.6rem;
+  background: var(--info-bg);
+  border-radius: 50%;
+}
+
+.reset-dialog__text {
+  overflow-wrap: anywhere;
+}
+
+.reset-dialog__hint {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* Calendario: botones Mes · Semana · Día con la primera letra en mayúscula */
+.calendar .fc-button {
+  text-transform: capitalize;
 }
