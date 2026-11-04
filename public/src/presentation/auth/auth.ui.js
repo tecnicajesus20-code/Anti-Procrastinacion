@@ -1,6 +1,10 @@
 /** PRESENTACIÓN DE AUTENTICACIÓN: formulario de cuenta y etiqueta de usuario. No conoce Firebase. */
 import { byId } from "../../shared/dom.js";
-import { runAction } from "../../shared/feedback.js";
+import { runAction, showMessage } from "../../shared/feedback.js";
+import { resizeImageToDataUrl } from "../../shared/image.js";
+import { buildProfileData, validateProfile } from "../../domain/profile.js";
+
+
 
 /** Convierte errores frecuentes de Firebase en mensajes accionables para la interfaz. */
 const authErrorText = (error) => ({
@@ -16,18 +20,63 @@ const authErrorText = (error) => ({
 }[error.code] ?? error.message ?? "No se pudo completar la autenticación.");
 
 /** @param {ReturnType<import("../../infrastructure/firebase/firebase-auth.js").createFirebaseAuth>} authService */
-export function initAuthUi(authService) {
+export function initAuthUi(authService, profileService) {
   const email = byId("auth-email");
   const password = byId("auth-password");
   const logout = byId("auth-logout");
+ const name = byId("auth-name");
+   const photoInput = byId("auth-photo");
+   const photoPreview = byId("auth-photo-preview");
+   let photo = null; // foto elegida, ya reducida
+   let currentUser = null;
+   let currentProfile = null;
 
+   function renderIdentity() {
+     const label = byId("user-label");
+     const avatar = byId("user-avatar");
+     label.textContent = currentUser ? (currentProfile?.displayName || currentUser.email) : "Modo demo (sin sesión)";
+     label.title = currentUser ? "Ver mi perfil" : "";
+     if (currentUser) label.dataset.go = "perfil";
+     else delete label.dataset.go;
+     avatar.hidden = !currentProfile?.photo;
+     if (currentProfile?.photo) avatar.src = currentProfile.photo;
+   }
+
+   photoInput.addEventListener("change", async () => {
+     photo = null;
+     photoPreview.hidden = true;
+     const [file] = photoInput.files;
+     if (!file) return;
+     try {
+       photo = await resizeImageToDataUrl(file);
+       photoPreview.src = photo;
+       photoPreview.hidden = false;
+     } catch {
+       showMessage("No se pudo leer la imagen.", "error");
+     }
+   });
   const run = (action, successText) => runAction(action, { successText, formatError: authErrorText });
 
   byId("auth-form").addEventListener("submit", (event) => {
     event.preventDefault();
     const registering = event.submitter?.id === "auth-register";
     if (registering) {
-      run(() => authService.register(email.value, password.value), "Cuenta creada.");
+       const input = { displayName: name.value, photo };
+   const [problem] = validateProfile(buildProfileData(input));
+   if (problem) {
+     byId("auth-extra").open = true;
+     showMessage(problem, "error");
+     return;
+   }
+   profileService.setPending(input);
+   run(async () => {
+     try {
+       await authService.register(email.value, password.value);
+     } catch (error) {
+       profileService.setPending(null);
+       throw error;
+     }
+   }, "Cuenta creada.");
     } else {
       run(() => authService.login(email.value, password.value), "Sesión iniciada.");
     }
@@ -62,10 +111,16 @@ export function initAuthUi(authService) {
 
   return {
     /** @param {{uid: string, email: string}|null} user */
-    setUser(user) {
-      byId("user-label").textContent = user ? user.email : "Modo demo (sin sesión)";
-      logout.hidden = !user;
-    },
+     setUser(user) {
+     currentUser = user;
+     currentProfile = null;
+     logout.hidden = !user;
+     renderIdentity();
+   },
+   setProfile(profile) {
+     currentProfile = profile;
+     renderIdentity();
+   },
     /** Desactiva el formulario y explica por qué (ej. Firebase sin configurar). */
     disable(reason) {
       byId("auth-form").querySelectorAll("input, button").forEach((control) => (control.disabled = true));

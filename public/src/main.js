@@ -40,6 +40,9 @@ import { initPomodoroUi } from "./presentation/pomodoro/pomodoro.ui.js";
 import { initAuthUi } from "./presentation/auth/auth.ui.js";
 import { initNavigation, initBellMenu } from "./presentation/shell/navigation.ui.js";
 import { initTaskReminderUi } from "./presentation/tasks/task-reminder.ui.js";
+import { createProfileService } from "./application/profile.service.js";
+import { createFirestoreProfileRepository } from "./infrastructure/firebase/profile.firestore.repository.js";
+import { initProfileUi } from "./presentation/profile/profile.ui.js";
 import { initCategoryUi } from "./presentation/tasks/category.ui.js";
 import { initBlockIntentDialog } from "./presentation/tasks/block-intent.ui.js";
 import { initBlockEndUi } from "./presentation/tasks/block-end.ui.js";
@@ -55,7 +58,8 @@ const createDemoCategoryRepository = () => createMemoryCategoryRepository([], {
 });
 
 /** Conecta la sesión con el repositorio de tareas. Si Firebase no está configurado, se queda en modo demo. */
-async function connectSession(authUi, taskService, navigation, pomodoroSessions, categoryService) {
+
+async function connectSession(authUi, taskService, navigation, pomodoroSessions, categoryService, profileService, profileUi) {
   const session = createSessionCoordinator({
     auth,
     taskService,
@@ -63,6 +67,11 @@ async function connectSession(authUi, taskService, navigation, pomodoroSessions,
     createGuestRepository: createDemoRepository,
     onUserChanged: (user) => {
       authUi.setUser(user);
+      navigation.setUser(user);
+         profileUi.setUser(user);
+       profileService
+     .useRepository(user ? createFirestoreProfileRepository(user.uid) : null)
+     .catch((error) => showMessage(`No se pudo cargar tu perfil: ${error.message}`, "error"));
       navigation.setUser(user); // solo apariencia y destino de pantalla
       pomodoroSessions.setStorageScope(user?.uid ?? "guest");
       // Categorías propias: misma sesión que las tareas (Firestore con sesión, demo sin ella).
@@ -172,12 +181,15 @@ async function startApp() {
     }
 
     taskService.subscribe(calendar.render);
-    const authUi = initAuthUi(auth);
+  const profileService = createProfileService();
+   const authUi = initAuthUi(auth, profileService);
+   const profileUi = initProfileUi(profileService);
+   profileService.subscribe(authUi.setProfile);
 
     await taskService.load();
     await categoryService.load().catch((error) => showMessage(`No se pudieron cargar las categorías: ${error.message}`, "error"));
     setLoading(false);
-    connectSession(authUi, taskService, navigation, pomodoroSessions, categoryService);
+    connectSession(authUi, taskService, navigation, pomodoroSessions, categoryService,profileService, profileUi);
   } catch (error) {
     setLoading(false);
     showMessage(error.message, "error");

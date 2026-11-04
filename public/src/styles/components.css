@@ -261,6 +261,30 @@
   border: 1px solid var(--bdr);
   border-radius: var(--radius-pill);
 }
+.user[data-go] {
+  position: relative;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+@media (hover: hover) {
+  .user[data-go]:hover {
+    color: transparent;           /* oculta el correo, pero sigue ocupando su espacio */
+    background: var(--teal);
+    border-color: var(--teal);
+  }
+  .user[data-go]:hover::after {
+    
+    content: "Ver mi perfil →";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--on-teal);
+  }
+}
 
 .demo-banner .link {
   color: var(--ocean);
@@ -1080,6 +1104,11 @@ textarea.input {
     font-size: 3rem;
   }
 }
+.avatar { width: 28px; height: 28px; border-radius: var(--radius-pill); object-fit: cover; }
+.avatar--lg { width: 72px; height: 72px; }
+.profile-head { display: flex; align-items: center; gap: 1rem; }
+.auth-extra { margin-top: 0.5rem; }
+.auth-extra summary { margin-bottom: 0.6rem; font-weight: 600; cursor: pointer; }
 
 /* =========================================
    CAMPANA DE RECORDATORIOS (barra superior)
@@ -1801,4 +1830,16 @@ a.btn--primary {
   width: 100%;
   resize: vertical;
   text-align: left;
+}
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
 }
