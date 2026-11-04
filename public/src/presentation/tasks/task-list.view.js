@@ -204,9 +204,8 @@ export function initTaskList(taskService, editBlockDialog, editTaskDialog, addBl
     }
     if (sessionList.childElementCount) pomodoroSection.append(sessionList);
 
-    item.append(title, description, progress, meta, blockList, pomodoroSection);
+    item.append(title, description, progress, meta);
     if (blockHint) item.append(blockHint);
-    item.append(actions);
     return item;
   }
 
