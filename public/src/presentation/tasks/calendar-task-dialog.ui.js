@@ -2,7 +2,7 @@
  * Diálogo para crear tareas, editar una tarea existente o añadirle otro bloque horario.
  */
 import { byId } from "../../shared/dom.js";
-import { showMessage, clearMessage } from "../../shared/feedback.js";
+import { showMessage, clearMessage, runAction } from "../../shared/feedback.js";
 import { dateToLocalInputValue } from "../../shared/date-time.js";
 import { getTaskBlocks } from "../../domain/task.js";
 import { readTaskInput } from "./task-input.js";

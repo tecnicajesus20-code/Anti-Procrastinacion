@@ -3,10 +3,16 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Bloque específico para la colección de tareas de cada usuario
+    // Tareas de cada usuario (incluye los campos del Pomodoro)
     match /users/{uid}/tasks/{taskId} {
       allow read, delete: if isOwner(uid);
       allow create, update: if isOwner(uid) && isValidTask(request.resource.data);
+    }
+
+    // Perfil del usuario (funcionalidad feature/FuncionalidadProfile)
+    match /users/{uid} {
+      allow read: if isOwner(uid);
+      allow create, update: if isOwner(uid) && isValidProfile(request.resource.data);
     }
 
     // Verifica que el usuario autenticado sea el dueño de la información
@@ -33,7 +39,15 @@ service cloud.firestore {
           || (t.pomodoroCompletionRate is int && t.pomodoroCompletionRate >= 0 && t.pomodoroCompletionRate <= 100));
     }
 
-    // NOTA: Se eliminó la regla abierta "match /{document=**}" para evitar que
-    // cualquier usuario no autenticado acceda a tus colecciones de forma pública.
+    // Valida el contrato de datos del perfil
+    function isValidProfile(p) {
+      return p.keys().hasAll(['displayName', 'createdAt'])
+        && p.keys().hasOnly(['displayName', 'photo', 'createdAt', 'updatedAt'])
+        && p.displayName is string && p.displayName.size() > 0 && p.displayName.size() <= 50
+        && p.createdAt is string
+        && (!p.keys().hasAny(['photo']) || p.photo == null || (p.photo is string && p.photo.size() <= 100000));
+    }
+
+    // NOTA: No hay regla abierta "match /{document=**}": todo lo demás queda denegado.
   }
 }
