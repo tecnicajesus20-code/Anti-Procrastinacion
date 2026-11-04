@@ -11,6 +11,8 @@ const authErrorText = (error) => ({
   "auth/operation-not-allowed": "El acceso con correo y contraseña no está habilitado en Firebase.",
   "auth/too-many-requests": "Demasiados intentos. Espera unos minutos e inténtalo de nuevo.",
   "auth/network-request-failed": "No se pudo conectar con Firebase. Comprueba tu conexión.",
+  "auth/missing-email": "Escribe tu correo arriba y vuelve a pulsar «Recuperar contraseña».",
+  "auth/user-not-found": "No hay ninguna cuenta con ese correo.",
 }[error.code] ?? error.message ?? "No se pudo completar la autenticación.");
 
 /** @param {ReturnType<import("../../infrastructure/firebase/firebase-auth.js").createFirebaseAuth>} authService */
@@ -30,7 +32,32 @@ export function initAuthUi(authService) {
       run(() => authService.login(email.value, password.value), "Sesión iniciada.");
     }
   });
-  byId("auth-reset").addEventListener("click", () => run(() => authService.resetPassword(email.value), "Revisa tu correo para restablecer la contraseña."));
+  // Recuperar contraseña: si el envío sale bien, el aviso se muestra en una ventana flotante
+  // con un botón que abre el correo (Gmail, Outlook o Yahoo según el dominio) y otro para cerrar.
+  const resetDialog = byId("reset-dialog");
+  const resetMail = byId("reset-dialog-mail");
+  const MAIL_PROVIDERS = [
+    { match: /@(gmail|googlemail)\./i, url: "https://mail.google.com/", label: "Abrir Gmail" },
+    { match: /@(outlook|hotmail|live|msn)\./i, url: "https://outlook.live.com/mail/", label: "Abrir Outlook" },
+    { match: /@(yahoo|ymail)\./i, url: "https://mail.yahoo.com/", label: "Abrir Yahoo Mail" },
+  ];
+  function openResetDialog(address) {
+    const provider = MAIL_PROVIDERS.find((candidate) => candidate.match.test(address)) ?? MAIL_PROVIDERS[0];
+    byId("reset-dialog-email").textContent = address;
+    resetMail.href = provider.url;
+    resetMail.textContent = provider.label;
+    resetDialog.showModal();
+  }
+  byId("auth-reset").addEventListener("click", () => run(async () => {
+    const address = email.value.trim();
+    await authService.resetPassword(address);
+    openResetDialog(address);
+  }));
+  byId("reset-dialog-close").addEventListener("click", () => resetDialog.close());
+  resetMail.addEventListener("click", () => resetDialog.close());
+  resetDialog.addEventListener("click", (event) => {
+    if (event.target === resetDialog) resetDialog.close(); // clic sobre el fondo oscuro
+  });
   logout.addEventListener("click", () => run(() => authService.logout(), "Sesión cerrada."));
 
   return {

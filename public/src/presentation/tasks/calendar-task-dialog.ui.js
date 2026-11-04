@@ -2,7 +2,7 @@
  * Diálogo para crear tareas, editar una tarea existente o añadirle otro bloque horario.
  */
 import { byId } from "../../shared/dom.js";
-import { runAction, showMessage } from "../../shared/feedback.js";
+import { showMessage, clearMessage } from "../../shared/feedback.js";
 import { dateToLocalInputValue } from "../../shared/date-time.js";
 import { getTaskBlocks } from "../../domain/task.js";
 import { readTaskInput } from "./task-input.js";
@@ -35,9 +35,48 @@ export function initCalendarTaskDialog(taskService, startPomodoro) {
   const deleteTaskButton = byId("event-dialog-delete-task");
   const blockHint = byId("event-dialog-block-hint");
   const saveButton = byId("event-dialog-save");
+  // Si index.html no trae la caja de error (versión anterior), se crea aquí para que la app no se rompa.
+  const errorBox = document.getElementById("event-dialog-error") ?? (() => {
+    const box = document.createElement("p");
+    box.className = "message message--error task-dialog__error";
+    box.id = "event-dialog-error";
+    box.setAttribute("role", "alert");
+    box.hidden = true;
+    form.querySelector(".event-dialog__actions").before(box);
+    return box;
+  })();
   let mode = modes.CREATE;
   let selected = null;
   let selectedBlockCount = 0;
+
+  /** Traduce errores técnicos (Firebase) a un texto que la persona entienda. */
+  function describeError(error) {
+    if (error?.code === "permission-denied") {
+      return "Firebase rechazó el cambio (permiso denegado). Publica las reglas actualizadas con: firebase deploy --only firestore:rules";
+    }
+    return error?.message || "No se pudo guardar el cambio.";
+  }
+
+  /**
+   * Ejecuta una acción del diálogo. Si falla, el error se muestra DENTRO de la ventana
+   * (antes quedaba escondido detrás del diálogo y parecía que el botón no hacía nada).
+   */
+  async function runInDialog(action) {
+    errorBox.hidden = true;
+    try {
+      await action();
+      clearMessage();
+    } catch (error) {
+      const text = describeError(error);
+      errorBox.textContent = text;
+      errorBox.hidden = false;
+      showMessage(text, "error");
+    }
+  }
+
+  dialog.addEventListener("close", () => {
+    errorBox.hidden = true;
+  });
 
   function setMode(nextMode) {
     mode = nextMode;
@@ -168,7 +207,7 @@ export function initCalendarTaskDialog(taskService, startPomodoro) {
 
   deleteBlockButton.addEventListener("click", () => {
     if (!selected || deleteBlockButton.disabled) return;
-    runAction(async () => {
+    runInDialog(async () => {
       await taskService.removeBlock(selected.taskId, selected.blockIndex);
       dialog.close();
     });
@@ -176,7 +215,7 @@ export function initCalendarTaskDialog(taskService, startPomodoro) {
 
   deleteTaskButton.addEventListener("click", () => {
     if (!selected || !window.confirm("¿Eliminar esta tarea y todos sus bloques?")) return;
-    runAction(async () => {
+    runInDialog(async () => {
       await taskService.remove(selected.taskId);
       dialog.close();
     });
@@ -186,7 +225,7 @@ export function initCalendarTaskDialog(taskService, startPomodoro) {
     event.preventDefault();
     if (mode === modes.VIEW) return;
 
-    runAction(async () => {
+    runInDialog(async () => {
       if (mode === modes.CREATE) {
         await taskService.add(readTaskInput(FIELDS));
       } else if (mode === modes.EDIT && selected) {
