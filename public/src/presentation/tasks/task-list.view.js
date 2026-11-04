@@ -87,4 +87,4 @@ export function initTaskList(taskService, editBlockDialog, editTaskDialog, addBl
   }
 
   taskService.subscribe(render);
-}
+}
