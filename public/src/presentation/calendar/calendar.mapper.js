@@ -21,7 +21,7 @@ export function taskToEvents(task) {
     classNames: [`event--${task.status}`],
     backgroundColor: color,
     borderColor: color,
-    extendedProps: { taskId: task.id, blockIndex },
+    extendedProps: { taskId: task.id, blockIndex, kind: "task" },
   }));
 }
 

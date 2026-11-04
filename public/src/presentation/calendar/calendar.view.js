@@ -18,7 +18,7 @@ import { taskToEvents, eventToBlock } from "./calendar.mapper.js";
 export function createCalendarView() {
   let calendar = null;
 
-  function mount(element, { onEventChanged, onDateSelected, onEventSelected }) {
+  function mount(element, { onEventChanged, onDateSelected, onEventSelected, onPomodoroEventSelected }) {
     const { Calendar } = window.FullCalendar ?? {};
     if (!Calendar) throw new Error("FullCalendar no se cargó. Revisa tu conexión a internet.");
 
@@ -36,11 +36,21 @@ export function createCalendarView() {
 
     calendar = new Calendar(element, {
       initialView: window.innerWidth < 600 ? "timeGridDay" : "timeGridWeek", // móvil: un día
-      // ⚠️ REVISIÓN PENDIENTE (ver README_PROVISIONAL_DISENO.md, D-01): "timeGridDays" no es una vista
-      // de FullCalendar; el botón aparece pero no lleva a ninguna vista válida. Además, en móvil no hay
-      // botón para volver a la vista de un día. Sugerencia: right: "timeGridWeek,timeGridDay".
-      headerToolbar: { left: "prev,next today", center: "title", right: "timeGridWeek,timeGridDays" },
+      // Botones de vista: Mes · Semana · Día (D-01 resuelto: antes había una vista inexistente "timeGridDays").
+      headerToolbar: { left: "prev,next today", center: "title", right: "dayGridMonth,timeGridWeek,timeGridDay" },
       locale: "es",
+      // Textos en español aunque el archivo de idioma de FullCalendar no llegue a cargarse.
+      buttonText: { today: "Hoy", month: "Mes", week: "Semana", day: "Día", list: "Agenda" },
+      buttonHints: { prev: "Anterior", next: "Siguiente", today: "Hoy", month: "Vista de mes", week: "Vista de semana", day: "Vista de día" },
+      viewHint: "Vista de $0",
+      navLinkHint: "Ir al $0",
+      allDayText: "Todo el día",
+      moreLinkText: "más",
+      noEventsText: "No hay tareas para mostrar",
+      weekText: "Sm",
+      navLinks: true, // en la vista de mes, clic en el número del día → abre ese día
+      dayMaxEvents: true, // en la vista de mes, si hay muchas tareas se agrupan en "+N más"
+      eventTimeFormat: { hour: "2-digit", minute: "2-digit", hour12: false },
       // ⚠️ REVISIÓN PENDIENTE (D-02): 2 = martes. Las tareas demo y el resto de la app asumen semanas
       // que empiezan en lunes. Si el martes no es intencionado, la sugerencia es firstDay: 1.
       firstDay: 2,
@@ -56,13 +66,76 @@ export function createCalendarView() {
       selectMirror: true,
       // La animación al revertir un cambio fallido es la de FullCalendar (dragRevertDuration, 500 ms por defecto).
       select: (info) => {
-        onDateSelected({ start: info.start, end: info.end });
+        if (info.allDay) {
+          // Vista de mes: se selecciona un día entero; se propone 09:00–10:00 del primer día elegido.
+          const start = new Date(info.start);
+          start.setHours(9, 0, 0, 0);
+          const end = new Date(start);
+          end.setHours(10);
+          onDateSelected({ start, end });
+        } else {
+          onDateSelected({ start: info.start, end: info.end });
+        }
         calendar.unselect();
       },
-      eventClick: (info) => onEventSelected({
-        taskId: info.event.extendedProps.taskId,
-        blockIndex: info.event.extendedProps.blockIndex,
-      }),
+      eventClick: (info) => {
+        const props = info.event.extendedProps;
+        if (props.kind?.startsWith("pomodoro-")) {
+          onPomodoroEventSelected?.({
+            taskId: props.taskId,
+            blockIndex: props.blockIndex,
+            kind: props.kind,
+            scheduleKey: props.scheduleKey,
+          });
+          return;
+        }
+        onEventSelected({ taskId: props.taskId, blockIndex: props.blockIndex });
+      },
+      eventContent: (info) => {
+        const { kind } = info.event.extendedProps;
+
+        const frame = document.createElement("div");
+        frame.className = "fc-event-main-frame";
+        if (kind === "pomodoro-focus") {
+          const { focusStart, focusEnd } = info.event.extendedProps;
+          const formatTime = (value) => new Intl.DateTimeFormat("es", {
+            hour: "2-digit",
+            minute: "2-digit",
+            hourCycle: "h23",
+          }).format(new Date(value));
+          const label = document.createElement("span");
+          label.className = "calendar-pomodoro-label";
+          label.textContent = `${formatTime(focusStart)}–${formatTime(focusEnd)}`;
+          frame.append(label);
+          return { domNodes: [frame] };
+        }
+
+        if (info.timeText) {
+          const time = document.createElement("div");
+          time.className = "fc-event-time";
+          time.textContent = info.timeText;
+          frame.append(time);
+        }
+        const titleContainer = document.createElement("div");
+        titleContainer.className = "fc-event-title-container";
+        const title = document.createElement("div");
+        title.className = "fc-event-title";
+        title.textContent = info.event.title;
+        titleContainer.append(title);
+        frame.append(titleContainer);
+        return { domNodes: [frame] };
+      },
+      eventDidMount: (info) => {
+        const { taskTitle, kind, focusStart, focusEnd, breakStart, breakEnd } = info.event.extendedProps;
+        if (kind?.startsWith("pomodoro-")) {
+          const focusLabel = `${new Date(focusStart).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}–${new Date(focusEnd).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} enfoque`;
+          const breakLabel = breakStart && breakEnd
+            ? ` · ${new Date(breakStart).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}–${new Date(breakEnd).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} descanso de 5 min`
+            : "";
+          info.el.title = `${focusLabel}${breakLabel} · ${taskTitle}`;
+          info.el.setAttribute("aria-label", info.el.title);
+        }
+      },
       eventDrop: saveEventChange,
       eventResize: saveEventChange,
     });

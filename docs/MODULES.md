@@ -7,7 +7,7 @@ Rutas relativas a `public/src/`. Todas las fechas de los contratos son texto ISO
 ### `domain/task.js`
 | Exportación | Contrato |
 |---|---|
-| `Task` (typedef) | `{ id, title, description: string\|null, status: "pending"\|"in_progress"\|"done", dueDate: string\|null, start, end }` |
+| `Task` (typedef) | `{ id, title, description: string\|null, status: "pending"\|"in_progress"\|"done", dueDate: string\|null, start, end, blocks?, pomodoroSessions?, pomodoroStatus?, pomodoroCompletionRate? }` |
 | `TaskData` (typedef) | `Task` sin `id` |
 | `TASK_STATUS` | `{ PENDING, IN_PROGRESS, DONE }` (congelado) |
 | `validateTask(data)` | `string[]` de errores en español; vacío si es válida. No comprueba `id` |
@@ -16,7 +16,7 @@ Rutas relativas a `public/src/`. Todas las fechas de los contratos son texto ISO
 | `isDone(task)`, `byStart(a, b)` | Predicado y comparador por inicio |
 
 ### `domain/pomodoro.js`
-`POMODORO_MODE { WORK: "work", BREAK: "break" }`, `POMODORO_DEFAULTS { workSeconds: 1500, breakSeconds: 300 }`, `nextMode(mode)`.
+`POMODORO_MODE { WORK: "work", BREAK: "break" }`, `POMODORO_DEFAULTS { workSeconds: 1500, breakSeconds: 300 }`, `POMODORO_SESSION_STATUS`, `nextMode(mode)`, `planPomodoroBlock`, `planPomodoroTask` y `summarizePomodoroTask`. Los bloques menores de 25 minutos siguen como tareas normales; el plan de los demás cubre cada minuto, intercala descansos de 5 minutos cuando caben y conserva el sobrante como enfoque parcial. El resumen calcula el umbral mínimo del 80%.
 
 ## application/
 
@@ -50,7 +50,10 @@ Dependencias: `auth.onAuthChange`, `taskService`, `createUserRepository(uid)`, `
 `start()` → `Promise<unsubscribe>`; rechaza si la autenticación no está disponible (Firebase sin configurar).
 
 ### `application/pomodoro.service.js` — `createPomodoroService({ workSeconds?, breakSeconds?, clock? })`
-`start()` (idempotente), `pause()`, `reset()`, `onTick(cb)` → cancelar. `cb({ mode, remaining, running })` se llama al suscribirse y en cada cambio. Al terminar un periodo se detiene y cambia de modo; el usuario debe pulsar Iniciar de nuevo.
+`start()` (idempotente), `startWorkSession`, `startBreak`, `awaitWorkConfirmation`, `pause()`, `reset()`, `onTick(cb)` → cancelar. `cb({ mode, remaining, running, awaitingConfirmation? })` se llama al suscribirse y en cada cambio. En sesiones ligadas a una tarea, el enfoque se detiene en cero hasta que se confirme el resultado.
+
+### `application/pomodoro-session.service.js` — `createPomodoroSessionService({ taskService, pomodoro, onError, ... })`
+Coordina planificación, inicio/reanudación, pausa, confirmación e incumplimiento. Cada cambio se guarda en `pomodoroSessions` junto con `pomodoroStatus` y `pomodoroCompletionRate`; requiere confirmación manual tras finalizar el enfoque. Reanuda el enfoque desde la marca de tiempo persistida y guarda el descanso en `localStorage`, separado por usuario, con `resumeBreak()` y `setStorageScope(scope)`.
 
 ## infrastructure/
 
@@ -58,7 +61,7 @@ Dependencias: `auth.onAuthChange`, `taskService`, `createUserRepository(uid)`, `
 |---|---|---|
 | `firebase/firebase.client.js` | `getFirebase()` → `{ auth, db, authApi, fsApi }` | Carga diferida desde CDN; caché; lanza si falta `config/firebase.config.js` |
 | `firebase/firebase-auth.js` | `createFirebaseAuth({ getFirebase? })` | `register`, `login`, `logout`, `resetPassword`, `onAuthChange`. Usuario `{ uid, email }`. Errores con `code` de Firebase |
-| `firebase/task.firestore.repository.js` | `createFirestoreTaskRepository(uid, { getFirebase? })` | `TaskRepository` sobre `users/{uid}/tasks` |
+| `firebase/task.firestore.repository.js` | `createFirestoreTaskRepository(uid, { getFirebase? })` | `TaskRepository` sobre `users/{uid}/tasks`; el repositorio asigna el UID a cada sesión |
 | `firebase/task.firestore.mapper.js` | `taskFromDocument(id, data)`, `taskToDocument(task)` | Esquema 1:1; el id no se guarda como campo |
 | `memory/task.memory.repository.js` | `createMemoryTaskRepository(initial?)` | `TaskRepository` en memoria; devuelve copias |
 | `memory/demo-tasks.js` | `buildSeedTasks(now?)` | 3 tareas en la semana de `now` (desde el lunes) |
@@ -73,7 +76,7 @@ Dependencias: `auth.onAuthChange`, `taskService`, `createUserRepository(uid)`, `
 | `tasks/task-list.view.js` | `initTaskList(taskService)` | `task-list` |
 | `calendar/calendar.view.js` | `createCalendarView()` → `{ mount(el, { onDateSelected, onEventChanged }), render(tasks), refresh() }` | (recibe el elemento) |
 | `calendar/calendar.mapper.js` | `taskToEvent(task)`, `eventToBlock(event, oldEvent)` | — |
-| `pomodoro/pomodoro.ui.js` | `initPomodoroUi(pomodoro)` | `pomodoro-time`, `pomodoro-mode`, `pomodoro-card`, `pomodoro-ring`, `pomodoro-start`, `pomodoro-pause`, `pomodoro-reset` |
+| `pomodoro/pomodoro.ui.js` | `initPomodoroUi(pomodoro, pomodoroSessions, navigation)` | `pomodoro-time`, `pomodoro-mode`, `pomodoro-card`, `pomodoro-ring`, `pomodoro-start`, `pomodoro-pause`, `pomodoro-reset`, `pomodoro-confirm`, `pomodoro-fail` |
 | `auth/auth.ui.js` | `initAuthUi(auth)` → `{ setUser(user), disable(reason) }` | `auth-form`, `auth-email`, `auth-password`, `auth-login`, `auth-register`, `auth-reset`, `auth-logout`, `auth-note`, `user-label` |
 | `shell/navigation.ui.js` | `initNavigation({ onPanelShown? })` → `{ navigate(ruta), setUser(user) }`; `ROUTES`, `resolveRoute(hash)`, `routeAfterUserChange(prev, user, ruta)` | `view-home`, `view-auth`, `view-app`, `panel-tasks`, `panel-calendar`, `panel-pomodoro` (+ botones con `data-go`) |
 

@@ -2,17 +2,18 @@
  * Diálogo para crear tareas, editar una tarea existente o añadirle otro bloque horario.
  */
 import { byId } from "../../shared/dom.js";
-import { runAction, showMessage } from "../../shared/feedback.js";
+import { showMessage, clearMessage, runAction } from "../../shared/feedback.js";
 import { dateToLocalInputValue } from "../../shared/date-time.js";
 import { getTaskBlocks } from "../../domain/task.js";
 import { readTaskInput } from "./task-input.js";
+import { initDifficultySelect } from "./difficulty-select.ui.js";
 
 const FIELDS = { title: "event-title", description: "event-description", start: "event-start", end: "event-end" };
 const modes = { CREATE: "create", VIEW: "view", EDIT: "edit", ADD_BLOCK: "add-block" };
 
 /**
  * @param {ReturnType<import("../../application/task.service.js").createTaskService>} taskService
- * @param {(taskTitle: string, block: {start: string, end: string}) => void} startPomodoro
+ * @param {(taskId: string, taskTitle: string, block: {start: string, end: string}) => Promise<void>} startPomodoro
  * @returns {{
  *   open: (slot: { start: Date, end: Date }) => void,
  *   openTask: (selection: { taskId: string, blockIndex: number }) => void,
@@ -35,9 +36,53 @@ export function initCalendarTaskDialog(taskService, startPomodoro) {
   const deleteTaskButton = byId("event-dialog-delete-task");
   const blockHint = byId("event-dialog-block-hint");
   const saveButton = byId("event-dialog-save");
+  // Categoría (de la tarea) y dificultad (del bloque). Opcionales al editar tareas antiguas.
+  const category = byId("event-category");
+  const difficultySelect = byId("event-difficulty");
+  const difficulty = initDifficultySelect({ select: "event-difficulty", start: "event-start", end: "event-end", hint: "event-difficulty-hint" });
+  let selectedFields = { hadCategory: false, hadDifficulty: false, resolved: false };
+  // Si index.html no trae la caja de error (versión anterior), se crea aquí para que la app no se rompa.
+  const errorBox = document.getElementById("event-dialog-error") ?? (() => {
+    const box = document.createElement("p");
+    box.className = "message message--error task-dialog__error";
+    box.id = "event-dialog-error";
+    box.setAttribute("role", "alert");
+    box.hidden = true;
+    form.querySelector(".event-dialog__actions").before(box);
+    return box;
+  })();
   let mode = modes.CREATE;
   let selected = null;
   let selectedBlockCount = 0;
+
+  /** Traduce errores técnicos (Firebase) a un texto que la persona entienda. */
+  function describeError(error) {
+    if (error?.code === "permission-denied") {
+      return "Firebase rechazó el cambio (permiso denegado). Publica las reglas actualizadas con: firebase deploy --only firestore:rules";
+    }
+    return error?.message || "No se pudo guardar el cambio.";
+  }
+
+  /**
+   * Ejecuta una acción del diálogo. Si falla, el error se muestra DENTRO de la ventana
+   * (antes quedaba escondido detrás del diálogo y parecía que el botón no hacía nada).
+   */
+  async function runInDialog(action) {
+    errorBox.hidden = true;
+    try {
+      await action();
+      clearMessage();
+    } catch (error) {
+      const text = describeError(error);
+      errorBox.textContent = text;
+      errorBox.hidden = false;
+      showMessage(text, "error");
+    }
+  }
+
+  dialog.addEventListener("close", () => {
+    errorBox.hidden = true;
+  });
 
   function setMode(nextMode) {
     mode = nextMode;
@@ -54,6 +99,11 @@ export function initCalendarTaskDialog(taskService, startPomodoro) {
     deleteTaskButton.hidden = mode !== modes.VIEW;
     blockHint.hidden = mode !== modes.VIEW || selectedBlockCount !== 1;
     saveButton.hidden = viewing;
+    category.disabled = viewing || addingBlock;
+    category.required = mode === modes.CREATE || (mode === modes.EDIT && selectedFields.hadCategory);
+    // Un bloque con resultado registrado conserva su dificultad (sus puntos ya se calcularon con ella).
+    difficultySelect.disabled = viewing || (mode === modes.EDIT && selectedFields.resolved);
+    difficultySelect.required = mode === modes.CREATE || addingBlock || (mode === modes.EDIT && selectedFields.hadDifficulty);
 
     byId("event-dialog-title").textContent = ({
       [modes.CREATE]: "Nueva tarea",
@@ -74,6 +124,9 @@ export function initCalendarTaskDialog(taskService, startPomodoro) {
     blockHint.hidden = true;
     start.value = dateToLocalInputValue(slotStart);
     end.value = dateToLocalInputValue(slotEnd);
+    selectedFields = { hadCategory: false, hadDifficulty: false, resolved: false };
+    category.value = "";
+    difficulty.setValue("");
     setMode(modes.CREATE);
     dialog.showModal();
     title.focus();
@@ -106,6 +159,13 @@ export function initCalendarTaskDialog(taskService, startPomodoro) {
       ? "Esta tarea tiene un solo bloque. Agrega otro antes de eliminarlo, o elimina la tarea completa."
       : "";
     blockHint.hidden = blocks.length !== 1;
+    selectedFields = {
+      hadCategory: Boolean(task.category),
+      hadDifficulty: Boolean(blocks[blockIndex].difficulty),
+      resolved: Boolean(blocks[blockIndex].outcome),
+    };
+    category.value = task.category ?? "";
+    difficulty.setValue(blocks[blockIndex].difficulty);
     setMode(initialMode);
     dialog.showModal();
   }
@@ -127,6 +187,9 @@ export function initCalendarTaskDialog(taskService, startPomodoro) {
     const suggestedEnd = new Date(suggestedStart.getTime() + 60 * 60 * 1000);
     start.value = dateToLocalInputValue(suggestedStart);
     end.value = dateToLocalInputValue(suggestedEnd);
+    selectedFields = { hadCategory: Boolean(task.category), hadDifficulty: false, resolved: false };
+    category.value = task.category ?? "";
+    difficulty.setValue("");
     setMode(modes.ADD_BLOCK);
   }
 
@@ -151,8 +214,10 @@ export function initCalendarTaskDialog(taskService, startPomodoro) {
     }
 
     const block = getTaskBlocks(task)[selected.blockIndex];
-    startPomodoro(task.title, block);
-    dialog.close();
+    runAction(async () => {
+      await startPomodoro(task.id, task.title, block);
+      dialog.close();
+    });
   });
 
   editButton.addEventListener("click", () => setMode(modes.EDIT));
@@ -168,7 +233,7 @@ export function initCalendarTaskDialog(taskService, startPomodoro) {
 
   deleteBlockButton.addEventListener("click", () => {
     if (!selected || deleteBlockButton.disabled) return;
-    runAction(async () => {
+    runInDialog(async () => {
       await taskService.removeBlock(selected.taskId, selected.blockIndex);
       dialog.close();
     });
@@ -176,7 +241,7 @@ export function initCalendarTaskDialog(taskService, startPomodoro) {
 
   deleteTaskButton.addEventListener("click", () => {
     if (!selected || !window.confirm("¿Eliminar esta tarea y todos sus bloques?")) return;
-    runAction(async () => {
+    runInDialog(async () => {
       await taskService.remove(selected.taskId);
       dialog.close();
     });
@@ -186,19 +251,21 @@ export function initCalendarTaskDialog(taskService, startPomodoro) {
     event.preventDefault();
     if (mode === modes.VIEW) return;
 
-    runAction(async () => {
+    runInDialog(async () => {
+      const blockFields = difficulty.value() ? { difficulty: difficulty.value() } : {};
       if (mode === modes.CREATE) {
-        await taskService.add(readTaskInput(FIELDS));
+        await taskService.add({ ...readTaskInput(FIELDS), category: category.value, difficulty: difficulty.value() });
       } else if (mode === modes.EDIT && selected) {
         const changes = readTaskInput(FIELDS);
         await taskService.updateBlock(selected.taskId, selected.blockIndex, {
           ...changes,
           title: changes.title.trim(),
           description: changes.description.trim() || null,
-        });
+          ...(category.value ? { category: category.value } : {}),
+        }, selectedFields.resolved ? {} : blockFields);
       } else if (mode === modes.ADD_BLOCK && selected) {
         const { start: blockStart, end: blockEnd } = readTaskInput({ start: FIELDS.start, end: FIELDS.end });
-        await taskService.addBlock(selected.taskId, blockStart, blockEnd);
+        await taskService.addBlock(selected.taskId, blockStart, blockEnd, blockFields);
       }
       dialog.close();
       form.reset();

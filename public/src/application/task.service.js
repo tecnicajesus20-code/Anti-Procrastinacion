@@ -10,8 +10,9 @@
  *   add(input)                  Crea una tarea (normaliza y valida con el dominio)
  *   update(id, changes)         Modifica campos de una tarea
  *   toggleDone(id)              Completar / reabrir
- *   moveBlock(id, start, end, blockIndex) Mueve o redimensiona un bloque horario
- *   addBlock(id, start, end)    Añade un bloque a una tarea existente
+ *   moveBlock(id, start, end, blockIndex) Mueve o redimensiona un bloque horario (conserva sus demás campos)
+ *   updateBlock(id, blockIndex, changes, blockChanges?) Edita la tarea y uno de sus bloques
+ *   addBlock(id, start, end, blockFields?) Añade un bloque a una tarea existente
  *   removeBlock(id, blockIndex) Elimina un bloque sin dejar la tarea sin horario
  *   remove(id)                  Elimina una tarea
  *   subscribe(callback)         Avisa con una copia de la lista en cada cambio; devuelve función para cancelar
@@ -20,6 +21,7 @@
  * (p. ej. se cierra sesión), su resultado NO se mezcla con el estado de la nueva sesión.
  */
 import { validateTask, buildTaskData, cloneTask, getTaskBlocks, toggledStatus } from "../domain/task.js";
+import { validateTaskExtensions } from "../domain/task-extensions.js";
 import { assertTaskRepository } from "./task-repository.js";
 
 /** @param {import("./task-repository.js").TaskRepository} initialRepository */
@@ -38,7 +40,7 @@ export function createTaskService(initialRepository) {
   }
 
   function assertValid(data) {
-    const errors = validateTask(data);
+    const errors = [...validateTask(data), ...validateTaskExtensions(data)];
     if (errors.length) throw new Error(errors.join(" "));
   }
 
@@ -104,14 +106,22 @@ export function createTaskService(initialRepository) {
 
   const toggleDone = async (id) => update(id, { status: toggledStatus(findOrThrow(id).status) });
 
-  async function updateBlock(id, blockIndex, changes) {
+  /**
+   * @param {Object} changes       Campos de la tarea + start/end del bloque
+   * @param {Object} [blockChanges] Campos propios del bloque (difficulty, focusIntent…). Opcional.
+   * Los campos que ya tenía el bloque (dificultad, resultado…) se conservan al moverlo o editarlo.
+   */
+  async function updateBlock(id, blockIndex, changes, blockChanges = {}) {
     const task = findOrThrow(id);
     const blocks = getTaskBlocks(task);
     if (!Number.isInteger(blockIndex) || blockIndex < 0 || blockIndex >= blocks.length) {
       throw new Error("El bloque horario seleccionado no existe.");
     }
+    if (blocks[blockIndex].outcome && "difficulty" in blockChanges && blockChanges.difficulty !== blocks[blockIndex].difficulty) {
+      throw new Error("No se puede cambiar la dificultad de un bloque que ya tiene resultado.");
+    }
 
-    blocks[blockIndex] = { start: changes.start, end: changes.end };
+    blocks[blockIndex] = { ...blocks[blockIndex], ...blockChanges, start: changes.start, end: changes.end };
     const updated = {
       ...changes,
       blocks,
@@ -134,10 +144,11 @@ export function createTaskService(initialRepository) {
     return updateBlock(id, blockIndex, { start, end });
   };
 
-  async function addBlock(id, start, end) {
+  /** @param {Object} [blockFields] Campos opcionales del bloque nuevo (p. ej. { difficulty }) */
+  async function addBlock(id, start, end, blockFields = {}) {
     const task = findOrThrow(id);
     const blocks = getTaskBlocks(task);
-    blocks.push({ start, end });
+    blocks.push({ ...blockFields, start, end });
     const updated = { blocks };
     assertValid({ ...task, ...updated });
     return write(

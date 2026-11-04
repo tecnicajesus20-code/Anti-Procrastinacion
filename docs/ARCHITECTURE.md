@@ -9,7 +9,7 @@ public/src/
 ├── main.js            Raíz de composición: crea todos los objetos y los conecta. Único sitio que conoce todas las capas.
 ├── domain/            QUÉ ES. Modelo, validación y reglas de estado. Sin imports.
 ├── application/       QUÉ SE PUEDE HACER. Casos de uso, contrato de persistencia, coordinación de sesión, temporizador.
-├── infrastructure/    DÓNDE Y CON QUÉ. Firebase (SDK, auth, Firestore) y almacenamiento en memoria.
+├── infrastructure/    DÓNDE Y CON QUÉ. Firebase (SDK, auth, Firestore) y almacenamiento local del modo demo.
 ├── presentation/      CÓMO SE VE. Formularios, lista, adaptador de FullCalendar, Pomodoro, cuenta y navegación entre pantallas (shell/).
 ├── shared/            Utilidades transversales: fechas, acceso al DOM, mensajes.
 ├── config/            Configuración de Firebase (la real es local y no está en Git).

@@ -15,7 +15,7 @@ Requiere Node 22 (verificado con 22.22.2).
 
 | Nivel | Archivos | Qué demuestra |
 |---|---|---|
-| Unitarias | `tests/unit/{domain,date-time,repositories,application,calendar,task-reminder}.test.js` | Reglas, conversiones, contrato de repositorios, casos de uso, calendario, avisos, carreras de sesión y Pomodoro |
+| Unitarias | `tests/unit/{domain,date-time,repositories,application,calendar,task-reminder,pomodoro-session}.test.js` | Reglas, conversiones, contrato de repositorios, casos de uso, calendario, avisos, carreras de sesión y trazabilidad Pomodoro |
 | Arquitectura | `tests/unit/{architecture,deploy-config}.test.js` | Capas permitidas, sin ciclos, Firebase/FullCalendar/DOM solo donde corresponde, sin `console.log`, ids existentes en `index.html`, `firebase.json` apunta a archivos reales y `public/` no expone reglas ni docs |
 | Regresión | `tests/regression/` | La app completa se comporta igual que `Desarrollo` |
 
@@ -93,3 +93,4 @@ Con el diseño nuevo (landing, pantallas con pestañas, estilos) `index.html` y 
 5. `firebase emulators:start --only firestore` o, en un proyecto de pruebas, `firebase deploy --only firestore:rules` para validar que las reglas se encuentran en su nueva ruta.
 6. Repetir 2–3 en un móvil (ancho < 600 px) y en escritorio.
 7. Servir la app por `localhost` o HTTPS, pulsar "Activar notificaciones" y aceptar el permiso del navegador. Si aparece "Notificaciones bloqueadas", permitirlas en la configuración del sitio y recargar. Pulsar "Activar alarma sonora" y confirmar el tono de prueba; crear un bloque que empiece en el siguiente minuto y comprobar el aviso y la alarma. La página debe permanecer abierta. Usar "Silenciar alarma" para detener el sonido. Si se cierra la página, las notificaciones requieren un backend de push y un service worker, que no forman parte de esta app.
+8. Probar bloques Pomodoro de 30, 45, 50, 60 y 90 minutos y comprobar que enfoque más descansos cubren todo el bloque. Repetir con y sin iniciar sesión: recargar durante el enfoque y durante el descanso, comprobar que el tiempo se reanuda desde la marca de tiempo; pausar el descanso, recargar y confirmar que se conserva pausado hasta reanudarlo. Confirmar el enfoque y verificar la transición al descanso y al siguiente ciclo. En modo demo, verificar que tareas e historial siguen disponibles tras recargar en el mismo navegador.

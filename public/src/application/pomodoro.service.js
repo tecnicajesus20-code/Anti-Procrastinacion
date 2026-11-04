@@ -19,10 +19,17 @@ export function createPomodoroService({
   let mode = POMODORO_MODE.WORK;
   let remaining = workSeconds;
   let timerId = null;
+  let awaitingConfirmation = false;
+  let confirmationRequired = false;
   const listeners = new Set();
 
   const durationOf = (value) => (value === POMODORO_MODE.WORK ? workSeconds : breakSeconds);
-  const state = () => ({ mode, remaining, running: timerId !== null });
+  const state = () => ({
+    mode,
+    remaining,
+    running: timerId !== null,
+    ...(awaitingConfirmation ? { awaitingConfirmation: true } : {}),
+  });
   const emit = () => listeners.forEach((callback) => callback(state()));
 
   function stop() {
@@ -33,16 +40,59 @@ export function createPomodoroService({
   function tick() {
     remaining -= 1;
     if (remaining <= 0) {
-      stop(); // al terminar un periodo, se cambia de modo y se espera a que el usuario continúe
+      stop();
+      if (mode === POMODORO_MODE.WORK && confirmationRequired) {
+        remaining = 0;
+        awaitingConfirmation = true;
+        emit();
+        return;
+      }
       mode = nextMode(mode);
       remaining = durationOf(mode);
+      awaitingConfirmation = false;
+      emit();
+      return;
     }
     emit();
   }
 
   function start() {
-    if (timerId !== null) return;
+    if (timerId !== null || awaitingConfirmation) return;
     timerId = clock.setInterval(tick, 1000);
+    emit();
+  }
+
+  function startWorkSession({ remainingSeconds = workSeconds } = {}) {
+    if (!Number.isFinite(remainingSeconds) || remainingSeconds <= 0 || remainingSeconds > workSeconds) {
+      throw new RangeError("El tiempo restante de la sesión no es válido.");
+    }
+    stop();
+    mode = POMODORO_MODE.WORK;
+    remaining = Math.ceil(remainingSeconds);
+    awaitingConfirmation = false;
+    confirmationRequired = true;
+    start();
+  }
+
+  function startBreak({ remainingSeconds = breakSeconds, running = true } = {}) {
+    if (!Number.isFinite(remainingSeconds) || remainingSeconds <= 0 || remainingSeconds > breakSeconds) {
+      throw new RangeError("El tiempo restante del descanso no es válido.");
+    }
+    stop();
+    mode = POMODORO_MODE.BREAK;
+    remaining = Math.ceil(remainingSeconds);
+    awaitingConfirmation = false;
+    confirmationRequired = false;
+    if (running) start();
+    else emit();
+  }
+
+  function awaitWorkConfirmation() {
+    stop();
+    mode = POMODORO_MODE.WORK;
+    remaining = 0;
+    awaitingConfirmation = true;
+    confirmationRequired = true;
     emit();
   }
 
@@ -55,6 +105,8 @@ export function createPomodoroService({
     stop();
     mode = POMODORO_MODE.WORK;
     remaining = workSeconds;
+    awaitingConfirmation = false;
+    confirmationRequired = false;
     emit();
   }
 
@@ -64,5 +116,5 @@ export function createPomodoroService({
     return () => listeners.delete(callback);
   }
 
-  return { start, pause, reset, onTick };
+  return { start, startWorkSession, startBreak, awaitWorkConfirmation, pause, reset, onTick };
 }

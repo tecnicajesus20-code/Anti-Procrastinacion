@@ -3,10 +3,22 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Bloque específico para la colección de tareas de cada usuario
+    // Tareas de cada usuario (incluye los campos del Pomodoro)
     match /users/{uid}/tasks/{taskId} {
       allow read, delete: if isOwner(uid);
       allow create, update: if isOwner(uid) && isValidTask(request.resource.data);
+    }
+
+    // Perfil del usuario (funcionalidad feature/FuncionalidadProfile)
+    match /users/{uid} {
+      allow read: if isOwner(uid);
+      allow create, update: if isOwner(uid) && isValidProfile(request.resource.data);
+    }
+
+    // Categorías propias de cada usuario (las 5 base no se guardan: viven en el código)
+    match /users/{uid}/categories/{categoryId} {
+      allow read, delete: if isOwner(uid);
+      allow create, update: if isOwner(uid) && isValidCategory(request.resource.data);
     }
 
     // Verifica que el usuario autenticado sea el dueño de la información
@@ -17,21 +29,34 @@ service cloud.firestore {
     // Valida el contrato de datos de la tarea
     function isValidTask(t) {
       return t.keys().hasAll(['title', 'status', 'start', 'end'])
-        && t.keys().hasOnly(['title', 'description', 'status', 'dueDate', 'start', 'end', 'blocks','userId', 'createdAt', 'updatedAt' ])
+        && t.keys().hasOnly([
+          'title', 'description', 'status', 'dueDate', 'start', 'end', 'blocks',
+          'pomodoroSessions', 'pomodoroStatus', 'pomodoroCompletionRate',
+          'category',
+          'userId', 'createdAt', 'updatedAt'
+        ])
         && t.title is string && t.title.size() > 0 && t.title.size() <= 120
         && t.status in ['pending', 'in_progress', 'done']
         && t.start is string && t.end is string
         && t.end > t.start
-        && (!t.keys().hasAny(['blocks']) || (t.blocks is list && t.blocks.size() > 0));
+        && (!t.keys().hasAny(['blocks']) || (t.blocks is list && t.blocks.size() > 0))
+        && (!t.keys().hasAny(['pomodoroSessions']) || (t.pomodoroSessions is list && t.pomodoroSessions.size() <= 1000))
+        && (!t.keys().hasAny(['pomodoroStatus']) || t.pomodoroStatus in ['not_applicable', 'pending', 'fulfilled', 'unfulfilled'])
+        && (!t.keys().hasAny(['pomodoroCompletionRate'])
+          || (t.pomodoroCompletionRate is int && t.pomodoroCompletionRate >= 0 && t.pomodoroCompletionRate <= 100))
+        && (!t.keys().hasAny(['category']) || (t.category is string && t.category.size() > 0 && t.category.size() <= 64));
     }
 
-    // NOTA: Se eliminó la regla abierta "match /{document=**}" para evitar que
-    // cualquier usuario no autenticado acceda a tus colecciones de forma pública.
-        match /users/{uid} {
-      allow read: if isOwner(uid);
-      allow create, update: if isOwner(uid) && isValidProfile(request.resource.data);
+    // Valida el contrato de datos de una categoría propia
+    function isValidCategory(c) {
+      return c.keys().hasAll(['name', 'createdAt'])
+        && c.keys().hasOnly(['name', 'color', 'userId', 'createdAt', 'updatedAt'])
+        && c.name is string && c.name.size() > 0 && c.name.size() <= 40
+        && (!c.keys().hasAny(['color']) || (c.color is string && c.color.size() <= 20))
+        && c.createdAt is string;
     }
 
+    // Valida el contrato de datos del perfil
     function isValidProfile(p) {
       return p.keys().hasAll(['displayName', 'createdAt'])
         && p.keys().hasOnly(['displayName', 'photo', 'createdAt', 'updatedAt'])
@@ -39,5 +64,7 @@ service cloud.firestore {
         && p.createdAt is string
         && (!p.keys().hasAny(['photo']) || p.photo == null || (p.photo is string && p.photo.size() <= 100000));
     }
+
+    // NOTA: No hay regla abierta "match /{document=**}": todo lo demás queda denegado.
   }
 }

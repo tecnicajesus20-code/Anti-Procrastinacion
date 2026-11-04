@@ -86,3 +86,27 @@ export function initNavigation({ onPanelShown = {} } = {}) {
     },
   };
 }
+
+export function initBellMenu() {
+  const root = byId("bell");
+  const toggle = byId("bell-toggle");
+
+  function setOpen(open) {
+    root.classList.toggle("bell--open", open);
+    toggle.setAttribute("aria-expanded", String(open));
+  }
+
+  toggle.addEventListener("click", (event) => {
+    event.stopPropagation();
+    setOpen(!root.classList.contains("bell--open"));
+  });
+  document.addEventListener("click", (event) => {
+    if (!root.contains(event.target)) setOpen(false);
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && root.classList.contains("bell--open")) {
+      setOpen(false);
+      toggle.focus();
+    }
+  });
+}
