@@ -35,10 +35,13 @@ import { initNavigation } from "./presentation/shell/navigation.ui.js";
 import { initTaskReminderUi } from "./presentation/tasks/task-reminder.ui.js";
 
 const auth = createFirebaseAuth();
-const createDemoRepository = () => createMemoryTaskRepository(buildSeedTasks());
+const createDemoRepository = () => createMemoryTaskRepository(buildSeedTasks(), {
+  storage: window.localStorage,
+  storageKey: "antiprocrastinacion:demo-tasks:v1",
+});
 
 /** Conecta la sesión con el repositorio de tareas. Si Firebase no está configurado, se queda en modo demo. */
-async function connectSession(authUi, taskService, navigation) {
+async function connectSession(authUi, taskService, navigation, pomodoroSessions) {
   const session = createSessionCoordinator({
     auth,
     taskService,
@@ -47,6 +50,7 @@ async function connectSession(authUi, taskService, navigation) {
     onUserChanged: (user) => {
       authUi.setUser(user);
       navigation.setUser(user); // solo apariencia y destino de pantalla
+      pomodoroSessions.setStorageScope(user?.uid ?? "guest");
     },
     onLoadingChange: setLoading,
     onLoadError: (error) => showMessage(`No se pudieron cargar las tareas: ${error.message}`, "error"),
@@ -69,6 +73,7 @@ async function startApp() {
     const pomodoroSessions = createPomodoroSessionService({
       taskService,
       pomodoro,
+      storage: window.localStorage,
       onError: (error) => showMessage(`No se pudo guardar la sesión Pomodoro: ${error.message}`, "error"),
     });
 
@@ -126,7 +131,7 @@ async function startApp() {
 
     await taskService.load();
     setLoading(false);
-    connectSession(authUi, taskService, navigation);
+    connectSession(authUi, taskService, navigation, pomodoroSessions);
   } catch (error) {
     setLoading(false);
     showMessage(error.message, "error");

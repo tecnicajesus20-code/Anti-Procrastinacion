@@ -53,6 +53,27 @@ test("el calendario muestra enfoque y descansos calculados para cada bloque de t
   assert.ok(events.every((event) => event.editable === false));
 });
 
+test("el calendario muestra los minutos residuales y vuelve a calcularse al editar el bloque", () => {
+  const task = {
+    id: "task-residual",
+    title: "Leer",
+    status: "pending",
+    start: "2026-11-02T09:00:00.000Z",
+    end: "2026-11-02T09:45:00.000Z",
+  };
+  const events = taskToEvents(task).filter((event) => event.extendedProps.kind === "pomodoro-focus");
+  assert.deepEqual(events.map((event) => [event.title, event.start, event.end]), [
+    ["Enfoque · 25 min", "2026-11-02T09:00:00.000Z", "2026-11-02T09:30:00.000Z"],
+    ["Enfoque · 15 min", "2026-11-02T09:30:00.000Z", "2026-11-02T09:45:00.000Z"],
+  ]);
+
+  const extendedEvents = taskToEvents({ ...task, end: "2026-11-02T10:00:00.000Z" })
+    .filter((event) => event.extendedProps.kind === "pomodoro-focus");
+  assert.equal(extendedEvents.length, 2);
+  assert.equal(new Set(extendedEvents.map((event) => event.id)).size, 2);
+  assert.equal(extendedEvents[1].end, "2026-11-02T10:00:00.000Z");
+});
+
 test("cada tarea recibe un color compartido por sus bloques y distinto del de otra tarea", () => {
   const task = {
     id: "task-2",

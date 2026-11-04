@@ -74,13 +74,17 @@ export function createPomodoroService({
     start();
   }
 
-  function startBreak() {
+  function startBreak({ remainingSeconds = breakSeconds, running = true } = {}) {
+    if (!Number.isFinite(remainingSeconds) || remainingSeconds <= 0 || remainingSeconds > breakSeconds) {
+      throw new RangeError("El tiempo restante del descanso no es válido.");
+    }
     stop();
     mode = POMODORO_MODE.BREAK;
-    remaining = breakSeconds;
+    remaining = Math.ceil(remainingSeconds);
     awaitingConfirmation = false;
     confirmationRequired = false;
-    start();
+    if (running) start();
+    else emit();
   }
 
   function awaitWorkConfirmation() {

@@ -35,8 +35,8 @@ Las tareas pueden tener varios bloques de tiempo. Los documentos antiguos sin `b
 - El color se deriva del id de la tarea en la interfaz; por eso todos sus bloques comparten color y no se añade un campo de color a Firestore.
 - Las fechas son **texto ISO, no `Timestamp`**. La comparación `end > start` de las reglas es textual y es correcta porque el cliente siempre genera el mismo formato (`Date#toISOString`). No hay conversiones de `Timestamp` en el código porque no se usan.
 - Cada sesión de enfoque guarda su horario previsto, duración real, inicio/fin, propietario y resultado. Al agotarse el temporizador queda `pending`; el usuario debe confirmar que la completó o registrarla como `unfulfilled` (con motivo opcional).
-- El umbral de cumplimiento es el 80% de las sesiones completas planificadas. Los periodos de descanso aparecen en el calendario, pero no cuentan como sesiones de enfoque ni como cumplimiento. Los bloques que no alcanzan una sesión completa se ignoran.
-- Las sesiones se guardan en el documento de la tarea, con un máximo de 1000 elementos impuesto por las reglas. En modo demo los cambios solo viven en memoria y se pierden al recargar.
+- El umbral de cumplimiento es el 80% de las sesiones de enfoque planificadas. Los bloques menores de 25 minutos se muestran como tareas normales; los demás se dividen en intervalos de hasta 25 minutos de enfoque y descansos de 5 minutos siempre que quepan. Cualquier sobrante después de un ciclo se conserva como enfoque parcial, y la suma de los intervalos cubre el bloque completo. Los descansos no cuentan como sesiones ni como cumplimiento.
+- Las sesiones se guardan en el documento de la tarea, con un máximo de 1000 elementos impuesto por las reglas. En modo demo, las tareas y sus sesiones se guardan en `localStorage` del dispositivo y navegador; el temporizador de descanso se guarda con una clave separada por modo demo o UID autenticado.
 
 Ejemplo:
 ```json
@@ -68,7 +68,7 @@ Ejemplo:
 `firestore.indexes.json` vacío: la única consulta es leer la subcolección completa.
 
 ## Modo demo
-Mismo contrato `Task`, en memoria (`infrastructure/memory/`). Los ids son `crypto.randomUUID()` (o `demo-1…3` para las tareas de ejemplo). No se persiste nada.
+Mismo contrato `Task`, en memoria y `localStorage` (`infrastructure/memory/`). Los ids son `crypto.randomUUID()` (o `demo-1…3` para las tareas de ejemplo). Los datos del modo demo solo están disponibles en el dispositivo y navegador donde se crearon.
 
 ## Correspondencias
 | Origen | Destino | Dónde |

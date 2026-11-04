@@ -107,7 +107,7 @@
     </header>
 
     <div class="demo-banner guest-only">
-      Estás en modo demo: los cambios no se guardan.
+      Estás en modo demo: los cambios se guardan solo en este dispositivo y navegador.
       <button class="link" type="button" data-go="cuenta">Iniciar sesión o crear una cuenta</button>
     </div>
 
@@ -178,6 +178,8 @@
             <p class="pomodoro-time" id="pomodoro-time">25:00</p>
           </div>
           <p class="pomodoro-task" id="pomodoro-task">Sin tarea seleccionada</p>
+          <p class="pomodoro-cycle" id="pomodoro-cycle">Sin ciclo programado</p>
+          <progress class="pomodoro-progress" id="pomodoro-progress" max="1" value="0" aria-label="Progreso del ciclo"></progress>
           <p class="pomodoro-session-status" id="pomodoro-session-status" role="status"></p>
           <div class="btn-row">
             <button class="btn btn--primary" id="pomodoro-start" type="button">Iniciar</button>

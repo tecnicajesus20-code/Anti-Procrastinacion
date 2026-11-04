@@ -1,11 +1,10 @@
 /** PRESENTACIÓN DEL POMODORO: muestra el tiempo y conecta los botones. */
 import { byId } from "../../shared/dom.js";
 import { formatMinutesSeconds, formatShortDateTime } from "../../shared/date-time.js";
-import { POMODORO_MODE, POMODORO_DEFAULTS } from "../../domain/pomodoro.js";
+import { POMODORO_MODE, POMODORO_DEFAULTS, planPomodoroTask } from "../../domain/pomodoro.js";
 import { runAction } from "../../shared/feedback.js";
 
 const MODE_LABELS = { [POMODORO_MODE.WORK]: "Trabajo", [POMODORO_MODE.BREAK]: "Descanso" };
-const MODE_TOTALS = { [POMODORO_MODE.WORK]: POMODORO_DEFAULTS.workSeconds, [POMODORO_MODE.BREAK]: POMODORO_DEFAULTS.breakSeconds };
 
 /**
  * Conecta el temporizador con sesiones de enfoque trazables y confirmación explícita del usuario.
@@ -19,6 +18,8 @@ export function initPomodoroUi(pomodoro, pomodoroSessions, navigation) {
   const card = byId("pomodoro-card");
   const ring = byId("pomodoro-ring");
   const taskLabel = byId("pomodoro-task");
+  const cycleLabel = byId("pomodoro-cycle");
+  const progress = byId("pomodoro-progress");
   const sessionStatus = byId("pomodoro-session-status");
   const confirmButton = byId("pomodoro-confirm");
   const failButton = byId("pomodoro-fail");
@@ -27,6 +28,7 @@ export function initPomodoroUi(pomodoro, pomodoroSessions, navigation) {
     const { currentSession: session, currentTask: task } = state;
     if (!session || !task) {
       taskLabel.textContent = "Sin tarea seleccionada";
+      cycleLabel.textContent = "Sin ciclo programado";
       sessionStatus.textContent = "";
       confirmButton.hidden = true;
       failButton.hidden = true;
@@ -34,7 +36,16 @@ export function initPomodoroUi(pomodoro, pomodoroSessions, navigation) {
     }
 
     taskLabel.textContent = `Tarea: ${task.title} · Enfoque programado: ${formatShortDateTime(session.scheduledStart)}`;
-    if (session.status === "completed") {
+    const cycleCount = planPomodoroTask(task).filter((slot) => (
+      slot.kind === "focus" && slot.blockIndex === session.blockIndex
+    )).length;
+    cycleLabel.textContent = `Ciclo ${session.sessionIndex + 1} de ${Math.max(cycleCount, session.sessionIndex + 1)}`;
+
+    if (state.timer?.mode === POMODORO_MODE.BREAK && session.status === "completed") {
+      sessionStatus.textContent = "Sesión completada. Descanso programado.";
+      confirmButton.hidden = true;
+      failButton.hidden = true;
+    } else if (session.status === "completed") {
       sessionStatus.textContent = "Sesión completada y registrada.";
       confirmButton.hidden = true;
       failButton.hidden = true;
@@ -58,18 +69,37 @@ export function initPomodoroUi(pomodoro, pomodoroSessions, navigation) {
   pomodoro.onTick((state) => {
     time.textContent = formatMinutesSeconds(state.remaining);
     mode.textContent = state.awaitingConfirmation ? "Confirmación pendiente" : MODE_LABELS[state.mode];
+    const activeSession = pomodoroSessions.getCurrentSession();
 
-    const total = Math.max(MODE_TOTALS[state.mode], state.remaining);
-    ring.style.setProperty("stroke-dashoffset", String(1 - state.remaining / total));
+    const progressTotal = state.mode === POMODORO_MODE.WORK
+      ? activeSession?.plannedDurationSeconds ?? POMODORO_DEFAULTS.workSeconds
+      : POMODORO_DEFAULTS.breakSeconds;
+    ring.style.setProperty("stroke-dashoffset", String(1 - state.remaining / progressTotal));
+    progress.value = Math.max(0, Math.min(1, 1 - state.remaining / progressTotal));
+    progress.setAttribute(
+      "aria-label",
+      state.mode === POMODORO_MODE.BREAK ? "Progreso del descanso" : "Progreso del ciclo"
+    );
     card.classList.toggle("pomodoro--break", state.mode === POMODORO_MODE.BREAK);
     card.classList.toggle("pomodoro--running", state.running);
     renderSession();
   });
-  pomodoroSessions.subscribe(renderSession);
+  pomodoroSessions.subscribe((state) => {
+    renderSession(state);
+    if (
+      (state.timer?.running && (state.currentSession?.runningSince || state.timer.mode === POMODORO_MODE.BREAK))
+      || (state.currentSession?.endedAt && state.currentSession.status === "pending")
+      || (state.currentSession?.status === "completed" && state.timer?.mode === POMODORO_MODE.BREAK)
+    ) {
+      navigation.navigate("pomodoro");
+    }
+  });
 
   byId("pomodoro-start").addEventListener("click", () => {
     const session = pomodoroSessions.getCurrentSession();
-    if (session?.status === "pending" && !session.endedAt) {
+    if (pomodoroSessions.getState().timer?.mode === POMODORO_MODE.BREAK && !pomodoroSessions.getState().timer.running) {
+      runAction(() => pomodoroSessions.resumeBreak());
+    } else if (session?.status === "pending" && !session.endedAt) {
       runAction(() => pomodoroSessions.resume(session.taskId, session.id));
     } else if (!session?.endedAt) {
       pomodoro.start();

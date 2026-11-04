@@ -16,6 +16,8 @@ export function createPomodoroSessionService({
   breakSeconds = POMODORO_DEFAULTS.breakSeconds,
   now = () => new Date(),
   createId = () => crypto.randomUUID(),
+  storage = null,
+  storageKey = "antiprocrastinacion:pomodoro-break:v1",
   onError,
 } = {}) {
   if (!taskService || !pomodoro) throw new TypeError("Se requieren taskService y pomodoro.");
@@ -24,6 +26,9 @@ export function createPomodoroSessionService({
   let current = null;
   let timerState = null;
   let completionInFlight = null;
+  let breakContext = null;
+  let restoringSession = false;
+  let storageScope = "guest";
   const listeners = new Set();
 
   const findTask = (taskId) => taskService.getAll().find((task) => task.id === taskId);
@@ -34,6 +39,45 @@ export function createPomodoroSessionService({
     currentTask: current ? findTask(current.taskId) : null,
     timer: timerState,
   });
+  const checkpointStorageKey = () => `${storageKey}:${encodeURIComponent(storageScope)}`;
+
+  function readBreakCheckpoint() {
+    if (!storage) return null;
+    let serialized;
+    try {
+      serialized = storage.getItem(checkpointStorageKey());
+      if (serialized === null) return null;
+      const checkpoint = JSON.parse(serialized);
+      if (
+        checkpoint?.version !== 1
+        || typeof checkpoint.taskId !== "string"
+        || !Number.isInteger(checkpoint.blockIndex)
+        || !Number.isInteger(checkpoint.sessionIndex)
+        || !Number.isFinite(checkpoint.remainingSeconds)
+        || checkpoint.remainingSeconds <= 0
+        || checkpoint.remainingSeconds > breakSeconds
+        || (checkpoint.runningSince !== null && Number.isNaN(Date.parse(checkpoint.runningSince)))
+      ) {
+        throw new Error("El estado del descanso Pomodoro guardado no es válido.");
+      }
+      return checkpoint;
+    } catch (error) {
+      onError(error instanceof SyntaxError
+        ? new Error("No se pudo leer el estado del descanso Pomodoro.", { cause: error })
+        : error);
+      return null;
+    }
+  }
+
+  function writeBreakCheckpoint(checkpoint) {
+    if (!storage) return;
+    try {
+      if (checkpoint) storage.setItem(checkpointStorageKey(), JSON.stringify({ version: 1, ...checkpoint }));
+      else storage.removeItem(checkpointStorageKey());
+    } catch (error) {
+      onError(error);
+    }
+  }
 
   async function saveSession(task, session) {
     const sessions = task.pomodoroSessions ?? [];
@@ -69,19 +113,142 @@ export function createPomodoroSessionService({
   }
 
   pomodoro.onTick((state) => {
+    const previousMode = timerState?.mode;
     timerState = state;
     if (state.awaitingConfirmation) {
       finishTimerSession().catch(onError);
     }
+    if (breakContext && previousMode === "break" && state.mode === "work") {
+      writeBreakCheckpoint(null);
+      startNextCycle();
+    }
   });
+
+  function startNextCycle() {
+    const context = breakContext;
+    breakContext = null;
+    const task = context && findTask(context.taskId);
+    if (!task) {
+      current = null;
+      writeBreakCheckpoint(null);
+      pomodoro.reset();
+      emit();
+      return;
+    }
+
+    const nextSlot = nextFocusSlot(task, context.blockIndex, context.sessionIndex);
+    if (nextSlot) {
+      start(context.taskId, context.blockIndex, nextSlot.scheduleKey).catch(onError);
+      return;
+    }
+
+    current = null;
+    pomodoro.reset();
+    emit();
+  }
+
+  function nextFocusSlot(task, blockIndex, afterSessionIndex) {
+    const sessions = task.pomodoroSessions ?? [];
+    return planPomodoroTask(task, { workSeconds, breakSeconds }).find((slot) => (
+      slot.kind === "focus"
+      && slot.blockIndex === blockIndex
+      && slot.sessionIndex > afterSessionIndex
+      && !sessions.some((session) => (
+        session.scheduleKey === slot.scheduleKey
+        && session.status !== POMODORO_SESSION_STATUS.PENDING
+      ))
+    ));
+  }
+
+  function restoreRunningSession() {
+    if (current || restoringSession) return;
+    const runningSessions = taskService.getAll().flatMap((task) => (
+      task.pomodoroSessions ?? []
+    ).filter((session) => (
+      session.status === POMODORO_SESSION_STATUS.PENDING
+      && !session.endedAt
+      && session.runningSince
+    )).map((session) => ({ taskId: task.id, session })));
+
+    if (runningSessions.length > 1) {
+      onError(new Error("Hay más de una sesión Pomodoro activa; reanúdalas o regístralas desde Tareas."));
+      return;
+    }
+    const active = runningSessions[0];
+    if (!active) return;
+
+    restoringSession = true;
+    start(active.taskId, active.session.blockIndex, active.session.scheduleKey)
+      .catch(onError)
+      .finally(() => { restoringSession = false; });
+  }
+
+  function restorePersistentTimer() {
+    if (current || restoringSession) return;
+    const tasks = taskService.getAll();
+    if (tasks.length === 0) return;
+    const checkpoint = readBreakCheckpoint();
+    if (checkpoint) {
+      const task = findTask(checkpoint.taskId);
+      const session = task?.pomodoroSessions?.find((candidate) => (
+        candidate.status === POMODORO_SESSION_STATUS.COMPLETED
+        && candidate.blockIndex === checkpoint.blockIndex
+        && candidate.sessionIndex === checkpoint.sessionIndex
+      ));
+      const hasScheduledBreak = task && planPomodoroTask(task, { workSeconds, breakSeconds }).some((slot) => (
+        slot.kind === "break"
+        && slot.blockIndex === checkpoint.blockIndex
+        && slot.sessionIndex === checkpoint.sessionIndex
+      ));
+      if (!session || !hasScheduledBreak) {
+        writeBreakCheckpoint(null);
+      } else {
+        const elapsed = checkpoint.runningSince
+          ? Math.max(0, (now().getTime() - Date.parse(checkpoint.runningSince)) / 1000)
+          : 0;
+        const remainingSeconds = checkpoint.remainingSeconds - elapsed;
+        current = { taskId: task.id, sessionId: session.id };
+        breakContext = {
+          taskId: task.id,
+          blockIndex: checkpoint.blockIndex,
+          sessionIndex: checkpoint.sessionIndex,
+        };
+        if (remainingSeconds <= 0) {
+          writeBreakCheckpoint(null);
+          startNextCycle();
+        } else {
+          pomodoro.startBreak({
+            remainingSeconds,
+            running: Boolean(checkpoint.runningSince),
+          });
+          emit();
+        }
+        return;
+      }
+    }
+    restoreRunningSession();
+  }
 
   taskService.subscribe(() => {
     if (current && !findSession(current.taskId, current.sessionId)) {
       current = null;
+      breakContext = null;
       pomodoro.reset();
     }
+    restorePersistentTimer();
     emit();
   });
+  restorePersistentTimer();
+
+  function setStorageScope(scope) {
+    const nextScope = String(scope || "guest");
+    if (nextScope === storageScope) return;
+    breakContext = null;
+    current = null;
+    pomodoro.reset();
+    storageScope = nextScope;
+    emit();
+  }
 
   async function start(taskId, block, scheduleKey) {
     const task = findTask(taskId);
@@ -183,6 +350,14 @@ export function createPomodoroSessionService({
   async function pause() {
     const state = timerState;
     pomodoro.pause();
+    if (breakContext && state?.mode === "break" && state.running) {
+      writeBreakCheckpoint({
+        ...breakContext,
+        remainingSeconds: state.remaining,
+        runningSince: null,
+      });
+      return;
+    }
     if (!current || !state?.running) return;
     const session = findSession(current.taskId, current.sessionId);
     const task = findTask(current.taskId);
@@ -195,18 +370,38 @@ export function createPomodoroSessionService({
     });
   }
 
-  function hasNextSession(task, session) {
-    return planPomodoroTask(task, { workSeconds, breakSeconds }).some((slot) => (
-      slot.kind === "focus"
-      && slot.blockIndex === session.blockIndex
-      && slot.sessionIndex > session.sessionIndex
-    ));
-  }
-
   async function continueAfterSession(task, session) {
+    const plan = planPomodoroTask(task, { workSeconds, breakSeconds });
+    const breakSlot = plan.find((slot) => (
+      slot.kind === "break"
+      && slot.blockIndex === session.blockIndex
+      && slot.sessionIndex === session.sessionIndex
+    ));
+    if (breakSlot) {
+      breakContext = {
+        taskId: task.id,
+        blockIndex: session.blockIndex,
+        sessionIndex: session.sessionIndex,
+      };
+      pomodoro.startBreak();
+      writeBreakCheckpoint({
+        ...breakContext,
+        remainingSeconds: breakSeconds,
+        runningSince: now().toISOString(),
+      });
+      emit();
+      return;
+    }
+
+    const nextSlot = nextFocusSlot(task, session.blockIndex, session.sessionIndex);
+    if (nextSlot) {
+      start(task.id, session.blockIndex, nextSlot.scheduleKey).catch(onError);
+      return;
+    }
+
     current = null;
-    if (hasNextSession(task, session) && breakSeconds > 0) pomodoro.startBreak();
-    else pomodoro.reset();
+    breakContext = null;
+    pomodoro.reset();
     emit();
   }
 
@@ -222,6 +417,21 @@ export function createPomodoroSessionService({
 
     await saveSession(task, { ...session, status: POMODORO_SESSION_STATUS.COMPLETED, runningSince: null });
     await continueAfterSession(task, session);
+  }
+
+  function resumeBreak() {
+    if (!breakContext || timerState?.mode !== "break") {
+      throw new Error("No hay un descanso Pomodoro pausado para reanudar.");
+    }
+    const checkpoint = readBreakCheckpoint();
+    if (!checkpoint || checkpoint.taskId !== breakContext.taskId) {
+      throw new Error("No se encontró el estado guardado del descanso Pomodoro.");
+    }
+    if (timerState.running) return;
+    const timestamp = now().toISOString();
+    pomodoro.start();
+    writeBreakCheckpoint({ ...checkpoint, runningSince: timestamp });
+    emit();
   }
 
   async function markUnfulfilled(taskId, sessionId, reason) {
@@ -270,6 +480,8 @@ export function createPomodoroSessionService({
       return markUnfulfilled(current.taskId, session.id, "Sesión reiniciada por el usuario.");
     }
     current = null;
+    breakContext = null;
+    writeBreakCheckpoint(null);
     pomodoro.reset();
     emit();
     return Promise.resolve();
@@ -284,6 +496,7 @@ export function createPomodoroSessionService({
   return {
     start,
     resume,
+    resumeBreak,
     pause,
     reset,
     confirm,
@@ -291,5 +504,6 @@ export function createPomodoroSessionService({
     getState,
     getCurrentSession: () => getState().currentSession,
     subscribe,
+    setStorageScope,
   };
 }

@@ -16,7 +16,7 @@ Rutas relativas a `public/src/`. Todas las fechas de los contratos son texto ISO
 | `isDone(task)`, `byStart(a, b)` | Predicado y comparador por inicio |
 
 ### `domain/pomodoro.js`
-`POMODORO_MODE { WORK: "work", BREAK: "break" }`, `POMODORO_DEFAULTS { workSeconds: 1500, breakSeconds: 300 }`, `POMODORO_SESSION_STATUS`, `nextMode(mode)`, `planPomodoroBlock`, `planPomodoroTask` y `summarizePomodoroTask`. El plan intercala descansos de 5 minutos entre sesiones completas; el resumen calcula el umbral mínimo del 80%.
+`POMODORO_MODE { WORK: "work", BREAK: "break" }`, `POMODORO_DEFAULTS { workSeconds: 1500, breakSeconds: 300 }`, `POMODORO_SESSION_STATUS`, `nextMode(mode)`, `planPomodoroBlock`, `planPomodoroTask` y `summarizePomodoroTask`. Los bloques menores de 25 minutos siguen como tareas normales; el plan de los demás cubre cada minuto, intercala descansos de 5 minutos cuando caben y conserva el sobrante como enfoque parcial. El resumen calcula el umbral mínimo del 80%.
 
 ## application/
 
@@ -53,7 +53,7 @@ Dependencias: `auth.onAuthChange`, `taskService`, `createUserRepository(uid)`, `
 `start()` (idempotente), `startWorkSession`, `startBreak`, `awaitWorkConfirmation`, `pause()`, `reset()`, `onTick(cb)` → cancelar. `cb({ mode, remaining, running, awaitingConfirmation? })` se llama al suscribirse y en cada cambio. En sesiones ligadas a una tarea, el enfoque se detiene en cero hasta que se confirme el resultado.
 
 ### `application/pomodoro-session.service.js` — `createPomodoroSessionService({ taskService, pomodoro, onError, ... })`
-Coordina planificación, inicio/reanudación, pausa, confirmación e incumplimiento. Cada cambio se guarda en `pomodoroSessions` junto con `pomodoroStatus` y `pomodoroCompletionRate`; requiere confirmación manual tras finalizar el enfoque.
+Coordina planificación, inicio/reanudación, pausa, confirmación e incumplimiento. Cada cambio se guarda en `pomodoroSessions` junto con `pomodoroStatus` y `pomodoroCompletionRate`; requiere confirmación manual tras finalizar el enfoque. Reanuda el enfoque desde la marca de tiempo persistida y guarda el descanso en `localStorage`, separado por usuario, con `resumeBreak()` y `setStorageScope(scope)`.
 
 ## infrastructure/
 

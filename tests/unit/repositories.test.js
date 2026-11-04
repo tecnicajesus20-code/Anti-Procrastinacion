@@ -77,6 +77,60 @@ test("memoria: devuelve copias (el llamador no puede mutar el estado interno)", 
   assert.equal((await repo.list())[0].title, "T");
 });
 
+test("modo demo: las tareas y sesiones Pomodoro sobreviven a una nueva instancia del repositorio", async () => {
+  const values = new Map();
+  const storage = {
+    getItem: (key) => values.get(key) ?? null,
+    setItem: (key, value) => values.set(key, value),
+    removeItem: (key) => values.delete(key),
+  };
+  const first = createMemoryTaskRepository([{ ...data, id: "demo-1" }], {
+    storage,
+    storageKey: "demo-tasks",
+  });
+  const [task] = await first.list();
+  await first.update(task.id, {
+    pomodoroSessions: [{
+      id: "session-1",
+      taskId: task.id,
+      ownerUid: null,
+      blockIndex: 0,
+      sessionIndex: 0,
+      scheduleKey: "0:2026-11-02T09:00:00.000Z",
+      scheduledStart: "2026-11-02T09:00:00.000Z",
+      scheduledEnd: "2026-11-02T09:25:00.000Z",
+      plannedDurationSeconds: 1500,
+      actualDurationSeconds: 300,
+      startedAt: "2026-11-02T09:00:00.000Z",
+      endedAt: null,
+      runningSince: "2026-11-02T09:05:00.000Z",
+      status: "pending",
+      failureReason: null,
+    }],
+  });
+
+  const reloaded = createMemoryTaskRepository([{ ...data, id: "demo-1" }], {
+    storage,
+    storageKey: "demo-tasks",
+  });
+  const [restored] = await reloaded.list();
+  assert.equal(restored.id, "demo-1");
+  assert.equal(restored.pomodoroSessions[0].id, "session-1");
+});
+
+test("modo demo: informa errores de datos guardados inválidos y de escritura", async () => {
+  const storage = {
+    getItem: () => "{",
+    setItem: () => { throw new Error("quota"); },
+    removeItem() {},
+  };
+  const repo = createMemoryTaskRepository([], { storage, storageKey: "demo-tasks" });
+  await assert.rejects(repo.list(), /No se pudieron leer las tareas guardadas/);
+  storage.getItem = () => null;
+  await assert.rejects(repo.create(data), /quota/);
+  assert.deepEqual(await repo.list(), []);
+});
+
 test("mapper", () => {
   assert.deepEqual(taskFromDocument("i", { title: "x" }), { id: "i", title: "x" });
   assert.deepEqual(taskToDocument({ id: "i", title: "x" }), { title: "x" });

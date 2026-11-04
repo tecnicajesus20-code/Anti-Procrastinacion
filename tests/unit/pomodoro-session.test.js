@@ -24,9 +24,9 @@ function fakeClock() {
   };
 }
 
-async function setup(end = "2026-11-02T09:00:03.000Z") {
+async function setup(end = "2026-11-02T09:00:03.000Z", { storage = null, breakSeconds = 1 } = {}) {
   const start = "2026-11-02T09:00:00.000Z";
-  const taskService = createTaskService(createMemoryTaskRepository([{
+  const taskRepository = createMemoryTaskRepository([{
     id: "task-session",
     title: "Preparar entrega",
     description: null,
@@ -35,11 +35,12 @@ async function setup(end = "2026-11-02T09:00:03.000Z") {
     start,
     end,
     blocks: [{ start, end }],
-  }]));
+  }], storage ? { storage, storageKey: "demo-tasks" } : {});
+  const taskService = createTaskService(taskRepository);
   await taskService.load();
 
   const clock = fakeClock();
-  const pomodoro = createPomodoroService({ workSeconds: 2, breakSeconds: 1, clock });
+  const pomodoro = createPomodoroService({ workSeconds: 2, breakSeconds, clock });
   let currentTime = new Date("2026-11-02T09:00:00.000Z");
   let nextId = 0;
   const errors = [];
@@ -47,9 +48,10 @@ async function setup(end = "2026-11-02T09:00:03.000Z") {
     taskService,
     pomodoro,
     workSeconds: 2,
-    breakSeconds: 1,
+    breakSeconds,
     now: () => new Date(currentTime),
     createId: () => `session-${++nextId}`,
+    storage,
     onError: (error) => errors.push(error),
   });
   return {
@@ -130,6 +132,213 @@ test("reanudar suma solo el tiempo trabajado, no el tiempo en pausa", async () =
   assert.equal(session.status, "pending");
   assert.equal(session.actualDurationSeconds, 2);
   assert.ok(session.endedAt);
+});
+
+test("restaura automáticamente una sesión persistida usando su marca de tiempo", async () => {
+  const values = new Map();
+  const storage = {
+    getItem: (key) => values.get(key) ?? null,
+    setItem: (key, value) => values.set(key, value),
+    removeItem: (key) => values.delete(key),
+  };
+  const { pomodoro, sessions, advanceTime } = await setup(undefined, { storage });
+  await sessions.start("task-session", 0);
+  pomodoro.pause();
+  advanceTime(1);
+  const reloadedTaskService = createTaskService(createMemoryTaskRepository([], {
+    storage,
+    storageKey: "demo-tasks",
+  }));
+  await reloadedTaskService.load();
+  const restoredPomodoro = createPomodoroService({
+    workSeconds: 2,
+    breakSeconds: 1,
+    clock: fakeClock(),
+  });
+
+  const restored = createPomodoroSessionService({
+    taskService: reloadedTaskService,
+    pomodoro: restoredPomodoro,
+    workSeconds: 2,
+    breakSeconds: 1,
+    now: () => new Date("2026-11-02T09:00:01.000Z"),
+    storage,
+    onError: (error) => { throw error; },
+  });
+  await new Promise((resolve) => setTimeout(resolve, 0));
+
+  assert.equal(restored.getCurrentSession().actualDurationSeconds, 1);
+  assert.equal(restored.getCurrentSession().runningSince, "2026-11-02T09:00:01.000Z");
+  assert.equal(restored.getState().timer.remaining, 1);
+  assert.equal(restored.getState().timer.running, true);
+});
+
+test("inicia el siguiente ciclo automáticamente al terminar el descanso programado", async () => {
+  const { taskService, clock, sessions } = await setup("2026-11-02T09:00:05.000Z");
+  await sessions.start("task-session", 0);
+  clock.tick(2);
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  await sessions.confirm("task-session", taskService.getAll()[0].pomodoroSessions[0].id);
+
+  assert.equal(sessions.getState().timer.mode, "break");
+  clock.tick(1);
+  await new Promise((resolve) => setTimeout(resolve, 0));
+
+  assert.equal(taskService.getAll()[0].pomodoroSessions.length, 2);
+  assert.equal(sessions.getCurrentSession().sessionIndex, 1);
+  assert.equal(sessions.getState().timer.remaining, 2);
+  assert.equal(sessions.getState().timer.running, true);
+});
+
+test("restaura un descanso en curso después de recargar y descuenta el tiempo transcurrido", async () => {
+  const values = new Map();
+  const storage = {
+    getItem: (key) => values.get(key) ?? null,
+    setItem: (key, value) => values.set(key, value),
+    removeItem: (key) => values.delete(key),
+  };
+  const { taskService, clock, pomodoro, sessions, advanceTime } = await setup(
+    "2026-11-02T09:00:15.000Z",
+    { storage, breakSeconds: 10 }
+  );
+  await sessions.start("task-session", 0);
+  clock.tick(2);
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  await sessions.confirm("task-session", taskService.getAll()[0].pomodoroSessions[0].id);
+  advanceTime(3);
+  pomodoro.pause();
+
+  const restoredPomodoro = createPomodoroService({ workSeconds: 2, breakSeconds: 10, clock: fakeClock() });
+  const restored = createPomodoroSessionService({
+    taskService,
+    pomodoro: restoredPomodoro,
+    workSeconds: 2,
+    breakSeconds: 10,
+    now: () => new Date("2026-11-02T09:00:03.000Z"),
+    storage,
+    onError: (error) => { throw error; },
+  });
+
+  assert.equal(restored.getState().timer.mode, "break");
+  assert.equal(restored.getState().timer.remaining, 7);
+  assert.equal(restored.getState().timer.running, true);
+  assert.equal(restored.getCurrentSession().status, "completed");
+});
+
+test("al recargar después de vencer el descanso inicia el siguiente enfoque pendiente", async () => {
+  const values = new Map();
+  const storage = {
+    getItem: (key) => values.get(key) ?? null,
+    setItem: (key, value) => values.set(key, value),
+    removeItem: (key) => values.delete(key),
+  };
+  const { taskService, clock, sessions } = await setup(
+    "2026-11-02T09:00:15.000Z",
+    { storage, breakSeconds: 10 }
+  );
+  await sessions.start("task-session", 0);
+  clock.tick(2);
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  await sessions.confirm("task-session", taskService.getAll()[0].pomodoroSessions[0].id);
+
+  const reloadedTaskService = createTaskService(createMemoryTaskRepository([], {
+    storage,
+    storageKey: "demo-tasks",
+  }));
+  await reloadedTaskService.load();
+  const restored = createPomodoroSessionService({
+    taskService: reloadedTaskService,
+    pomodoro: createPomodoroService({ workSeconds: 2, breakSeconds: 10, clock: fakeClock() }),
+    workSeconds: 2,
+    breakSeconds: 10,
+    now: () => new Date("2026-11-02T09:00:11.000Z"),
+    storage,
+    onError: (error) => { throw error; },
+  });
+  await new Promise((resolve) => setTimeout(resolve, 0));
+
+  assert.equal(reloadedTaskService.getAll()[0].pomodoroSessions.length, 2);
+  assert.equal(restored.getCurrentSession().sessionIndex, 1);
+  assert.equal(restored.getState().timer.mode, "work");
+  assert.equal(restored.getState().timer.remaining, 2);
+  assert.equal(restored.getState().timer.running, true);
+});
+
+test("restaura un descanso pausado y permite reanudarlo", async () => {
+  const values = new Map();
+  const storage = {
+    getItem: (key) => values.get(key) ?? null,
+    setItem: (key, value) => values.set(key, value),
+    removeItem: (key) => values.delete(key),
+  };
+  const { taskService, clock, sessions, advanceTime } = await setup(
+    "2026-11-02T09:00:15.000Z",
+    { storage, breakSeconds: 10 }
+  );
+  await sessions.start("task-session", 0);
+  clock.tick(2);
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  await sessions.confirm("task-session", taskService.getAll()[0].pomodoroSessions[0].id);
+  await sessions.pause();
+  advanceTime(5);
+
+  const restored = createPomodoroSessionService({
+    taskService,
+    pomodoro: createPomodoroService({ workSeconds: 2, breakSeconds: 10, clock: fakeClock() }),
+    workSeconds: 2,
+    breakSeconds: 10,
+    now: () => new Date("2026-11-02T09:00:05.000Z"),
+    storage,
+    onError: (error) => { throw error; },
+  });
+
+  assert.equal(restored.getState().timer.mode, "break");
+  assert.equal(restored.getState().timer.remaining, 10);
+  assert.equal(restored.getState().timer.running, false);
+  restored.resumeBreak();
+  assert.equal(restored.getState().timer.running, true);
+});
+
+test("separa el checkpoint del descanso al cambiar de modo demo a cuenta", async () => {
+  const values = new Map();
+  const storage = {
+    getItem: (key) => values.get(key) ?? null,
+    setItem: (key, value) => values.set(key, value),
+    removeItem: (key) => values.delete(key),
+  };
+  const { taskService, clock, pomodoro, sessions } = await setup(
+    "2026-11-02T09:00:15.000Z",
+    { storage, breakSeconds: 10 }
+  );
+  await sessions.start("task-session", 0);
+  clock.tick(2);
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  await sessions.confirm("task-session", taskService.getAll()[0].pomodoroSessions[0].id);
+  await sessions.pause();
+  assert.ok(values.has("antiprocrastinacion:pomodoro-break:v1:guest"));
+
+  sessions.setStorageScope("account-2");
+
+  assert.equal(values.has("antiprocrastinacion:pomodoro-break:v1:account-2"), false);
+  assert.equal(sessions.getState().timer.mode, "work");
+  assert.equal(sessions.getState().timer.running, false);
+  assert.equal(sessions.getCurrentSession(), null);
+});
+
+test("reiniciar durante el descanso cancela la transición automática al siguiente ciclo", async () => {
+  const { taskService, clock, pomodoro, sessions } = await setup("2026-11-02T09:00:05.000Z");
+  await sessions.start("task-session", 0);
+  clock.tick(2);
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  await sessions.confirm("task-session", taskService.getAll()[0].pomodoroSessions[0].id);
+  await sessions.reset();
+  clock.tick(1);
+  let timerState;
+  pomodoro.onTick((state) => { timerState = state; });
+
+  assert.equal(taskService.getAll()[0].pomodoroSessions.length, 1);
+  assert.equal(timerState.mode, "work");
+  assert.equal(timerState.running, false);
 });
 
 test("una sesión pausada impide iniciar otro horario de enfoque", async () => {

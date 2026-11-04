@@ -45,7 +45,7 @@ export function taskToEvents(task) {
       const session = sessionByKey.get(slot.scheduleKey);
       return {
         id: `${task.id}:pomodoro:focus:${slot.blockIndex}:${slot.sessionIndex}`,
-        title: "Enfoque · 25 min",
+        title: `Enfoque · ${Math.ceil(slot.durationSeconds / 60)} min`,
         start: slot.start,
         end: rest?.end ?? slot.end,
         classNames: [

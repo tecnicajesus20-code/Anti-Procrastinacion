@@ -72,6 +72,27 @@
   font-weight: 600;
 }
 
+.pomodoro-cycle {
+  margin: 0.3rem 0 0.65rem;
+  color: #DCE7E1;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.pomodoro-progress {
+  display: block;
+  width: min(300px, 76vw);
+  height: 0.55rem;
+  margin: 0 auto 0.75rem;
+  overflow: hidden;
+  accent-color: var(--teal);
+}
+
+.pomodoro--break .pomodoro-progress {
+  accent-color: #38B6FF;
+}
+
 .pomodoro-time {
   font-size: 4.5rem;
   font-weight: 800;

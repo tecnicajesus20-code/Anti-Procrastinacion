@@ -16,8 +16,8 @@ export const POMODORO_SESSION_STATUS = Object.freeze({
 });
 
 /**
- * Planea sesiones completas de enfoque dentro del bloque asignado.
- * Los descansos solo se insertan entre sesiones y el tiempo restante menor a 25 minutos se ignora.
+ * Divide todo el bloque en intervalos de enfoque y descansos. Los descansos son de 5 minutos
+ * cuando caben; el tiempo residual se convierte en un intervalo de enfoque parcial.
  */
 export function planPomodoroBlock(block, blockIndex, {
   workSeconds = POMODORO_DEFAULTS.workSeconds,
@@ -33,13 +33,16 @@ export function planPomodoroBlock(block, blockIndex, {
 
   const workMs = workSeconds * 1000;
   const breakMs = breakSeconds * 1000;
-  const count = Math.floor((end - start + breakMs) / (workMs + breakMs));
+  if (end - start < workMs) return [];
+  let remainingMs = end - start;
   const plan = [];
   let cursor = start;
+  let sessionIndex = 0;
 
-  for (let sessionIndex = 0; sessionIndex < count; sessionIndex += 1) {
+  while (remainingMs > 0) {
+    const focusDurationMs = Math.min(workMs, remainingMs);
     const focusStart = new Date(cursor).toISOString();
-    const focusEnd = new Date(cursor + workMs).toISOString();
+    const focusEnd = new Date(cursor + focusDurationMs).toISOString();
     plan.push({
       kind: "focus",
       blockIndex,
@@ -47,13 +50,15 @@ export function planPomodoroBlock(block, blockIndex, {
       scheduleKey: `${blockIndex}:${focusStart}`,
       start: focusStart,
       end: focusEnd,
-      durationSeconds: workSeconds,
+      durationSeconds: focusDurationMs / 1000,
     });
-    cursor += workMs;
+    cursor += focusDurationMs;
+    remainingMs -= focusDurationMs;
 
-    if (sessionIndex < count - 1) {
+    if (remainingMs >= breakMs && breakMs > 0) {
       const breakStart = new Date(cursor).toISOString();
       cursor += breakMs;
+      remainingMs -= breakMs;
       plan.push({
         kind: "break",
         blockIndex,
@@ -63,6 +68,8 @@ export function planPomodoroBlock(block, blockIndex, {
         durationSeconds: breakSeconds,
       });
     }
+
+    sessionIndex += 1;
   }
 
   return plan;
