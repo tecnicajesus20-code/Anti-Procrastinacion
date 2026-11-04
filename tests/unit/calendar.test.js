@@ -1,77 +1,66 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { taskToEvents } from "../../public/src/presentation/calendar/calendar.mapper.js";
+import { eventToBlock, taskToEvents } from "../../public/src/presentation/calendar/calendar.mapper.js";
 
-test("cada bloque horario se convierte en un evento del calendario enlazado a la misma tarea", () => {
+test("cada bloque horario se representa como una sola tarea editable", () => {
   const task = {
     id: "task-1",
     title: "Estudiar",
     status: "pending",
     start: "2026-11-02T09:00:00.000Z",
-    end: "2026-11-02T09:20:00.000Z",
+    end: "2026-11-02T11:00:00.000Z",
     blocks: [
-      { start: "2026-11-02T09:00:00.000Z", end: "2026-11-02T09:20:00.000Z" },
+      { start: "2026-11-02T09:00:00.000Z", end: "2026-11-02T11:00:00.000Z" },
       { start: "2026-11-03T09:00:00.000Z", end: "2026-11-03T09:20:00.000Z" },
     ],
+    pomodoroSessions: [{ id: "old-session", scheduleKey: "0:old", status: "unfulfilled" }],
   };
 
-  const events = taskToEvents(task).filter((event) => event.extendedProps.kind === "task");
+  const events = taskToEvents(task);
+  assert.equal(events.length, 2);
   assert.deepEqual(events.map((event) => ({
     id: event.id,
+    title: event.title,
     start: event.start,
-    backgroundColor: event.backgroundColor,
-    borderColor: event.borderColor,
+    end: event.end,
     taskId: event.extendedProps.taskId,
     blockIndex: event.extendedProps.blockIndex,
+    kind: event.extendedProps.kind,
+    editable: event.editable,
   })), [
-    { id: "task-1:block:0", start: task.blocks[0].start, backgroundColor: events[0].backgroundColor, borderColor: events[0].borderColor, taskId: "task-1", blockIndex: 0 },
-    { id: "task-1:block:1", start: task.blocks[1].start, backgroundColor: events[0].backgroundColor, borderColor: events[0].borderColor, taskId: "task-1", blockIndex: 1 },
+    {
+      id: "task-1:block:0",
+      title: task.title,
+      start: task.blocks[0].start,
+      end: task.blocks[0].end,
+      taskId: task.id,
+      blockIndex: 0,
+      kind: "task",
+      editable: true,
+    },
+    {
+      id: "task-1:block:1",
+      title: task.title,
+      start: task.blocks[1].start,
+      end: task.blocks[1].end,
+      taskId: task.id,
+      blockIndex: 1,
+      kind: "task",
+      editable: true,
+    },
   ]);
+  assert.ok(events.every((event) => event.classNames.includes("event--calendar-task")));
 });
 
-test("el calendario muestra enfoque y descansos calculados para cada bloque de tarea", () => {
-  const task = {
-    id: "task-pomodoro",
-    title: "Preparar entrega",
-    status: "pending",
-    start: "2026-11-02T09:00:00.000Z",
-    end: "2026-11-02T10:00:00.000Z",
-  };
-  const events = taskToEvents(task).filter((event) => event.extendedProps.kind.startsWith("pomodoro-"));
+test("mover y redimensionar una tarea conserva su bloque en ISO", () => {
+  const start = new Date("2026-11-02T09:00:00.000Z");
+  const oldEvent = { start, end: new Date("2026-11-02T10:00:00.000Z") };
+  const event = { start, end: new Date("2026-11-02T09:45:00.000Z") };
 
-  assert.deepEqual(events.map((event) => [event.extendedProps.kind, event.start, event.end]), [
-    ["pomodoro-focus", "2026-11-02T09:00:00.000Z", "2026-11-02T09:30:00.000Z"],
-    ["pomodoro-focus", "2026-11-02T09:30:00.000Z", "2026-11-02T10:00:00.000Z"],
-  ]);
-  assert.equal(taskToEvents(task).some((event) => event.extendedProps.kind === "task"), false);
-  assert.deepEqual(events.map((event) => event.title), ["Enfoque · 25 min", "Enfoque · 25 min"]);
-  assert.deepEqual(events.map((event) => [event.extendedProps.focusEnd, event.extendedProps.breakStart, event.extendedProps.breakEnd]), [
-    ["2026-11-02T09:25:00.000Z", "2026-11-02T09:25:00.000Z", "2026-11-02T09:30:00.000Z"],
-    ["2026-11-02T09:55:00.000Z", "2026-11-02T09:55:00.000Z", "2026-11-02T10:00:00.000Z"],
-  ]);
-  assert.ok(events.every((event) => event.classNames.includes("event--pomodoro-cycle-with-break")));
-  assert.ok(events.every((event) => event.editable === false));
-});
-
-test("el calendario muestra los minutos residuales y vuelve a calcularse al editar el bloque", () => {
-  const task = {
-    id: "task-residual",
-    title: "Leer",
-    status: "pending",
+  assert.deepEqual(eventToBlock(event, oldEvent), {
     start: "2026-11-02T09:00:00.000Z",
     end: "2026-11-02T09:45:00.000Z",
-  };
-  const events = taskToEvents(task).filter((event) => event.extendedProps.kind === "pomodoro-focus");
-  assert.deepEqual(events.map((event) => [event.title, event.start, event.end]), [
-    ["Enfoque · 25 min", "2026-11-02T09:00:00.000Z", "2026-11-02T09:30:00.000Z"],
-    ["Enfoque · 15 min", "2026-11-02T09:30:00.000Z", "2026-11-02T09:45:00.000Z"],
-  ]);
-
-  const extendedEvents = taskToEvents({ ...task, end: "2026-11-02T10:00:00.000Z" })
-    .filter((event) => event.extendedProps.kind === "pomodoro-focus");
-  assert.equal(extendedEvents.length, 2);
-  assert.equal(new Set(extendedEvents.map((event) => event.id)).size, 2);
-  assert.equal(extendedEvents[1].end, "2026-11-02T10:00:00.000Z");
+  });
 });
 
 test("cada tarea recibe un color compartido por sus bloques y distinto del de otra tarea", () => {
@@ -86,14 +75,8 @@ test("cada tarea recibe un color compartido por sus bloques y distinto del de ot
       { start: "2026-11-03T09:00:00.000Z", end: "2026-11-03T09:20:00.000Z" },
     ],
   };
-  const colors = taskToEvents(task)
-    .filter((event) => event.extendedProps.kind === "task")
-    .map((event) => event.backgroundColor);
-  const otherTask = { ...task, id: "task-1" };
+  const colors = taskToEvents(task).map((event) => event.backgroundColor);
 
   assert.equal(colors[0], colors[1]);
-  assert.notEqual(
-    colors[0],
-    taskToEvents(otherTask).find((event) => event.extendedProps.kind === "task").backgroundColor
-  );
+  assert.notEqual(colors[0], taskToEvents({ ...task, id: "task-1" })[0].backgroundColor);
 });

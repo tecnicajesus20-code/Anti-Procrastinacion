@@ -27,8 +27,9 @@ function createButton(className, text, onClick, { disabled = false, title = "" }
  * @param {(taskId: string) => void} addBlockDialog
  * @param {(taskId: string, taskTitle: string, block: {start: string, end: string}) => Promise<void>} startPomodoro
  * @param {ReturnType<import("../../application/pomodoro-session.service.js").createPomodoroSessionService>} pomodoroSessions
+ * @param {(taskTitle: string, onSubmit: (reason: string) => Promise<void>) => void} openUnfulfilledDialog
  */
-export function initTaskList(taskService, editBlockDialog, editTaskDialog, addBlockDialog, startPomodoro, pomodoroSessions) {
+export function initTaskList(taskService, editBlockDialog, editTaskDialog, addBlockDialog, startPomodoro, pomodoroSessions, openUnfulfilledDialog) {
   const list = byId("task-list");
 
   function renderItem(task) {
@@ -127,20 +128,20 @@ export function initTaskList(taskService, editBlockDialog, editTaskDialog, addBl
             createButton("btn btn--primary", "Confirmar completada", () => runAction(
               () => pomodoroSessions.confirm(task.id, session.id)
             )),
-            createButton("btn btn--danger", "Marcar incumplida", () => {
-              const reason = window.prompt("Motivo de incumplimiento (opcional):");
-              if (reason !== null) runAction(() => pomodoroSessions.markUnfulfilled(task.id, session.id, reason));
-            })
+            createButton("btn btn--danger", "Marcar incumplida", () => openUnfulfilledDialog(
+              task.title,
+              (reason) => pomodoroSessions.markUnfulfilled(task.id, session.id, reason)
+            ))
           );
         } else {
           sessionActions.append(
             createButton("btn", isCurrent && pomodoroSessions.getState().timer?.running ? "Sesión en curso" : "Reanudar sesión", () => runAction(
               () => pomodoroSessions.resume(task.id, session.id)
             ), { disabled: Boolean(active && !isCurrent) }),
-            createButton("btn btn--danger", "Marcar incumplida", () => {
-              const reason = window.prompt("Motivo de incumplimiento (opcional):");
-              if (reason !== null) runAction(() => pomodoroSessions.markUnfulfilled(task.id, session.id, reason));
-            }, { disabled: Boolean(active && !isCurrent) })
+            createButton("btn btn--danger", "Marcar incumplida", () => openUnfulfilledDialog(
+              task.title,
+              (reason) => pomodoroSessions.markUnfulfilled(task.id, session.id, reason)
+            ), { disabled: Boolean(active && !isCurrent) })
           );
         }
         sessionItem.append(sessionActions);

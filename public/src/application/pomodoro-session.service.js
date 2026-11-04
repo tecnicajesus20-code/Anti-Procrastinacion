@@ -435,6 +435,8 @@ export function createPomodoroSessionService({
   }
 
   async function markUnfulfilled(taskId, sessionId, reason) {
+    const failureReason = String(reason ?? "").trim();
+    if (!failureReason) throw new Error("Escribe el motivo del incumplimiento.");
     const task = findTask(taskId);
     let session = findSession(taskId, sessionId);
     if (!task || !session || session.status !== POMODORO_SESSION_STATUS.PENDING) {
@@ -466,7 +468,7 @@ export function createPomodoroSessionService({
       endedAt: session.endedAt ?? timestamp.toISOString(),
       runningSince: null,
       status: POMODORO_SESSION_STATUS.UNFULFILLED,
-      failureReason: String(reason ?? "").trim() || "Sin motivo indicado.",
+      failureReason,
     };
     await saveSession(task, completedSession);
     if (current?.taskId === taskId && current.sessionId === sessionId) {
@@ -487,6 +489,14 @@ export function createPomodoroSessionService({
     return Promise.resolve();
   }
 
+  function cancel() {
+    const session = current ? findSession(current.taskId, current.sessionId) : null;
+    if (session?.status === POMODORO_SESSION_STATUS.PENDING) {
+      return markUnfulfilled(current.taskId, session.id, "El usuario canceló el Pomodoro.");
+    }
+    return reset();
+  }
+
   function subscribe(callback) {
     listeners.add(callback);
     callback(getState());
@@ -499,6 +509,7 @@ export function createPomodoroSessionService({
     resumeBreak,
     pause,
     reset,
+    cancel,
     confirm,
     markUnfulfilled,
     getState,

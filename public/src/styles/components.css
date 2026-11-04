@@ -580,6 +580,126 @@ textarea.input {
   display: none;
 }
 
+.pomodoro-confirm-dialog {
+  position: fixed;
+  inset: 0;
+  width: min(420px, calc(100% - 2rem));
+  height: fit-content;
+  max-height: calc(100dvh - 2rem);
+  margin: auto;
+  padding: 0;
+  overflow: hidden;
+  color: var(--text-main);
+  background: var(--glass-bg-strong);
+  border: 1.5px solid var(--glass-border);
+  border-radius: 18px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4);
+}
+
+.pomodoro-confirm-dialog[open] {
+  animation: pop 0.25s ease-out;
+}
+
+.pomodoro-confirm-dialog::backdrop {
+  background: rgba(5, 25, 18, 0.72);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+}
+
+.pomodoro-confirm-dialog__content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  padding: 1.5rem;
+}
+
+.pomodoro-confirm-dialog__title {
+  color: var(--forest-dark);
+  font-size: 1.15rem;
+}
+
+.pomodoro-confirm-dialog__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  margin-top: 0.4rem;
+}
+
+.unfulfilled-dialog {
+  position: fixed;
+  inset: 0;
+  width: min(520px, calc(100% - 2rem));
+  height: fit-content;
+  max-height: calc(100dvh - 2rem);
+  margin: auto;
+  overflow-y: auto;
+  color: var(--text-main);
+  background: var(--glass-bg-strong);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1.5px solid var(--glass-border);
+  border-radius: 22px;
+  box-shadow: 0 32px 80px rgba(10, 70, 53, 0.4);
+}
+
+.unfulfilled-dialog[open] {
+  animation: dialog-in 0.22s var(--ease);
+}
+
+.unfulfilled-dialog::backdrop {
+  background: rgba(5, 25, 18, 0.72);
+  backdrop-filter: blur(7px);
+  -webkit-backdrop-filter: blur(7px);
+}
+
+.unfulfilled-dialog__form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding: 2rem;
+}
+
+.unfulfilled-dialog__title {
+  margin: 0;
+  color: var(--forest-dark);
+  font-size: 1.5rem;
+  line-height: 1.2;
+}
+
+.unfulfilled-dialog__task {
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: var(--text-muted);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.unfulfilled-dialog__task:empty {
+  display: none;
+}
+
+.unfulfilled-dialog__form .field {
+  gap: 0.6rem;
+}
+
+.unfulfilled-dialog__form .input {
+  min-height: 7rem;
+  resize: vertical;
+}
+
+.unfulfilled-dialog__actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+}
+
+.unfulfilled-dialog__actions [disabled] {
+  cursor: wait;
+  opacity: 0.7;
+}
+
 .alarm-dialog {
   position: fixed;
   inset: 0;
@@ -657,21 +777,33 @@ textarea.input {
   .alarm-dialog__content {
     padding: 1.5rem 1.2rem;
   }
+
+  .unfulfilled-dialog__form {
+    padding: 1.5rem 1.2rem;
+  }
 }
 
 /* =========================================
    CALENDARIO (FullCalendar)
    ========================================= */
+.calendar-card {
+  padding: 1.25rem;
+  color: #E5F0F4;
+  background: linear-gradient(145deg, #102B37 0%, #0B202A 100%);
+  border: 1px solid rgba(135, 176, 190, 0.18);
+  box-shadow: 0 18px 44px rgba(2, 15, 22, 0.3);
+}
+
 .calendar {
   padding: 0.5rem;
   font-size: 0.85rem;
 
-  --fc-page-bg-color: transparent;
-  --fc-border-color: var(--line);
-  --fc-neutral-bg-color: var(--field);
-  --fc-neutral-text-color: var(--muted);
-  --fc-today-bg-color: rgba(22, 224, 138, 0.1);
-  --fc-highlight-color: rgba(22, 224, 138, 0.22);
+  --fc-page-bg-color: #0D2530;
+  --fc-border-color: rgba(151, 185, 197, 0.16);
+  --fc-neutral-bg-color: rgba(255, 255, 255, 0.035);
+  --fc-neutral-text-color: #B5C8D0;
+  --fc-today-bg-color: rgba(22, 224, 138, 0.11);
+  --fc-highlight-color: rgba(22, 224, 138, 0.2);
   --fc-now-indicator-color: #E5484D;
   --fc-button-bg-color: var(--teal);
   --fc-button-border-color: var(--teal);
@@ -682,11 +814,11 @@ textarea.input {
   --fc-button-active-border-color: var(--teal-hover);
   --fc-event-bg-color: var(--teal);
   --fc-event-border-color: var(--teal);
-  --fc-event-text-color: var(--on-teal);
+  --fc-event-text-color: #FFFFFF;
 }
 
 .calendar .fc {
-  color: var(--ink);
+  color: #E5F0F4;
 }
 
 .calendar a {
@@ -700,6 +832,7 @@ textarea.input {
 }
 
 .calendar .fc-toolbar-title {
+  color: #F1F7F9;
   font-size: 1.1rem !important;
   font-weight: 800;
   text-transform: capitalize;
@@ -707,8 +840,31 @@ textarea.input {
 
 .calendar .fc-button {
   font-weight: 700;
-  border-radius: 9px;
+  border-radius: 10px;
   box-shadow: none !important;
+}
+
+.calendar .fc-button:focus {
+  box-shadow: 0 0 0 2px rgba(22, 224, 138, 0.3) !important;
+}
+
+.calendar .fc-col-header-cell {
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.calendar .fc-col-header-cell-cushion {
+  padding: 0.45rem 0.2rem;
+  color: #CFDDE2;
+  font-weight: 700;
+}
+
+.calendar .fc-timegrid-slot-label-cushion,
+.calendar .fc-timegrid-axis-cushion {
+  color: #B5C8D0;
+}
+
+.calendar .fc-timegrid-slot-minor {
+  border-top-style: dotted;
 }
 
 .calendar .fc-button:disabled {
@@ -723,62 +879,86 @@ textarea.input {
   box-shadow: 0 2px 6px -2px rgba(15, 38, 58, 0.25);
 }
 
+.calendar .fc-event.event--calendar-task {
+  display: flex;
+  align-items: stretch;
+  padding: 0.2rem 0.3rem 0.45rem;
+  color: #FFFFFF;
+  cursor: grab;
+  box-shadow: 0 3px 9px rgba(15, 38, 58, 0.24);
+}
+
+.calendar .event--calendar-task .fc-event-main,
+.calendar .event--calendar-task .fc-event-main-frame {
+  display: flex;
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.08rem;
+}
+
+.calendar .event--calendar-task .calendar-event-time {
+  max-width: 100%;
+  overflow: hidden;
+  color: inherit;
+  font-size: 0.68rem;
+  font-weight: 650;
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.calendar .event--calendar-task .fc-event-title-container {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  align-items: flex-start;
+  justify-content: flex-start;
+  text-align: left;
+}
+
+.calendar .event--calendar-task .fc-event-title {
+  width: 100%;
+  overflow: hidden;
+  color: #FFFFFF;
+  font-size: 0.76rem;
+  font-weight: 700;
+  line-height: 1.15;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: normal;
+}
+
 .calendar .fc-event:active {
   cursor: grabbing;
 }
 
-.calendar .fc-event.event--pomodoro-focus {
-  cursor: pointer;
-  padding: 0;
-  border-radius: 7px;
-  box-shadow: 0 2px 6px rgba(18, 54, 41, 0.22);
-  overflow: hidden;
-  white-space: nowrap;
-}
-
-.calendar .fc-event.event--pomodoro-cycle-with-break::after {
+.calendar .event--calendar-task .fc-event-resizer-end {
   position: absolute;
-  right: 4px;
-  bottom: 1px;
-  left: 4px;
-  display: flex;
-  height: 8px;
-  align-items: center;
-  justify-content: center;
-  border-radius: 4px;
-  background: #bac4d2;
-  color: #233044;
-  content: "5 minutos";
-  font-size: 0.48rem;
-  font-weight: 800;
-  line-height: 1;
-  white-space: nowrap;
-  text-shadow: none;
-}
-
-.calendar .calendar-pomodoro-label {
-  position: absolute;
-  top: 1px;
-  right: 4px;
-  left: 4px;
+  bottom: 0;
+  right: 0;
+  left: 0;
   display: block;
-  height: 8px;
-  overflow: hidden;
-  color: #fff;
-  font-size: 0.52rem;
-  font-weight: 700;
-  line-height: 8px;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+  width: auto;
+  height: 10px;
+  z-index: 2;
+  cursor: ns-resize;
+  touch-action: none;
 }
 
-.calendar .fc-event.event--pomodoro-completed {
-  opacity: 0.72;
-}
-
-.calendar .fc-event.event--pomodoro-unfulfilled {
-  --fc-event-bg-color: #b42318;
-  --fc-event-border-color: #b42318;
+.calendar .event--calendar-task .fc-event-resizer-end::after {
+  position: absolute;
+  bottom: 3px;
+  left: 50%;
+  width: 24px;
+  height: 3px;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  content: "";
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
 }
 
 /* Estado de la tarea en el calendario (clases que pone presentation/calendar/calendar.mapper.js) */
@@ -835,6 +1015,7 @@ textarea.input {
 .calendar-legend .calendar-hint {
   flex-basis: 100%;
   margin-top: 0;
+  color: #AFC1C9;
 }
 
 /* =========================================

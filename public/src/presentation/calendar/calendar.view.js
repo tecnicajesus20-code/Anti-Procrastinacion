@@ -18,7 +18,7 @@ import { taskToEvents, eventToBlock } from "./calendar.mapper.js";
 export function createCalendarView() {
   let calendar = null;
 
-  function mount(element, { onEventChanged, onDateSelected, onEventSelected, onPomodoroEventSelected }) {
+  function mount(element, { onEventChanged, onDateSelected, onEventSelected }) {
     const { Calendar } = window.FullCalendar ?? {};
     if (!Calendar) throw new Error("FullCalendar no se cargó. Revisa tu conexión a internet.");
 
@@ -36,21 +36,20 @@ export function createCalendarView() {
 
     calendar = new Calendar(element, {
       initialView: window.innerWidth < 600 ? "timeGridDay" : "timeGridWeek", // móvil: un día
-      // ⚠️ REVISIÓN PENDIENTE (ver README_PROVISIONAL_DISENO.md, D-01): "timeGridDays" no es una vista
-      // de FullCalendar; el botón aparece pero no lleva a ninguna vista válida. Además, en móvil no hay
-      // botón para volver a la vista de un día. Sugerencia: right: "timeGridWeek,timeGridDay".
-      headerToolbar: { left: "prev,next today", center: "title", right: "timeGridWeek,timeGridDays" },
+      headerToolbar: { left: "prev,next today", center: "title", right: "dayGridMonth,timeGridWeek,timeGridDay" },
+      buttonText: { today: "Hoy", month: "Mes", week: "Semana", day: "Día" },
       locale: "es",
-      // ⚠️ REVISIÓN PENDIENTE (D-02): 2 = martes. Las tareas demo y el resto de la app asumen semanas
-      // que empiezan en lunes. Si el martes no es intencionado, la sugerencia es firstDay: 1.
+      eventTimeFormat: { hour: "2-digit", minute: "2-digit", hour12: false },
       firstDay: 2,
       allDaySlot: false,
       nowIndicator: true,
       height: "auto",
       slotMinTime: "00:00:00",
       slotMaxTime: "24:00:00",
+      snapDuration: "00:05:00",
       editable: true,              // permite arrastrar eventos
       eventDurationEditable: true, // permite ajustar la duración desde el borde inferior
+      eventResizableFromStart: false,
       eventLongPressDelay: 300,    // en móvil, mantener pulsado para arrastrar
       selectable: true,
       selectMirror: true,
@@ -60,62 +59,26 @@ export function createCalendarView() {
         calendar.unselect();
       },
       eventClick: (info) => {
+        if (info.jsEvent.target instanceof Element
+          && info.jsEvent.target.closest(".fc-event-resizer")) return;
         const props = info.event.extendedProps;
-        if (props.kind?.startsWith("pomodoro-")) {
-          onPomodoroEventSelected?.({
-            taskId: props.taskId,
-            blockIndex: props.blockIndex,
-            kind: props.kind,
-            scheduleKey: props.scheduleKey,
-          });
-          return;
-        }
         onEventSelected({ taskId: props.taskId, blockIndex: props.blockIndex });
       },
       eventContent: (info) => {
-        const { kind } = info.event.extendedProps;
-
         const frame = document.createElement("div");
         frame.className = "fc-event-main-frame";
-        if (kind === "pomodoro-focus") {
-          const { focusStart, focusEnd } = info.event.extendedProps;
-          const formatTime = (value) => new Intl.DateTimeFormat("es", {
-            hour: "2-digit",
-            minute: "2-digit",
-            hourCycle: "h23",
-          }).format(new Date(value));
-          const label = document.createElement("span");
-          label.className = "calendar-pomodoro-label";
-          label.textContent = `${formatTime(focusStart)}–${formatTime(focusEnd)}`;
-          frame.append(label);
-          return { domNodes: [frame] };
-        }
-
-        if (info.timeText) {
-          const time = document.createElement("div");
-          time.className = "fc-event-time";
-          time.textContent = info.timeText;
-          frame.append(time);
-        }
+        const time = document.createElement("div");
+        time.className = "calendar-event-time";
+        time.textContent = info.timeText;
         const titleContainer = document.createElement("div");
         titleContainer.className = "fc-event-title-container";
         const title = document.createElement("div");
         title.className = "fc-event-title";
         title.textContent = info.event.title;
         titleContainer.append(title);
+        frame.append(time);
         frame.append(titleContainer);
         return { domNodes: [frame] };
-      },
-      eventDidMount: (info) => {
-        const { taskTitle, kind, focusStart, focusEnd, breakStart, breakEnd } = info.event.extendedProps;
-        if (kind?.startsWith("pomodoro-")) {
-          const focusLabel = `${new Date(focusStart).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}–${new Date(focusEnd).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} enfoque`;
-          const breakLabel = breakStart && breakEnd
-            ? ` · ${new Date(breakStart).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}–${new Date(breakEnd).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} descanso de 5 min`
-            : "";
-          info.el.title = `${focusLabel}${breakLabel} · ${taskTitle}`;
-          info.el.setAttribute("aria-label", info.el.title);
-        }
       },
       eventDrop: saveEventChange,
       eventResize: saveEventChange,

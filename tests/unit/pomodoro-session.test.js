@@ -107,6 +107,10 @@ test("pausar conserva el tiempo trabajado y abandonar registra el motivo", async
   let session = taskService.getAll()[0].pomodoroSessions[0];
   assert.equal(session.actualDurationSeconds, 1);
   assert.equal(session.runningSince, null);
+  await assert.rejects(
+    sessions.markUnfulfilled("task-session", session.id, "   "),
+    /Escribe el motivo del incumplimiento/
+  );
   await sessions.markUnfulfilled("task-session", session.id, "Me interrumpieron");
 
   session = taskService.getAll()[0].pomodoroSessions[0];
@@ -365,4 +369,17 @@ test("reiniciar una sesión terminada sin confirmar la registra como incumplida"
   assert.equal(session.status, "unfulfilled");
   assert.equal(session.actualDurationSeconds, 2);
   assert.equal(session.failureReason, "Sesión reiniciada por el usuario.");
+});
+
+test("cancelar un Pomodoro registra que el usuario canceló la sesión", async () => {
+  const { taskService, clock, sessions } = await setup();
+  await sessions.start("task-session", 0);
+  clock.tick(2);
+  await new Promise((resolve) => setTimeout(resolve, 0));
+
+  await sessions.cancel();
+  const session = taskService.getAll()[0].pomodoroSessions[0];
+  assert.equal(session.status, "unfulfilled");
+  assert.equal(session.actualDurationSeconds, 2);
+  assert.equal(session.failureReason, "El usuario canceló el Pomodoro.");
 });

@@ -30,6 +30,7 @@ import { initCalendarTaskDialog } from "./presentation/tasks/calendar-task-dialo
 import { initTaskList } from "./presentation/tasks/task-list.view.js";
 import { createCalendarView } from "./presentation/calendar/calendar.view.js";
 import { initPomodoroUi } from "./presentation/pomodoro/pomodoro.ui.js";
+import { initUnfulfilledDialog } from "./presentation/pomodoro/unfulfilled-dialog.ui.js";
 import { initAuthUi } from "./presentation/auth/auth.ui.js";
 import { initNavigation } from "./presentation/shell/navigation.ui.js";
 import { initTaskReminderUi } from "./presentation/tasks/task-reminder.ui.js";
@@ -70,6 +71,7 @@ async function startApp() {
     // El calendario se monta con su pestaña oculta; al mostrarla recalcula su tamaño.
     const navigation = initNavigation({ onPanelShown: { calendar: calendar.refresh } });
     const pomodoro = createPomodoroService();
+    const openUnfulfilledDialog = initUnfulfilledDialog();
     const pomodoroSessions = createPomodoroSessionService({
       taskService,
       pomodoro,
@@ -78,7 +80,7 @@ async function startApp() {
     });
 
     initTaskForm(taskService);
-    const startPomodoroForTask = initPomodoroUi(pomodoro, pomodoroSessions, navigation);
+    const startPomodoroForTask = initPomodoroUi(pomodoro, pomodoroSessions, navigation, openUnfulfilledDialog);
     const calendarDialog = initCalendarTaskDialog(taskService, startPomodoroForTask);
     initTaskList(
       taskService,
@@ -86,7 +88,8 @@ async function startApp() {
       calendarDialog.editTask,
       calendarDialog.addBlockToTask,
       startPomodoroForTask,
-      pomodoroSessions
+      pomodoroSessions,
+      openUnfulfilledDialog
     );
     const reminderUi = initTaskReminderUi(startPomodoroForTask);
     const reminders = createTaskReminderService({
@@ -99,19 +102,6 @@ async function startApp() {
       calendar.mount(byId("calendar"), {
         onDateSelected: calendarDialog.open,
         onEventSelected: calendarDialog.openTask,
-        onPomodoroEventSelected: ({ taskId, blockIndex, kind, scheduleKey }) => {
-          if (kind === "pomodoro-break") {
-            showMessage("Este bloque corresponde a un descanso Pomodoro de 5 minutos.");
-            return;
-          }
-          const task = taskService.getAll().find((candidate) => candidate.id === taskId);
-          const block = task && (Array.isArray(task.blocks) && task.blocks.length ? task.blocks : [task])[blockIndex];
-          if (!task || !block) {
-            showMessage("No se encontró la tarea del bloque Pomodoro.", "error");
-            return;
-          }
-          runAction(() => startPomodoroForTask(task.id, task.title, block, scheduleKey));
-        },
         // Al mover o redimensionar, el caso de uso actualiza el bloque y el calendario se redibuja.
         onEventChanged: async ({ id, blockIndex, start, end }) => {
           try {

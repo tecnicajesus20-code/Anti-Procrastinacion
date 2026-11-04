@@ -154,13 +154,10 @@
 
     <!-- Calendario -->
     <div id="panel-calendar" hidden>
-      <section class="card">
-        <h2 class="card-title">Calendario</h2>
+      <section class="card calendar-card" aria-label="Calendario">
         <div class="calendar" id="calendar"></div>
-        <div class="calendar-legend" aria-label="Leyenda de sesiones Pomodoro">
-          <span class="calendar-legend__item"><span class="calendar-legend__swatch calendar-legend__swatch--focus"></span>Enfoque · 25 min</span>
-          <span class="calendar-legend__item"><span class="calendar-legend__swatch calendar-legend__swatch--break"></span>Descanso · 5 min</span>
-          <p class="calendar-hint">La franja gris al pie de cada enfoque marca el descanso de 5 min. Haz clic en un bloque verde para iniciarlo; para cambiar horarios, edita el bloque desde Tareas.</p>
+        <div class="calendar-legend" aria-label="Uso del calendario">
+          <p class="calendar-hint">Cada tarea aparece en un solo bloque. Haz clic para ver sus detalles e iniciar el Pomodoro; arrastra el borde inferior para ajustar la duración.</p>
         </div>
       </section>
     </div>
@@ -184,7 +181,7 @@
           <div class="btn-row">
             <button class="btn btn--primary" id="pomodoro-start" type="button">Iniciar</button>
             <button class="btn" id="pomodoro-pause" type="button">Pausar</button>
-            <button class="btn" id="pomodoro-reset" type="button">Reiniciar</button>
+            <button class="btn" id="pomodoro-reset" type="button">Cancelar</button>
           </div>
           <div class="btn-row">
             <button class="btn btn--primary" id="pomodoro-confirm" type="button" hidden>Confirmar sesión completada</button>
@@ -195,6 +192,17 @@
     </div>
     </section>
   </main>
+
+  <dialog class="pomodoro-confirm-dialog" id="pomodoro-cancel-dialog" aria-labelledby="pomodoro-cancel-title">
+    <div class="pomodoro-confirm-dialog__content">
+      <h2 class="pomodoro-confirm-dialog__title" id="pomodoro-cancel-title">¿Quieres cancelar este Pomodoro?</h2>
+      <p>La sesión quedará registrada como incumplida.</p>
+      <div class="pomodoro-confirm-dialog__actions">
+        <button class="btn btn--danger" id="pomodoro-cancel-confirm" type="button">Sí, cancelar</button>
+        <button class="btn" id="pomodoro-cancel-dismiss" type="button">Seguir con el Pomodoro</button>
+      </div>
+    </div>
+  </dialog>
 
   <dialog class="event-dialog" id="event-dialog" aria-labelledby="event-dialog-title">
     <form class="event-form" id="event-form">
@@ -221,10 +229,24 @@
         <button class="btn" id="event-dialog-cancel" type="button">Cancelar</button>
         <button class="btn" id="event-dialog-edit" type="button" hidden>Editar tarea</button>
         <button class="btn" id="event-dialog-add-block" type="button" hidden>Crear otro bloque</button>
-        <button class="btn btn--pomodoro" id="event-dialog-pomodoro" type="button" hidden>Iniciar Pomodoro</button>
+        <button class="btn btn--pomodoro" id="event-dialog-pomodoro" type="button" hidden>Iniciar tarea con Pomodoro</button>
         <button class="btn btn--danger" id="event-dialog-delete-block" type="button" hidden>Eliminar bloque</button>
         <button class="btn btn--danger" id="event-dialog-delete-task" type="button" hidden>Eliminar tarea</button>
         <button class="btn btn--primary" id="event-dialog-save" type="submit">Guardar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="unfulfilled-dialog" id="unfulfilled-dialog" aria-labelledby="unfulfilled-dialog-title">
+    <form class="unfulfilled-dialog__form" id="unfulfilled-form">
+      <h2 class="unfulfilled-dialog__title" id="unfulfilled-dialog-title">Registrar incumplimiento</h2>
+      <p class="unfulfilled-dialog__task" id="unfulfilled-task"></p>
+      <label class="field" for="unfulfilled-reason">¿Cuál fue el motivo? (obligatorio)
+        <textarea class="input" id="unfulfilled-reason" rows="3" maxlength="500" required></textarea>
+      </label>
+      <div class="unfulfilled-dialog__actions">
+        <button class="btn btn--danger" id="unfulfilled-submit" type="submit">Registrar incumplimiento</button>
+        <button class="btn" id="unfulfilled-cancel" type="button">Cancelar</button>
       </div>
     </form>
   </dialog>

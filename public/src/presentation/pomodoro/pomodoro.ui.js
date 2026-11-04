@@ -11,8 +11,9 @@ const MODE_LABELS = { [POMODORO_MODE.WORK]: "Trabajo", [POMODORO_MODE.BREAK]: "D
  * @param {ReturnType<import("../../application/pomodoro.service.js").createPomodoroService>} pomodoro
  * @param {ReturnType<import("../../application/pomodoro-session.service.js").createPomodoroSessionService>} pomodoroSessions
  * @param {{navigate: (route: string) => void}} navigation
+ * @param {(taskTitle: string, onSubmit: (reason: string) => Promise<void>) => void} openUnfulfilledDialog
  */
-export function initPomodoroUi(pomodoro, pomodoroSessions, navigation) {
+export function initPomodoroUi(pomodoro, pomodoroSessions, navigation, openUnfulfilledDialog) {
   const time = byId("pomodoro-time");
   const mode = byId("pomodoro-mode");
   const card = byId("pomodoro-card");
@@ -23,6 +24,9 @@ export function initPomodoroUi(pomodoro, pomodoroSessions, navigation) {
   const sessionStatus = byId("pomodoro-session-status");
   const confirmButton = byId("pomodoro-confirm");
   const failButton = byId("pomodoro-fail");
+  const cancelDialog = byId("pomodoro-cancel-dialog");
+  const cancelConfirmButton = byId("pomodoro-cancel-confirm");
+  const cancelDismissButton = byId("pomodoro-cancel-dismiss");
 
   function renderSession(state = pomodoroSessions.getState()) {
     const { currentSession: session, currentTask: task } = state;
@@ -106,7 +110,15 @@ export function initPomodoroUi(pomodoro, pomodoroSessions, navigation) {
     }
   });
   byId("pomodoro-pause").addEventListener("click", () => runAction(() => pomodoroSessions.pause()));
-  byId("pomodoro-reset").addEventListener("click", () => runAction(() => pomodoroSessions.reset()));
+  byId("pomodoro-reset").addEventListener("click", () => cancelDialog.showModal());
+  cancelDismissButton.addEventListener("click", () => cancelDialog.close());
+  cancelConfirmButton.addEventListener("click", () => runAction(
+    async () => {
+      await pomodoroSessions.cancel();
+      cancelDialog.close();
+    },
+    "Pomodoro cancelado."
+  ));
 
   confirmButton.addEventListener("click", () => {
     const session = pomodoroSessions.getCurrentSession();
@@ -118,11 +130,10 @@ export function initPomodoroUi(pomodoro, pomodoroSessions, navigation) {
   failButton.addEventListener("click", () => {
     const session = pomodoroSessions.getCurrentSession();
     if (!session) return;
-    const reason = window.prompt("Motivo de incumplimiento (opcional):");
-    if (reason !== null) runAction(
-      () => pomodoroSessions.markUnfulfilled(session.taskId, session.id, reason),
-      "Sesión registrada como incumplida."
-    );
+    const task = pomodoroSessions.getState().currentTask;
+    openUnfulfilledDialog(task?.title ?? "Sesión Pomodoro", (reason) => (
+      pomodoroSessions.markUnfulfilled(session.taskId, session.id, reason)
+    ));
   });
 
   return async function startPomodoroForTask(taskId, taskTitle, block, scheduleKey) {
