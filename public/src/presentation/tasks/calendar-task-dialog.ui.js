@@ -3,8 +3,19 @@
  */
 import { byId } from "../../shared/dom.js";
 import { showMessage, clearMessage, runAction } from "../../shared/feedback.js";
-import { dateToLocalInputValue } from "../../shared/date-time.js";
+import { dateToLocalInputValue, formatClock } from "../../shared/date-time.js";
 import { getTaskBlocks } from "../../domain/task.js";
+import { planPomodoroBlock } from "../../domain/pomodoro.js";
+
+const formatLongDay = (iso) => new Date(iso).toLocaleDateString("es", {
+  weekday: "long", day: "numeric", month: "long", year: "numeric",
+});
+const formatDuration = (ms) => {
+  const minutes = Math.round(ms / 60_000);
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return [h && `${h} h`, m && `${m} min`].filter(Boolean).join(" ") || "0 min";
+};
 import { readTaskInput } from "./task-input.js";
 
 const FIELDS = { title: "event-title", description: "event-description", start: "event-start", end: "event-end" };
@@ -93,6 +104,10 @@ export function initCalendarTaskDialog(taskService, startPomodoro) {
     deleteTaskButton.hidden = mode !== modes.VIEW;
     blockHint.hidden = mode !== modes.VIEW || selectedBlockCount !== 1;
     saveButton.hidden = viewing;
+    form.querySelector(".event-dialog__actions").classList.toggle("event-dialog__actions--view", viewing);
+    dialog.classList.toggle("event-dialog--view", viewing);
+    byId("event-receipt").hidden = !viewing;
+    byId("event-dialog-cancel").hidden = viewing; // en "Detalles" se cierra con la ×
 
     byId("event-dialog-title").textContent = ({
       [modes.CREATE]: "Nueva tarea",
@@ -101,6 +116,34 @@ export function initCalendarTaskDialog(taskService, startPomodoro) {
       [modes.ADD_BLOCK]: "Crear otro bloque",
     })[mode];
     saveButton.textContent = addingBlock ? "Crear bloque" : "Guardar";
+  }
+
+  /** Rellena el comprobante del modo "Detalles" con el bloque seleccionado. */
+  function fillReceipt(task, blocks, blockIndex) {
+    const block = blocks[blockIndex];
+    const order = [...blocks]
+      .sort((a, b) => Date.parse(a.start) - Date.parse(b.start))
+      .findIndex((candidate) => candidate.start === block.start && candidate.end === block.end);
+    const plan = planPomodoroBlock(block, blockIndex);
+    const focus = plan.filter((slot) => slot.kind === "focus");
+    const breaks = plan.filter((slot) => slot.kind === "break");
+    const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
+
+    byId("receipt-title").textContent = task.title;
+    byId("receipt-date").textContent = formatLongDay(block.start);
+    byId("receipt-start").textContent = formatClock(block.start);
+    byId("receipt-end").textContent = formatClock(block.end);
+    byId("receipt-block").textContent = `${order + 1} de ${blocks.length}`;
+    byId("receipt-focus").textContent = focus.length
+      ? `${plural(focus.length, "sesión", "sesiones")} · ${formatDuration(focus.reduce((sum, slot) => sum + slot.durationSeconds * 1000, 0))}`
+      : "—";
+    byId("receipt-breaks").textContent = breaks.length
+      ? `${plural(breaks.length, "pausa", "pausas")} · ${formatDuration(breaks.length * 5 * 60_000)}`
+      : "—";
+    byId("receipt-total").textContent = formatDuration(Date.parse(block.end) - Date.parse(block.start));
+    const descriptionEl = byId("receipt-description");
+    descriptionEl.textContent = task.description ?? "";
+    descriptionEl.hidden = !task.description;
   }
 
   /** Abre el diálogo con el hueco seleccionado ya relleno. */
@@ -145,6 +188,7 @@ export function initCalendarTaskDialog(taskService, startPomodoro) {
       ? "Esta tarea tiene un solo bloque. Agrega otro antes de eliminarlo, o elimina la tarea completa."
       : "";
     blockHint.hidden = blocks.length !== 1;
+    fillReceipt(task, blocks, blockIndex);
     setMode(initialMode);
     dialog.showModal();
   }

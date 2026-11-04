@@ -3,7 +3,7 @@ import { byId } from "../../shared/dom.js";
 import { runAction } from "../../shared/feedback.js";
 import { readTaskInput } from "./task-input.js";
 
-const FIELDS = { title: "task-title", description: "task-description", dueDate: "task-due", start: "task-start", end: "task-end" };
+const FIELDS = { title: "task-title", description: "task-description",start: "task-start", end: "task-end" };
 
 /** @param {ReturnType<import("../../application/task.service.js").createTaskService>} taskService */
 export function initTaskForm(taskService) {

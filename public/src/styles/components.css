@@ -67,14 +67,14 @@
 .pomodoro-task {
   min-height: 1.4rem;
   margin: 0.35rem 0 0.15rem;
-  color: #DCE7E1;
+  color: #8A9E97;
   font-size: 0.9rem;
   font-weight: 600;
 }
 
 .pomodoro-cycle {
   margin: 0.3rem 0 0.65rem;
-  color: #DCE7E1;
+  color: #8A9E97;
   font-size: 0.9rem;
   font-weight: 700;
   text-align: center;
@@ -549,7 +549,7 @@ textarea.input {
 .pomodoro-session-status {
   min-height: 1.4rem;
   margin: 0.35rem 0;
-  color: #DCE7E1;
+  color: #8A9E97;
   font-size: 0.9rem;
 }
 
@@ -634,6 +634,210 @@ textarea.input {
   padding-top: 1rem;
   border-top: 1px solid var(--bdr);
 }
+
+/* Título de la tarea: sin etiqueta, el nombre en grande */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.event-dialog .event-title-input {
+  padding: 0.55rem 0.2rem;
+  font-size: 1.5rem;
+  font-weight: 800;
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid var(--bdr);
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.event-dialog .event-title-input:focus {
+  border-bottom-color: var(--teal);
+  outline: none;
+}
+
+/* ===== Modo "Detalles": comprobante (tipo factura, fresco) ===== */
+.event-dialog {
+  --receipt-bg: #F2FBF7;
+  --receipt-rule: rgba(14, 90, 70, 0.22);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .event-dialog { --receipt-bg: #133029; --receipt-rule: rgba(155, 227, 203, 0.22); }
+}
+:root[data-theme="dark"] .event-dialog { --receipt-bg: #133029; --receipt-rule: rgba(155, 227, 203, 0.22); }
+
+.event-dialog--view .event-field--title,
+.event-dialog--view .event-time-fields,
+.event-dialog--view .event-field--description {
+  display: none;
+}
+
+.event-dialog--view .event-dialog__header {
+  margin-bottom: 0.9rem;
+}
+
+.event-dialog--view .event-dialog__title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.receipt {
+  position: relative;
+  margin-bottom: 1.6rem;
+  padding: 1.4rem 1.3rem 1.2rem;
+  background: var(--receipt-bg);
+  border-top: 5px solid var(--teal);
+  border-radius: 14px 14px 0 0;
+  font-variant-numeric: tabular-nums;
+  animation: receipt-in 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+
+.receipt[hidden] {
+  display: none;
+}
+
+/* Borde inferior festoneado, como un ticket recién impreso */
+.receipt::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -10px;
+  height: 10px;
+  background: radial-gradient(circle at 8px 0, var(--receipt-bg) 7px, transparent 7.5px) 0 0 / 16px 10px repeat-x;
+}
+
+@keyframes receipt-in {
+  from { opacity: 0; transform: translateY(-14px); clip-path: inset(0 0 100% 0); }
+  to   { opacity: 1; transform: none; clip-path: inset(0 0 -20px 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .receipt { animation: none; }
+}
+
+.receipt__title {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 800;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+.receipt__date {
+  margin: 0.3rem 0 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.receipt__date::first-letter {
+  text-transform: uppercase;
+}
+
+.receipt__rows {
+  margin: 1rem 0 0;
+  padding-top: 0.9rem;
+  border-top: 2px dashed var(--receipt-rule);
+}
+
+.receipt__row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding: 0.28rem 0;
+  font-size: 0.95rem;
+}
+
+.receipt__row dt {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+/* Línea de puntos entre concepto y valor */
+.receipt__row::after {
+  content: "";
+  order: 1;
+  flex: 1;
+  border-bottom: 2px dotted var(--receipt-rule);
+  transform: translateY(-0.25em);
+}
+
+.receipt__row dd {
+  order: 2;
+  margin: 0;
+  font-weight: 700;
+  text-align: right;
+}
+
+.receipt__total {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-top: 0.9rem;
+  padding: 0.75rem 0.9rem;
+  font-weight: 700;
+  color: var(--on-teal);
+  background: var(--teal);
+  border-radius: 10px;
+}
+
+.receipt__total strong {
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+
+.receipt__description {
+  margin: 0.9rem 0 0;
+  padding-top: 0.8rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+  border-top: 2px dashed var(--receipt-rule);
+}
+
+.receipt__description[hidden] {
+  display: none;
+}
+
+.event-dialog--view .event-dialog__block-hint {
+  margin-bottom: 0.4rem;
+  font-size: 0.8rem;
+  text-align: center;
+  color: var(--muted);
+}
+
+/* Modo "Detalles de tarea": botones en cuadrícula ordenada
+   1) Iniciar Pomodoro  2) Editar · Crear bloque  3) Eliminar bloque · Eliminar tarea  4) Cerrar */
+.event-dialog__actions--view {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-areas:
+    "pomodoro pomodoro"
+    "edit     add"
+    "delblock deltask";
+}
+
+.event-dialog__actions--view .btn {
+  width: 100%;
+  min-height: 2.75rem;
+  justify-content: center;
+  text-align: center;
+}
+
+.event-dialog__actions--view #event-dialog-pomodoro { grid-area: pomodoro; min-height: 3rem; font-size: 1rem; }
+.event-dialog__actions--view #event-dialog-edit { grid-area: edit; }
+.event-dialog__actions--view #event-dialog-add-block { grid-area: add; }
+.event-dialog__actions--view #event-dialog-delete-block { grid-area: delblock; }
+.event-dialog__actions--view #event-dialog-delete-task { grid-area: deltask; }
 
 .event-dialog__block-hint {
   margin: 0;
@@ -1015,6 +1219,37 @@ textarea.input {
   font-variant-numeric: tabular-nums;
 }
 
+.pomodoro-next {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 30%;
+  z-index: 1;
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--muted, #6B7C86);
+}
+
+/* Al terminar el tiempo (trabajo ↔ descanso) el reloj gira como una moneda */
+.pomodoro-coin {
+  perspective: 900px;
+}
+
+.pomodoro-coin--flip .pomodoro-ring {
+  animation: coin-flip 1.1s cubic-bezier(0.45, 0, 0.25, 1);
+}
+
+@keyframes coin-flip {
+  0%   { transform: rotateY(0) scale(1); }
+  45%  { transform: rotateY(540deg) scale(1.12) translateY(-12px); }
+  100% { transform: rotateY(720deg) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pomodoro-coin--flip .pomodoro-ring { animation: none; }
+}
+
 .pomodoro .btn-row {
   justify-content: center;
 }
@@ -1185,19 +1420,52 @@ textarea.input {
 /* =========================================
    INICIO Y FIN: cada fecha en su propia caja, separadas y sin desbordar
    ========================================= */
+/* Inicio / Fin con aspecto de comprobante (crear y editar) */
 .event-time-fields {
+  position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 1rem;
-  padding: 1rem;
-  background: var(--field);
-  border: 1px solid var(--line);
-  border-radius: 14px;
+  gap: 0.15rem;
+  margin-bottom: 0.9rem;
+  padding: 1rem 1.2rem 1.1rem;
+  background: var(--receipt-bg, #F2FBF7);
+  border: 0;
+  border-top: 5px solid var(--teal);
+  border-radius: 14px 14px 0 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.event-time-fields::before {
+  content: "Horario";
+  margin-bottom: 0.4rem;
+  padding-bottom: 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border-bottom: 2px dashed var(--receipt-rule, rgba(14, 90, 70, 0.22));
+}
+
+/* Borde inferior festoneado, como un ticket */
+.event-time-fields::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -10px;
+  height: 10px;
+  background: radial-gradient(circle at 8px 0, var(--receipt-bg, #F2FBF7) 7px, transparent 7.5px) 0 0 / 16px 10px repeat-x;
 }
 
 .event-time-fields .field {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0.75rem;
   min-width: 0;
-  gap: 0.4rem;
+  font-weight: 600;
+  color: var(--muted);
 }
 
 .event-time-fields .input {
@@ -1205,8 +1473,21 @@ textarea.input {
   width: 100%;
   min-width: 0;
   max-width: 100%;
-  min-height: 2.9rem;
-  background: var(--solid);
+  min-height: 2.6rem;
+  padding: 0.35rem 0.2rem;
+  font-weight: 700;
+  color: var(--ink);
+  text-align: right;
+  background: transparent;
+  border: 0;
+  border-bottom: 2px dotted var(--receipt-rule, rgba(14, 90, 70, 0.22));
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.event-time-fields .input:focus {
+  border-bottom: 2px solid var(--teal);
+  outline: none;
 }
 
 .event-form .input {
@@ -1324,40 +1605,8 @@ textarea.input {
   font-weight: 800;
 }
 
-.task-detail__controls {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.task-detail__duration {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: var(--muted);
-}
-
-.task-detail__select {
-  width: auto;
-  padding: 0.3rem 0.5rem;
-  font-size: 0.85rem;
-}
-
-.task-detail__reorganize {
-  padding: 0.35rem 0.75rem;
-  font-size: 0.82rem;
-  font-weight: 700;
-  color: var(--ink);
-  background: var(--field);
-  border: 1px solid var(--bdr);
-  border-radius: var(--radius-pill);
-  cursor: pointer;
-}
-
-.task-detail__reorganize:hover {
-  border-color: var(--accent);
+.task-detail__chip[hidden] {
+  display: none;
 }
 
 /* Lista cronológica de bloques: número en círculo unido por una línea vertical */
@@ -1598,4 +1847,262 @@ a.btn--primary {
 /* Calendario: botones Mes · Semana · Día con la primera letra en mayúscula */
 .calendar .fc-button {
   text-transform: capitalize;
+}
+
+/* =========================================
+   SELECTOR DE FECHA Y HORA (date-time-picker.ui.js)
+   ========================================= */
+.dtp-input::-webkit-calendar-picker-indicator {
+  display: none;
+}
+
+.dtp-input:not(:disabled) {
+  cursor: pointer;
+}
+
+.dtp {
+  position: fixed;
+  inset: auto;
+  z-index: 1000;
+  width: 300px;
+  max-width: calc(100vw - 16px);
+  margin: 0;
+  padding: 1rem;
+  color: var(--ink);
+  background: var(--solid);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  box-shadow: 0 24px 60px -12px rgba(6, 40, 30, 0.35);
+  font-family: var(--font-main);
+  font-variant-numeric: tabular-nums;
+}
+
+.dtp:not(:popover-open):not(.dtp--open) {
+  display: none;
+}
+
+.dtp:popover-open,
+.dtp--open {
+  display: block;
+  animation: dtp-in 0.28s var(--ease);
+}
+
+@keyframes dtp-in {
+  from { opacity: 0; transform: translateY(-6px) scale(0.97); }
+}
+
+.dtp__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.6rem;
+}
+
+.dtp__month {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.dtp__month::first-letter {
+  text-transform: uppercase;
+}
+
+.dtp__nav,
+.dtp__step {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  font: inherit;
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--ink);
+  background: var(--field);
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+}
+
+.dtp__nav:hover,
+.dtp__step:hover {
+  background: rgba(22, 224, 138, 0.18);
+}
+
+.dtp__nav:active,
+.dtp__step:active {
+  transform: scale(0.9);
+}
+
+.dtp__weekdays,
+.dtp__grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  text-align: center;
+}
+
+.dtp__weekdays span {
+  padding: 0.25rem 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.dtp__day {
+  aspect-ratio: 1;
+  padding: 0;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ink);
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, transform 0.15s;
+}
+
+.dtp__day:hover {
+  background: rgba(22, 224, 138, 0.16);
+}
+
+.dtp__day--out {
+  color: var(--muted);
+  opacity: 0.45;
+}
+
+.dtp__day--today {
+  box-shadow: inset 0 0 0 2px var(--teal);
+}
+
+.dtp__day--selected,
+.dtp__day--selected:hover {
+  font-weight: 800;
+  color: var(--on-teal);
+  background: var(--teal);
+  box-shadow: 0 6px 14px -6px rgba(22, 224, 138, 0.9);
+  transform: scale(1.06);
+}
+
+.dtp__time {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: 0.8rem;
+  padding: 0.7rem;
+  background: var(--field);
+  border-radius: 14px;
+}
+
+.dtp__time-label {
+  width: 100%;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.dtp__clock,
+.dtp__spin {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.dtp__step {
+  width: 1.6rem;
+  height: 1.6rem;
+  font-size: 1rem;
+  background: var(--solid);
+}
+
+.dtp__digits {
+  min-width: 1.9rem;
+  font-size: 1.35rem;
+  font-weight: 800;
+  text-align: center;
+}
+
+.dtp__colon {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--muted);
+}
+
+.dtp__meridiem {
+  display: flex;
+  padding: 3px;
+  background: var(--solid);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+}
+
+.dtp__seg {
+  padding: 0.3rem 0.55rem;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--muted);
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.dtp__seg--on {
+  color: var(--on-teal);
+  background: var(--teal);
+}
+
+.dtp__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.8rem;
+}
+
+.dtp__link {
+  padding: 0.4rem 0.7rem;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--ink);
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+
+.dtp__link:hover {
+  background: var(--field);
+}
+
+.dtp__done {
+  padding: 0.5rem 1.2rem;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--on-teal);
+  background: var(--teal);
+  border: 0;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.dtp__done:hover {
+  background: var(--teal-hover);
+}
+
+.dtp button:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 2px;
 }

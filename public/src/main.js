@@ -34,6 +34,7 @@ import { initPomodoroUi } from "./presentation/pomodoro/pomodoro.ui.js";
 import { initAuthUi } from "./presentation/auth/auth.ui.js";
 import { initNavigation, initBellMenu } from "./presentation/shell/navigation.ui.js";
 import { initTaskReminderUi } from "./presentation/tasks/task-reminder.ui.js";
+import { initDateTimePickers } from "./presentation/shared/date-time-picker.ui.js";
 
 const auth = createFirebaseAuth();
 const createDemoRepository = () => createMemoryTaskRepository(buildSeedTasks(), {
@@ -81,6 +82,7 @@ async function startApp() {
     initBellMenu(); // campana de recordatorios (solo presentación)
     initTaskForm(taskService);
     initTaskDialog(); // ventana "+ Nueva tarea" (solo presentación)
+    initDateTimePickers(); // calendario propio para todos los campos Inicio / Fin
     const startPomodoroForTask = initPomodoroUi(pomodoro, pomodoroSessions, navigation);
     const calendarDialog = initCalendarTaskDialog(taskService, startPomodoroForTask);
     initTaskList(
