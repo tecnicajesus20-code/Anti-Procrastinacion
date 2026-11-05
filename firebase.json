@@ -1,7 +1,17 @@
 {
   "hosting": {
-    "site": "muvenapp-antiprocrastinacion",
-    "public": "public"
+    "public": "/home/camper/Escritorio/Anti-Procrastinacion/public",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
   },
   "firestore": {
     "database": "(default)",
