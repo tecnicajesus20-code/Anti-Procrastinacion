@@ -217,3 +217,42 @@ textarea {
     transition: none !important;
   }
 }
+/* =========================================
+   iPhone: sin franjas blancas y sin zoom con dos dedos
+   ========================================= */
+/* Color sólido detrás del degradado: Safari lo usa para las barras y el rebote del scroll */
+html {
+  background-color: #F1FAF6;
+  touch-action: pan-x pan-y;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    background-color: #0B2233;
+  }
+}
+
+:root[data-theme="dark"] {
+  background-color: #0B2233;
+}
+
+body {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* Safari iOS no soporta fondos "fixed": el degradado se pinta en una capa fija que cubre toda la pantalla */
+@supports (-webkit-touch-callout: none) {
+  html {
+    background-attachment: scroll;
+  }
+
+  html::before {
+    content: "";
+    position: fixed;
+    inset: -20vh 0;
+    z-index: -1;
+    background: var(--bg);
+    pointer-events: none;
+  }
+}
