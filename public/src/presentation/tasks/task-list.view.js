@@ -4,7 +4,7 @@
  */
 import { byId } from "../../shared/dom.js";
 import { runAction } from "../../shared/feedback.js";
-import { formatShortDateTime } from "../../shared/date-time.js";
+import { formatShortDateTime, formatClock } from "../../shared/date-time.js";
 import { getTaskBlocks, isDone, byStart } from "../../domain/task.js";
 import { POMODORO_SESSION_STATUS, summarizePomodoroTask } from "../../domain/pomodoro.js";
 import { getTaskColor } from "./task-color.js";
@@ -37,8 +37,13 @@ export function initTaskList(taskService, editBlockDialog, editTaskDialog, addBl
   const { blockOutcomes = null, getCategories = () => [] } = extras;
   const detail = initTaskDetailDialog(taskService, { editBlockDialog, editTaskDialog, addBlockDialog, startPomodoro, blockOutcomes, getCategories });
 
-  const DUE_FORMAT = { weekday: "short", day: "numeric", month: "short" };
-  const formatDue = (iso) => new Date(iso).toLocaleDateString("es", DUE_FORMAT).replace(/\./g, "");
+  const DAY_FORMAT = { weekday: "short", day: "numeric", month: "short" };
+  const formatDay = (iso) => new Date(iso).toLocaleDateString("es", DAY_FORMAT).replace(/\./g, "");
+  /** "Último bloque: mié 4 nov, 1:00 a 3:00 a. m." — fecha y hora del bloque más tardío. */
+  const formatLastBlock = (blocks) => {
+    const last = [...blocks].sort((a, b) => Date.parse(b.start) - Date.parse(a.start))[0];
+    return last ? `Último bloque: ${formatDay(last.start)}, ${formatClock(last.start)} a ${formatClock(last.end)}` : "Sin bloques";
+  };
 
   function renderItem(task) {
     const done = isDone(task);
@@ -73,22 +78,13 @@ export function initTaskList(taskService, editBlockDialog, editTaskDialog, addBl
     const count = document.createElement("span");
     count.className = "task-count";
     count.textContent = `${doneBlocks} de ${blocks.length} ${blocks.length === 1 ? "bloque" : "bloques"}`;
-    const due = document.createElement("span");
-    due.className = "task-chip";
-    due.textContent = task.dueDate ? `Vence ${formatDue(task.dueDate)}` : "Sin fecha límite";
+    const lastBlock = document.createElement("span");
+    lastBlock.className = "task-chip";
+    lastBlock.textContent = formatLastBlock(blocks);
     const hint = document.createElement("span");
     hint.className = "task-open-hint";
     hint.textContent = "Ver bloques →";
-    const category = resolveTaskCategory(task, getCategories());
-    if (category) {
-      const chip = document.createElement("span");
-      chip.className = "task-chip task-chip--category";
-      chip.style.setProperty("--category-color", category.color);
-      chip.textContent = `${category.icon} ${category.name}`;
-      meta.append(count, due, chip, hint);
-    } else {
-      meta.append(count, due, hint);
-    }
+    meta.append(count, lastBlock, hint);
 
     item.tabIndex = 0;
     item.setAttribute("aria-label", `Ver detalle de ${task.title}`);

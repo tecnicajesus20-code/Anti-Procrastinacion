@@ -118,13 +118,13 @@ test("recargar (otro servicio sobre el mismo almacenamiento) no permite puntuar 
   assert.equal(pointsSummary(reloaded.getAll()).earned, 2);
 });
 
-test("respuesta No: penalización 1,5× y la tarea no se completa; no se puede responder No antes del fin", async () => {
+test("respuesta No: Desvío del 20 % y la tarea no se completa; no se puede responder No antes del fin", async () => {
   const { taskService, outcomes, clock } = await setup([task("t", [blk(0, 60, "intermedia")])], T0 + 30 * MIN);
   await assert.rejects(outcomes.answer("t", 0, false), /todavía no ha terminado/);
   clock.value = T0 + 61 * MIN;
   await outcomes.answer("t", 0, false);
   const saved = taskService.getAll()[0];
-  assert.deepEqual([saved.blocks[0].outcome.status, saved.blocks[0].outcome.points, saved.status], ["not_completed", -18, "pending"]);
+  assert.deepEqual([saved.blocks[0].outcome.status, saved.blocks[0].outcome.points, saved.status], ["not_completed", -2, "pending"]); // 20 % de 12
 });
 
 test("tarea antigua (sin dificultad): Completar no suma ni resta, pero cuenta para completar la tarea", async () => {
@@ -198,10 +198,10 @@ test("24 h sin respuesta: se registra como no realizado una sola vez", async () 
   s.watcher.check();
   await new Promise((resolve) => setTimeout(resolve, 0));
   const outcome = s.taskService.getAll()[0].blocks[0].outcome;
-  assert.deepEqual([outcome.status, outcome.points, outcome.source], ["not_completed", -18, "timeout"]);
+  assert.deepEqual([outcome.status, outcome.points, outcome.source], ["not_completed", -2, "timeout"]); // 20 % de 12
   s.watcher.check();
   await new Promise((resolve) => setTimeout(resolve, 0));
-  assert.equal(pointsSummary(s.taskService.getAll()).lost, 18);
+  assert.equal(pointsSummary(s.taskService.getAll()).lost, 2); // una sola vez, aunque se compruebe dos veces
   assert.deepEqual(s.errors, []);
 });
 

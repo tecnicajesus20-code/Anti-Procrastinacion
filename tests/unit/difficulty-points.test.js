@@ -38,7 +38,7 @@ test("validateBlockDifficulty: sin dificultad es válido; excedido o desconocido
   assert.equal(validateBlockDifficulty(block(-30, "facil")), null);
 });
 
-test("puntos = multiplicador × minutos/15, redondeado, mínimo 1; penalización 1,5×", () => {
+test("puntos = multiplicador × minutos/15, redondeado, mínimo 1; penalización (Desvío) 20 %, mínimo 1", () => {
   assert.equal(pointsForBlock(block(30, "facil")), 2);
   assert.equal(pointsForBlock(block(5, "facil")), 1); // 0,33 → mínimo 1
   assert.equal(pointsForBlock(block(45, "moderada")), 6);
@@ -47,10 +47,11 @@ test("puntos = multiplicador × minutos/15, redondeado, mínimo 1; penalización
   assert.equal(pointsForBlock(block(180, "hardcore")), 60);
   assert.equal(pointsForBlock(block(25, "intermedia")), 5); // 3 × 1,67 = 5
   assert.equal(pointsForBlock(block(60)), 0); // tarea antigua: no suma
-  assert.equal(penaltyForBlock(block(30, "facil")), 3);
-  assert.equal(penaltyForBlock(block(5, "facil")), 2); // 1 × 1,5 = 1,5 → 2
-  assert.equal(penaltyForBlock(block(60, "intermedia")), 18);
-  assert.equal(penaltyForBlock(block(60)), 0);
+  assert.equal(penaltyForBlock(block(30, "facil")), 1); // 2 × 0,2 = 0,4 → mínimo 1
+  assert.equal(penaltyForBlock(block(5, "facil")), 1); // 1 × 0,2 = 0,2 → mínimo 1
+  assert.equal(penaltyForBlock(block(60, "intermedia")), 2); // 12 × 0,2 = 2,4 → 2
+  assert.equal(penaltyForBlock(block(180, "hardcore")), 12); // 60 × 0,2 = 12
+  assert.equal(penaltyForBlock(block(60)), 0); // tarea antigua: no resta
 });
 
 test("buildBlockOutcome guarda puntos positivos o negativos y es válido", () => {
@@ -58,7 +59,7 @@ test("buildBlockOutcome guarda puntos positivos o negativos y es válido", () =>
   const done = buildBlockOutcome(block(60, "intermedia"), "completed", { now });
   assert.deepEqual(done, { status: "completed", points: 12, resolvedAt: now.toISOString(), source: "user" });
   const failed = buildBlockOutcome(block(60, "intermedia"), "not_completed", { now, source: "timeout" });
-  assert.deepEqual(failed, { status: "not_completed", points: -18, resolvedAt: now.toISOString(), source: "timeout" });
+  assert.deepEqual(failed, { status: "not_completed", points: -2, resolvedAt: now.toISOString(), source: "timeout" });
   assert.equal(buildBlockOutcome(block(60), "not_completed", { now }).points, 0);
   assert.ok(!Object.is(buildBlockOutcome(block(60), "not_completed", { now }).points, -0));
   assert.equal(validateBlockOutcome(done), null);

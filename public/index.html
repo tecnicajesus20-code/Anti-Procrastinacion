@@ -4,10 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Sistema Antiprocrastinación</title>
-  <link rel="stylesheet" href="src/styles/base.css" />
+  <link rel="stylesheet" href="src/styles/base.css?v=20261104e" />
   <link rel="stylesheet" href="src/styles/layout.css" />
   <link rel="stylesheet" href="src/styles/landing.css" />
-  <link rel="stylesheet" href="src/styles/components.css?v=20261104" />
+  <link rel="stylesheet" href="src/styles/components.css?v=20261104f" />
 </head>
 <body>
   <!-- Decoración de fondo -->
@@ -51,7 +51,7 @@
       </div>
 
       <div class="feats">
-        <div class="card"><div class="feat__icon">📝</div><h3 class="feat__title">Tareas claras</h3><p class="feat__text">Crea cada tarea con su título, descripción, horario y fecha límite.</p></div>
+        <div class="card"><div class="feat__icon">📝</div><h3 class="feat__title">Tareas claras</h3><p class="feat__text">Crea cada tarea con su título, descripción, horario y bloques de trabajo.</p></div>
         <div class="card"><div class="feat__icon">🗓️</div><h3 class="feat__title">Calendario</h3><p class="feat__text">Arrastra una tarea para moverla o estira su borde para cambiar su duración.</p></div>
         <div class="card"><div class="feat__icon">⏱️</div><h3 class="feat__title">Pomodoro propio</h3><p class="feat__text">Trabaja 25 minutos y descansa 5, con un temporizador que respira contigo.</p></div>
       </div>
@@ -110,6 +110,7 @@
         <button class="nav-tab" type="button" data-go="tareas">Tareas</button>
         <button class="nav-tab" type="button" data-go="calendario">Calendario</button>
         <button class="nav-tab" type="button" data-go="pomodoro">Pomodoro</button>
+        <button class="nav-tab user-only" type="button" data-go="perfil">Perfil</button>
       </nav>
       <!-- Campana de recordatorios: se abre al pasar el cursor o al pulsar. Mismos botones e ids de siempre. -->
       <div class="bell" id="bell">
@@ -184,8 +185,9 @@
           <button class="icon-button" id="task-dialog-close" type="button" aria-label="Cerrar">×</button>
         </div>
         <form class="form" id="task-form">
-          <label class="field">Título
-            <input class="input" id="task-title" type="text" maxlength="120" required />
+          <label class="field event-field--title">
+            <span class="sr-only">Título</span>
+            <input class="input event-title-input" id="task-title" type="text" maxlength="120" placeholder="Nombre de la tarea" required />
           </label>
           <label class="field">Descripción (opcional)
             <input class="input" id="task-description" type="text" />
@@ -208,9 +210,6 @@
             <select class="input" id="task-difficulty" required></select>
           </label>
           <p class="note difficulty-hint" id="task-difficulty-hint"></p>
-          <label class="field">Fecha límite (opcional)
-            <input class="input" id="task-due" type="datetime-local" />
-          </label>
           <p class="message message--error task-dialog__error" id="task-dialog-error" role="alert" hidden></p>
           <button class="btn btn--primary btn--block" type="submit">Agregar tarea</button>
         </form>
@@ -235,12 +234,15 @@
       <div class="pomodoro-wrap">
         <section class="pomodoro" id="pomodoro-card">
           <p class="pomodoro-mode" id="pomodoro-mode">Trabajo</p>
-          <div class="pomodoro-ring">
-            <svg viewBox="0 0 260 260" aria-hidden="true">
-              <circle class="pomodoro-ring__track" cx="130" cy="130" r="116" />
-              <circle class="pomodoro-ring__progress" id="pomodoro-ring" cx="130" cy="130" r="116" pathLength="1" />
-            </svg>
-            <p class="pomodoro-time" id="pomodoro-time">25:00</p>
+          <div class="pomodoro-coin" id="pomodoro-coin">
+            <div class="pomodoro-ring">
+              <svg viewBox="0 0 260 260" aria-hidden="true">
+                <circle class="pomodoro-ring__track" cx="130" cy="130" r="116" />
+                <circle class="pomodoro-ring__progress" id="pomodoro-ring" cx="130" cy="130" r="116" pathLength="1" />
+              </svg>
+              <p class="pomodoro-time" id="pomodoro-time">25:00</p>
+              <p class="pomodoro-next" id="pomodoro-next">Luego: descanso 5 min</p>
+            </div>
           </div>
           <p class="pomodoro-task" id="pomodoro-task">Sin tarea seleccionada</p>
           <p class="pomodoro-cycle" id="pomodoro-cycle">Sin ciclo programado</p>
@@ -259,17 +261,81 @@
       </div>
     </div>
     <!-- Perfil -->
-     <div id="panel-profile" hidden>
-     <section class="card profile-head">
-       <img class="avatar avatar--lg" id="profile-avatar" alt="Foto de perfil" hidden />
-       <div>
-         <h2 class="card-title" id="profile-name">Sin nombre</h2>
-         <p class="muted" id="profile-email"></p>
-         <p class="muted" id="profile-since"></p>
-       </div>
-     </section>
-     <div id="profile-content"></div>
-   </div>
+    <!-- Perfil: datos personales + Score + historial + estadísticas (profile.ui.js / progress.ui.js) -->
+    <div id="panel-profile" hidden>
+      <div class="profile-grid">
+        <!-- 1 · Información personal -->
+        <section class="card profile-head">
+          <div class="profile-avatar">
+            <img class="avatar avatar--lg" id="profile-avatar" alt="Foto de perfil" hidden />
+            <span class="profile-avatar__initial" id="profile-initial" aria-hidden="true">?</span>
+          </div>
+          <div class="profile-head__info">
+            <h2 class="profile-head__name" id="profile-name">Sin nombre</h2>
+            <p class="muted" id="profile-email"></p>
+            <p class="muted profile-head__since" id="profile-since"></p>
+          </div>
+          <button class="btn btn--sm" id="profile-edit" type="button">Editar perfil</button>
+        </section>
+
+        <!-- 2 · Score y puntos -->
+        <section class="card score-card" aria-labelledby="score-title">
+          <p class="section-kicker" id="score-title">Tu Score</p>
+          <p class="score-card__value" id="score-value">0</p>
+          <div class="score-card__split">
+            <div class="score-pill score-pill--up">
+              <span class="score-pill__label">Impulsos</span>
+              <strong id="score-impulses">+0</strong>
+              <span class="score-pill__sub" id="score-impulses-count"></span>
+            </div>
+            <div class="score-pill score-pill--down">
+              <span class="score-pill__label">Desvíos</span>
+              <strong id="score-deviations">−0</strong>
+              <span class="score-pill__sub" id="score-deviations-count"></span>
+            </div>
+          </div>
+          <p class="score-card__rule">Cumplir un bloque suma su valor completo; no cumplirlo resta solo el 20 %.</p>
+        </section>
+
+        <!-- 3 · Historial de movimientos -->
+        <section class="card profile-section profile-section--history" aria-labelledby="history-title">
+          <h3 class="section-title" id="history-title">Historial de movimientos</h3>
+          <ul class="movements" id="history-list"></ul>
+          <button class="btn btn--sm movements__more" id="history-more" type="button" hidden>Ver más</button>
+        </section>
+
+        <!-- 4 · Distribución del tiempo -->
+        <section class="card profile-section" aria-labelledby="distribution-title">
+          <h3 class="section-title" id="distribution-title">Distribución del tiempo</h3>
+          <p class="section-sub">Tiempo de los bloques completados, por categoría.</p>
+          <div class="distribution" id="distribution"></div>
+        </section>
+
+        <!-- 5 · Productividad -->
+        <section class="card profile-section profile-section--wide" aria-labelledby="productivity-title">
+          <h3 class="section-title" id="productivity-title">Productividad</h3>
+          <div class="stat-tiles" id="productivity-tiles"></div>
+          <div class="productivity-split">
+            <div>
+              <h4 class="subsection-title">Horarios más productivos</h4>
+              <p class="section-sub" id="hours-summary"></p>
+              <div class="chart" id="hours-chart"></div>
+            </div>
+            <div>
+              <h4 class="subsection-title">Tiempo libre esta semana</h4>
+              <div id="free-time"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 6 · Evolución semanal -->
+        <section class="card profile-section profile-section--wide" aria-labelledby="evolution-title">
+          <h3 class="section-title" id="evolution-title">Evolución semanal</h3>
+          <p class="section-sub">Últimas 8 semanas. Cada gráfico tiene su propia escala.</p>
+          <div class="evolution" id="evolution"></div>
+        </section>
+      </div>
+    </div>
 
     </section>
   </main>
@@ -280,8 +346,25 @@
         <h2 class="event-dialog__title" id="event-dialog-title">Nueva tarea</h2>
         <button class="icon-button" id="event-dialog-close" type="button" aria-label="Cerrar">×</button>
       </div>
-      <label class="field">Título
-        <input class="input event-title-input" id="event-title" type="text" maxlength="120" placeholder="Añade un título" required />
+      <!-- Modo "Detalles": resumen tipo comprobante (lo rellena calendar-task-dialog.ui.js) -->
+      <div class="receipt" id="event-receipt" hidden>
+        <h3 class="receipt__title" id="receipt-title"></h3>
+        <p class="receipt__date" id="receipt-date"></p>
+        <dl class="receipt__rows">
+          <div class="receipt__row"><dt>Inicio</dt><dd id="receipt-start"></dd></div>
+          <div class="receipt__row"><dt>Fin</dt><dd id="receipt-end"></dd></div>
+          <div class="receipt__row"><dt>Bloque</dt><dd id="receipt-block"></dd></div>
+        </dl>
+        <dl class="receipt__rows">
+          <div class="receipt__row"><dt>Enfoque</dt><dd id="receipt-focus"></dd></div>
+          <div class="receipt__row"><dt>Descansos</dt><dd id="receipt-breaks"></dd></div>
+        </dl>
+        <div class="receipt__total"><span>Duración total</span><strong id="receipt-total"></strong></div>
+        <p class="receipt__description" id="receipt-description"></p>
+      </div>
+      <label class="field event-field--title">
+        <span class="sr-only">Título</span>
+        <input class="input event-title-input" id="event-title" type="text" maxlength="120" placeholder="Nombre de la tarea" required />
       </label>
       <div class="event-time-fields">
         <label class="field">Inicio
@@ -295,7 +378,7 @@
         <select class="input" id="event-difficulty"></select>
       </label>
       <p class="note difficulty-hint" id="event-difficulty-hint"></p>
-      <label class="field">Descripción <span class="optional-label">(opcional)</span>
+      <label class="field event-field--description">Descripción <span class="optional-label">(opcional)</span>
         <textarea class="input event-description-input" id="event-description" rows="2"></textarea>
       </label>
       <div class="category-field">
@@ -330,25 +413,49 @@
       </div>
       <div class="task-detail__meta">
         <span class="task-detail__chip"><span aria-hidden="true">🗓️</span> <span id="task-detail-when"></span></span>
-        <span class="task-detail__chip"><span aria-hidden="true">⚑</span> <span id="task-detail-due"></span></span>
+        <span class="task-detail__chip"><span aria-hidden="true">⏱</span> <span id="task-detail-last"></span></span>
         <span class="task-detail__chip task-detail__chip--category" id="task-detail-category" hidden></span>
         <span class="task-detail__chip task-detail__chip--points" id="task-detail-points" hidden></span>
       </div>
       <div class="task-detail__section-head">
         <h3 class="task-detail__section-title">Bloques de trabajo</h3>
-        <div class="task-detail__controls">
-          <label class="task-detail__duration">Duración
-            <select class="input task-detail__select" id="task-detail-duration"></select>
-            min
-          </label>
-          <button class="task-detail__reorganize" id="task-detail-reorganize" type="button">Reorganizar</button>
-        </div>
       </div>
       <ol class="work-timeline" id="task-detail-blocks"></ol>
       <p class="task-detail__note" id="task-detail-note"></p>
       <p class="message message--error task-dialog__error task-detail__error" id="task-detail-error" role="alert" hidden></p>
       <div class="task-detail__actions" id="task-detail-actions"></div>
     </div>
+  </dialog>
+
+  <!-- Editar perfil (profile.ui.js). El correo NO se edita aquí: pertenece a la cuenta de Firebase Auth. -->
+  <dialog class="event-dialog profile-dialog" id="profile-dialog" aria-labelledby="profile-dialog-title">
+    <form class="form" id="profile-form">
+      <div class="event-dialog__header">
+        <h2 class="event-dialog__title" id="profile-dialog-title">Editar perfil</h2>
+        <button class="icon-button" id="profile-dialog-close" type="button" aria-label="Cerrar">×</button>
+      </div>
+      <div class="profile-dialog__photo">
+        <img class="avatar avatar--lg" id="profile-form-preview" alt="Vista previa de la foto" hidden />
+        <span class="profile-avatar__initial" id="profile-form-initial" aria-hidden="true">?</span>
+        <div class="profile-dialog__photo-actions">
+          <label class="btn btn--sm" for="profile-form-photo">Cambiar foto</label>
+          <input class="sr-only" id="profile-form-photo" type="file" accept="image/*" />
+          <button class="btn btn--sm btn--danger" id="profile-form-remove-photo" type="button">Quitar foto</button>
+        </div>
+      </div>
+      <label class="field">Nombre
+        <input class="input" id="profile-form-name" type="text" maxlength="50" autocomplete="name" required />
+      </label>
+      <label class="field">Correo
+        <input class="input" id="profile-form-email" type="email" disabled />
+      </label>
+      <p class="note">El correo es el de tu cuenta y no se cambia desde el perfil.</p>
+      <p class="message message--error task-dialog__error" id="profile-form-error" role="alert" hidden></p>
+      <div class="event-dialog__actions">
+        <button class="btn" id="profile-form-cancel" type="button">Cancelar</button>
+        <button class="btn btn--primary" id="profile-form-save" type="submit">Guardar</button>
+      </div>
+    </form>
   </dialog>
 
   <!-- Aviso tras "Recuperar contraseña": se abre como ventana flotante (auth.ui.js) -->
