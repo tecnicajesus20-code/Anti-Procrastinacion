@@ -3025,3 +3025,72 @@ a.btn--primary {
   outline: 2px solid var(--teal);
   outline-offset: 2px;
 }
+
+/* =========================================
+   AJUSTES MÓVIL · cabecera (solo pantallas pequeñas; escritorio sin cambios)
+   ========================================= */
+@media (max-width: 520px) {
+  html,
+  body {
+    overflow-x: hidden;
+  }
+
+  .top {
+    gap: 0.6rem;
+    padding: 0.6rem 0.75rem;
+  }
+
+  .top > * {
+    min-width: 0;
+  }
+
+  /* Las 4 pestañas comparten el ancho y siempre caben */
+  .nav-tabs {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+    gap: 0.2rem;
+  }
+
+  .nav-tab {
+    min-width: 0;
+    padding: 0.5rem 0.2rem;
+    font-size: clamp(0.72rem, 3.4vw, 0.9rem);
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Nombre/correo largo: se recorta con "…" en vez de ensanchar la página */
+  .user-profile {
+    min-width: 0;
+    max-width: 100%;
+    flex: 1 1 auto;
+  }
+
+  .user-profile .user {
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .top .btn--sm {
+    flex-shrink: 0;
+  }
+
+  /* Campana arriba a la derecha, en la misma fila que el logo */
+  .top .logo {
+    display: flex;
+    align-items: center;
+    min-height: 40px;
+    padding-right: 48px;
+  }
+
+  .top .bell {
+    position: absolute;
+    top: 0.6rem;
+    right: 0.75rem;
+  }
+}

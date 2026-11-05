@@ -2,12 +2,21 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <!-- Color de las barras del navegador (iPhone/Android) para que no queden en blanco -->
+  <meta name="theme-color" content="#0B2233" media="(prefers-color-scheme: dark)" />
+  <meta name="theme-color" content="#F1FAF6" media="(prefers-color-scheme: light)" />
+  <!-- Safari en iPhone ignora user-scalable=no: se bloquea el zoom con dos dedos aquí -->
+  <script>
+    ["gesturestart", "gesturechange", "gestureend"].forEach(function (t) {
+      document.addEventListener(t, function (e) { e.preventDefault(); }, { passive: false });
+    });
+  </script>
   <title>Sistema Antiprocrastinación</title>
-  <link rel="stylesheet" href="src/styles/base.css?v=20261104e" />
+  <link rel="stylesheet" href="src/styles/base.css?v=20261105a" />
   <link rel="stylesheet" href="src/styles/layout.css" />
   <link rel="stylesheet" href="src/styles/landing.css" />
-  <link rel="stylesheet" href="src/styles/components.css?v=20261104f" />
+  <link rel="stylesheet" href="src/styles/components.css?v=20261105n" />
 </head>
 <body>
   <!-- Decoración de fondo -->
