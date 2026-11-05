@@ -2,6 +2,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
 :root {
+  /* color-scheme: los controles nativos (calendario, listas) usan el tema de la página */
+  color-scheme: light;
   --bg: linear-gradient(180deg, #FBFFFD, #F1FAF6);
   --glass: #FFFFFF;
   --solid: #FFFFFF;
@@ -50,6 +52,7 @@
 /* Modo oscuro: sigue la preferencia del sistema; data-theme en <html> permite forzarlo si algún día se añade un selector */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
+    color-scheme: dark;
     --bg: linear-gradient(125deg, #06231C, #0B2233 50%, #0A2B3D);
     --glass: rgba(20, 44, 54, 0.6);
     --solid: #10242C;
@@ -70,6 +73,7 @@
 }
 
 :root[data-theme="dark"] {
+  color-scheme: dark;
   --bg: linear-gradient(125deg, #06231C, #0B2233 50%, #0A2B3D);
   --glass: rgba(20, 44, 54, 0.6);
   --solid: #10242C;

@@ -62,21 +62,28 @@ export function createCalendarView() {
       editable: true,              // permite arrastrar eventos
       eventDurationEditable: true, // permite ajustar la duración desde el borde inferior
       eventLongPressDelay: 300,    // en móvil, mantener pulsado para arrastrar
+      // Sin encimar: al mover, estirar o seleccionar no se puede caer sobre otra tarea; solo justo arriba o abajo.
+      // FullCalendar muestra el cursor de "no permitido" y, al soltar encima, el bloque vuelve a su sitio.
+      eventOverlap: false,
+      selectOverlap: false,
       selectable: true,
       selectMirror: true,
       // La animación al revertir un cambio fallido es la de FullCalendar (dragRevertDuration, 500 ms por defecto).
       select: (info) => {
-        if (info.allDay) {
-          // Vista de mes: se selecciona un día entero; se propone 09:00–10:00 del primer día elegido.
-          const start = new Date(info.start);
-          start.setHours(9, 0, 0, 0);
-          const end = new Date(start);
-          end.setHours(10);
-          onDateSelected({ start, end });
-        } else {
-          onDateSelected({ start: info.start, end: info.end });
+        try {
+          if (info.allDay) {
+            // Vista de mes: se selecciona un día entero; se propone 09:00–10:00 del primer día elegido.
+            const start = new Date(info.start);
+            start.setHours(9, 0, 0, 0);
+            const end = new Date(start);
+            end.setHours(10);
+            onDateSelected({ start, end });
+          } else {
+            onDateSelected({ start: info.start, end: info.end });
+          }
+        } finally {
+          calendar.unselect(); // el recuadro verde se quita siempre, aunque abrir la ventana falle
         }
-        calendar.unselect();
       },
       eventClick: (info) => {
         const props = info.event.extendedProps;

@@ -2,6 +2,7 @@
  * LISTA DE TAREAS: dibuja tarjetas y conecta las acciones con sus casos de uso.
  * No decide reglas de estado: Completar/Reabrir es el caso de uso taskService.toggleDone.
  */
+import { promptDialog } from "../shared/confirm-dialog.ui.js";
 import { byId } from "../../shared/dom.js";
 import { runAction } from "../../shared/feedback.js";
 import { formatShortDateTime } from "../../shared/date-time.js";
@@ -37,9 +38,6 @@ export function initTaskList(taskService, editBlockDialog, editTaskDialog, addBl
   const { blockOutcomes = null, getCategories = () => [] } = extras;
   const detail = initTaskDetailDialog(taskService, { editBlockDialog, editTaskDialog, addBlockDialog, startPomodoro, blockOutcomes, getCategories });
 
-  const DUE_FORMAT = { weekday: "short", day: "numeric", month: "short" };
-  const formatDue = (iso) => new Date(iso).toLocaleDateString("es", DUE_FORMAT).replace(/\./g, "");
-
   function renderItem(task) {
     const done = isDone(task);
     const item = document.createElement("li");
@@ -73,9 +71,6 @@ export function initTaskList(taskService, editBlockDialog, editTaskDialog, addBl
     const count = document.createElement("span");
     count.className = "task-count";
     count.textContent = `${doneBlocks} de ${blocks.length} ${blocks.length === 1 ? "bloque" : "bloques"}`;
-    const due = document.createElement("span");
-    due.className = "task-chip";
-    due.textContent = task.dueDate ? `Vence ${formatDue(task.dueDate)}` : "Sin fecha límite";
     const hint = document.createElement("span");
     hint.className = "task-open-hint";
     hint.textContent = "Ver bloques →";
@@ -85,9 +80,9 @@ export function initTaskList(taskService, editBlockDialog, editTaskDialog, addBl
       chip.className = "task-chip task-chip--category";
       chip.style.setProperty("--category-color", category.color);
       chip.textContent = `${category.icon} ${category.name}`;
-      meta.append(count, due, chip, hint);
+      meta.append(count, chip, hint);
     } else {
-      meta.append(count, due, hint);
+      meta.append(count, hint);
     }
 
     item.tabIndex = 0;
@@ -190,8 +185,8 @@ export function initTaskList(taskService, editBlockDialog, editTaskDialog, addBl
             createButton("btn btn--primary", "Confirmar completada", () => runAction(
               () => pomodoroSessions.confirm(task.id, session.id)
             )),
-            createButton("btn btn--danger", "Marcar incumplida", () => {
-              const reason = window.prompt("Motivo de incumplimiento (opcional):");
+            createButton("btn btn--danger", "Marcar incumplida", async () => {
+              const reason = await promptDialog({ title: "¿Por qué no se completó?", message: "Cuéntalo en pocas palabras (opcional). Te ayudará a ver qué te distrae.", placeholder: "Ej.: me interrumpieron", confirmText: "Registrar", danger: true, icon: "📝" });
               if (reason !== null) runAction(() => pomodoroSessions.markUnfulfilled(task.id, session.id, reason));
             })
           );
@@ -200,8 +195,8 @@ export function initTaskList(taskService, editBlockDialog, editTaskDialog, addBl
             createButton("btn", isCurrent && pomodoroSessions.getState().timer?.running ? "Sesión en curso" : "Reanudar sesión", () => runAction(
               () => pomodoroSessions.resume(task.id, session.id)
             ), { disabled: Boolean(active && !isCurrent) }),
-            createButton("btn btn--danger", "Marcar incumplida", () => {
-              const reason = window.prompt("Motivo de incumplimiento (opcional):");
+            createButton("btn btn--danger", "Marcar incumplida", async () => {
+              const reason = await promptDialog({ title: "¿Por qué no se completó?", message: "Cuéntalo en pocas palabras (opcional). Te ayudará a ver qué te distrae.", placeholder: "Ej.: me interrumpieron", confirmText: "Registrar", danger: true, icon: "📝" });
               if (reason !== null) runAction(() => pomodoroSessions.markUnfulfilled(task.id, session.id, reason));
             }, { disabled: Boolean(active && !isCurrent) })
           );

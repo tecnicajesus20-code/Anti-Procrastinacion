@@ -1,7 +1,18 @@
 {
   "hosting": {
     "site": "muvenapp-antiprocrastinacion",
-    "public": "public"
+    "public": "public",
+    "headers": [
+      {
+        "source": "**/*.@(js|css|html)",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache"
+          }
+        ]
+      }
+    ]
   },
   "firestore": {
     "database": "(default)",

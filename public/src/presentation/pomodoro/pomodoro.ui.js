@@ -1,4 +1,5 @@
 /** PRESENTACIÓN DEL POMODORO: muestra el tiempo y conecta los botones. */
+import { promptDialog } from "../shared/confirm-dialog.ui.js";
 import { byId } from "../../shared/dom.js";
 import { formatMinutesSeconds, formatShortDateTime } from "../../shared/date-time.js";
 import { POMODORO_MODE, POMODORO_DEFAULTS, planPomodoroTask } from "../../domain/pomodoro.js";
@@ -23,6 +24,18 @@ export function initPomodoroUi(pomodoro, pomodoroSessions, navigation) {
   const sessionStatus = byId("pomodoro-session-status");
   const confirmButton = byId("pomodoro-confirm");
   const failButton = byId("pomodoro-fail");
+  const ringBox = card.querySelector(".pomodoro-ring");
+  let lastMode = null;
+
+  /** Voltea el reloj como una moneda (solo apariencia). */
+  function flipCoin() {
+    ringBox.classList.remove("pomodoro-ring--flip");
+    void ringBox.offsetWidth; // reinicia la animación si ya estaba puesta
+    ringBox.classList.add("pomodoro-ring--flip");
+  }
+  ringBox.addEventListener("animationend", (event) => {
+    if (event.animationName === "coin-flip") ringBox.classList.remove("pomodoro-ring--flip");
+  });
 
   function renderSession(state = pomodoroSessions.getState()) {
     const { currentSession: session, currentTask: task } = state;
@@ -80,6 +93,8 @@ export function initPomodoroUi(pomodoro, pomodoroSessions, navigation) {
       "aria-label",
       state.mode === POMODORO_MODE.BREAK ? "Progreso del descanso" : "Progreso del ciclo"
     );
+    if (lastMode !== null && lastMode !== state.mode) flipCoin();
+    lastMode = state.mode;
     card.classList.toggle("pomodoro--break", state.mode === POMODORO_MODE.BREAK);
     card.classList.toggle("pomodoro--running", state.running);
     renderSession();
@@ -106,7 +121,7 @@ export function initPomodoroUi(pomodoro, pomodoroSessions, navigation) {
     }
   });
   byId("pomodoro-pause").addEventListener("click", () => runAction(() => pomodoroSessions.pause()));
-  byId("pomodoro-reset").addEventListener("click", () => runAction(() => pomodoroSessions.reset()));
+  byId("pomodoro-reset").addEventListener("click", () => { flipCoin(); runAction(() => pomodoroSessions.reset()); });
 
   confirmButton.addEventListener("click", () => {
     const session = pomodoroSessions.getCurrentSession();
@@ -115,10 +130,10 @@ export function initPomodoroUi(pomodoro, pomodoroSessions, navigation) {
       "Sesión completada y registrada."
     );
   });
-  failButton.addEventListener("click", () => {
+  failButton.addEventListener("click", async () => {
     const session = pomodoroSessions.getCurrentSession();
     if (!session) return;
-    const reason = window.prompt("Motivo de incumplimiento (opcional):");
+    const reason = await promptDialog({ title: "¿Por qué no se completó?", message: "Cuéntalo en pocas palabras (opcional). Te ayudará a ver qué te distrae.", placeholder: "Ej.: me interrumpieron", confirmText: "Registrar", danger: true, icon: "📝" });
     if (reason !== null) runAction(
       () => pomodoroSessions.markUnfulfilled(session.taskId, session.id, reason),
       "Sesión registrada como incumplida."

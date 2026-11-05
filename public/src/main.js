@@ -47,6 +47,8 @@ import { initProgressUi } from "./presentation/profile/progress.ui.js";
 import { initCategoryUi } from "./presentation/tasks/category.ui.js";
 import { initBlockIntentDialog } from "./presentation/tasks/block-intent.ui.js";
 import { initBlockEndUi } from "./presentation/tasks/block-end.ui.js";
+import { initLandingFeats } from "./presentation/shell/landing-feats.ui.js";
+import { initDateTimePickers } from "./presentation/shared/datetime-picker.ui.js";
 
 const auth = createFirebaseAuth();
 const createDemoRepository = () => createMemoryTaskRepository(buildSeedTasks(), {
@@ -153,7 +155,14 @@ async function startApp() {
 
     try {
       calendar.mount(byId("calendar"), {
-        onDateSelected: calendarDialog.open,
+        onDateSelected: (slot) => {
+          try {
+            calendarDialog.open(slot);
+          } catch (error) {
+            console.error(error);
+            showMessage(`No se pudo abrir la ventana de nueva tarea: ${error.message}`, "error");
+          }
+        },
         onEventSelected: calendarDialog.openTask,
         onPomodoroEventSelected: ({ taskId, blockIndex, kind, scheduleKey }) => {
           if (kind === "pomodoro-break") {
@@ -205,4 +214,6 @@ async function startApp() {
   }
 }
 
+initDateTimePickers(); // antes que los formularios: envuelve input.value de los campos de fecha
+initLandingFeats(); // solo apariencia: no depende de tareas ni sesión
 startApp();

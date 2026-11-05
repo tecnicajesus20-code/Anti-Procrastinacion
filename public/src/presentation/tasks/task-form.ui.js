@@ -5,7 +5,7 @@ import { readTaskInput } from "./task-input.js";
 import { initDifficultySelect } from "./difficulty-select.ui.js";
 
 const FIELDS = {
-  title: "task-title", description: "task-description", dueDate: "task-due", start: "task-start", end: "task-end",
+  title: "task-title", description: "task-description", start: "task-start", end: "task-end",
   category: "task-category", difficulty: "task-difficulty",
 };
 
@@ -15,11 +15,21 @@ export function initTaskForm(taskService) {
   // Dificultad del primer bloque: deshabilita los niveles que no admiten la duración elegida.
   initDifficultySelect({ select: "task-difficulty", start: "task-start", end: "task-end", hint: "task-difficulty-hint" });
 
+  // Evita crear la tarea dos veces si se pulsa "Agregar tarea" varias veces mientras se guarda.
+  const submitButton = form.querySelector('button[type="submit"]');
+  let saving = false;
+
   form.addEventListener("submit", (event) => {
     event.preventDefault();
-    runAction(async () => {
+    if (saving) return;
+    saving = true;
+    if (submitButton) submitButton.disabled = true;
+    Promise.resolve(runAction(async () => {
       await taskService.add(readTaskInput(FIELDS));
       form.reset();
+    })).finally(() => {
+      saving = false;
+      if (submitButton) submitButton.disabled = false;
     });
   });
 }

@@ -136,6 +136,79 @@
   margin-top: 3rem;
 }
 
+/* Tarjetas que rotan entre varias funciones (landing-feats.ui.js). Las caras se apilan en la misma celda. */
+.feat {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  overflow: hidden;
+  transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+.feat:hover {
+  transform: translateY(-3px);
+  border-color: var(--teal);
+}
+
+.feat__tag {
+  justify-self: start;
+  margin-bottom: 0.8rem;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--teal);
+  background: color-mix(in srgb, var(--teal) 14%, transparent);
+}
+
+.feat__face {
+  grid-area: 2 / 1;
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+  pointer-events: none;
+}
+
+.feat__face.is-active {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+
+.feat__face.is-leaving {
+  opacity: 0;
+  transform: translateY(-14px);
+}
+
+.feat__dots {
+  display: flex;
+  gap: 0.35rem;
+  margin-top: 1rem;
+}
+
+.feat__dots i {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--line);
+  transition: width 0.4s ease, background 0.4s ease;
+}
+
+.feat__dots i.is-active {
+  width: 18px;
+  background: var(--teal);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .feat,
+  .feat__face,
+  .feat__dots i {
+    transition: opacity 0.2s linear;
+    transform: none !important;
+  }
+}
+
 .feat__icon {
   margin-bottom: 0.6rem;
   font-size: 1.6rem;

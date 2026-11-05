@@ -1,6 +1,7 @@
 /**
  * Diálogo para crear tareas, editar una tarea existente o añadirle otro bloque horario.
  */
+import { confirmDialog } from "../shared/confirm-dialog.ui.js";
 import { byId } from "../../shared/dom.js";
 import { showMessage, clearMessage, runAction } from "../../shared/feedback.js";
 import { dateToLocalInputValue } from "../../shared/date-time.js";
@@ -128,7 +129,8 @@ export function initCalendarTaskDialog(taskService, startPomodoro) {
     category.value = "";
     difficulty.setValue("");
     setMode(modes.CREATE);
-    dialog.showModal();
+    if (dialog.open && !dialog.matches(":modal")) dialog.close(); // abierta a medias (no modal): showModal fallaría
+    if (!dialog.open) dialog.showModal();
     title.focus();
   }
 
@@ -239,17 +241,32 @@ export function initCalendarTaskDialog(taskService, startPomodoro) {
     });
   });
 
-  deleteTaskButton.addEventListener("click", () => {
-    if (!selected || !window.confirm("¿Eliminar esta tarea y todos sus bloques?")) return;
+  deleteTaskButton.addEventListener("click", async () => {
+    if (!selected) return;
+    const target = selected;
+    const ok = await confirmDialog({
+      title: "¿Eliminar esta tarea?",
+      message: `Se borrarán «${title.value}» y todos sus bloques. Esta acción no se puede deshacer.`,
+      confirmText: "Sí, eliminar",
+      danger: true,
+    });
+    if (!ok || selected !== target) return;
     runInDialog(async () => {
       await taskService.remove(selected.taskId);
       dialog.close();
     });
   });
 
+  // Evita guardar dos veces: mientras se guarda (Firestore tarda un momento), los clics extra se ignoran.
+  let saving = false;
+
   form.addEventListener("submit", (event) => {
     event.preventDefault();
-    if (mode === modes.VIEW) return;
+    if (mode === modes.VIEW || saving) return;
+    saving = true;
+    saveButton.disabled = true;
+    const saveText = saveButton.textContent;
+    saveButton.textContent = "Guardando…";
 
     runInDialog(async () => {
       const blockFields = difficulty.value() ? { difficulty: difficulty.value() } : {};
@@ -269,11 +286,14 @@ export function initCalendarTaskDialog(taskService, startPomodoro) {
       }
       dialog.close();
       form.reset();
+    }).finally(() => {
+      saving = false;
+      saveButton.disabled = false;
+      saveButton.textContent = saveText;
     });
   });
 
   byId("event-dialog-close").addEventListener("click", () => dialog.close());
-  byId("event-dialog-cancel").addEventListener("click", () => dialog.close());
 
   return { open, openTask, editTask, editBlock, addBlockToTask };
 }

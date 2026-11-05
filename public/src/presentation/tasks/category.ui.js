@@ -3,6 +3,7 @@
  * Solo presentación: crear y eliminar delegan en category.service (que reasigna las tareas a Ocio).
  * Los botones que abren la ventana se marcan en el HTML con data-category-manage.
  */
+import { confirmDialog } from "../shared/confirm-dialog.ui.js";
 import { byId } from "../../shared/dom.js";
 
 /**
@@ -61,7 +62,13 @@ export function initCategoryUi(categoryService, selectIds) {
         remove.addEventListener("click", async () => {
           const count = categoryService.countTasks(category.id);
           const detail = count ? ` Sus ${count} ${count === 1 ? "tarea pasará" : "tareas pasarán"} a Ocio.` : "";
-          if (!window.confirm(`¿Eliminar la categoría «${category.name}»?${detail}`)) return;
+          const ok = await confirmDialog({
+            title: `¿Eliminar «${category.name}»?`,
+            message: `La categoría se borrará.${detail}`,
+            confirmText: "Sí, eliminar",
+            danger: true,
+          });
+          if (!ok) return;
           errorBox.hidden = true;
           remove.disabled = true;
           try {

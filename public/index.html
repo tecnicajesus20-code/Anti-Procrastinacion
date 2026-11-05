@@ -4,10 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Sistema Antiprocrastinación</title>
-  <link rel="stylesheet" href="src/styles/base.css" />
+  <link rel="stylesheet" href="src/styles/base.css?v=20261104r" />
   <link rel="stylesheet" href="src/styles/layout.css" />
   <link rel="stylesheet" href="src/styles/landing.css" />
-  <link rel="stylesheet" href="src/styles/components.css?v=20261104p" />
+  <link rel="stylesheet" href="src/styles/components.css?v=20261104w" />
 </head>
 <body>
   <!-- Decoración de fondo -->
@@ -50,10 +50,46 @@
         </div>
       </div>
 
-      <div class="feats">
-        <div class="card"><div class="feat__icon">📝</div><h3 class="feat__title">Tareas claras</h3><p class="feat__text">Crea cada tarea con su título, descripción, horario y fecha límite.</p></div>
-        <div class="card"><div class="feat__icon">🗓️</div><h3 class="feat__title">Calendario</h3><p class="feat__text">Arrastra una tarea para moverla o estira su borde para cambiar su duración.</p></div>
-        <div class="card"><div class="feat__icon">⏱️</div><h3 class="feat__title">Pomodoro propio</h3><p class="feat__text">Trabaja 25 minutos y descansa 5, con un temporizador que respira contigo.</p></div>
+      <div class="feats" id="landing-feats">
+        <div class="card feat">
+          <span class="feat__tag">Organiza</span>
+          <div class="feat__face is-active">
+            <div class="feat__icon">📝</div><h3 class="feat__title">Tareas claras</h3><p class="feat__text">Crea cada tarea con su título, descripción, categoría y horario.</p>
+          </div>
+          <div class="feat__face" aria-hidden="true">
+            <div class="feat__icon">🏷️</div><h3 class="feat__title">Categorías</h3><p class="feat__text">Agrupa tus tareas en Hogar, Trabajo, Estudio, Ocio… o crea las tuyas con su propio color.</p>
+          </div>
+          <div class="feat__face" aria-hidden="true">
+            <div class="feat__icon">💀</div><h3 class="feat__title">Dificultad</h3><p class="feat__text">Elige de Fácil a Hardcore para cada bloque: más reto, más puntos al cumplirlo.</p>
+          </div>
+          <div class="feat__dots" aria-hidden="true"><i class="is-active"></i><i></i><i></i></div>
+        </div>
+        <div class="card feat">
+          <span class="feat__tag">Planea</span>
+          <div class="feat__face is-active">
+            <div class="feat__icon">🗓️</div><h3 class="feat__title">Calendario</h3><p class="feat__text">Arrastra una tarea para moverla o estira su borde para cambiar su duración.</p>
+          </div>
+          <div class="feat__face" aria-hidden="true">
+            <div class="feat__icon">🧩</div><h3 class="feat__title">Bloques de trabajo</h3><p class="feat__text">Cada horario se divide en bloques de 25 minutos con 5 de pausa, listos para enfocar.</p>
+          </div>
+          <div class="feat__face" aria-hidden="true">
+            <div class="feat__icon">🔔</div><h3 class="feat__title">Recordatorios</h3><p class="feat__text">La campana te avisa cuando una tarea está por empezar y cuando un bloque termina.</p>
+          </div>
+          <div class="feat__dots" aria-hidden="true"><i class="is-active"></i><i></i><i></i></div>
+        </div>
+        <div class="card feat">
+          <span class="feat__tag">Avanza</span>
+          <div class="feat__face is-active">
+            <div class="feat__icon">⏱️</div><h3 class="feat__title">Pomodoro propio</h3><p class="feat__text">Trabaja 25 minutos y descansa 5, con un temporizador que respira contigo.</p>
+          </div>
+          <div class="feat__face" aria-hidden="true">
+            <div class="feat__icon">📈</div><h3 class="feat__title">Tu progreso</h3><p class="feat__text">Gana Impulsos al completar bloques; los Desvíos restan. Tu Score lo resume todo.</p>
+          </div>
+          <div class="feat__face" aria-hidden="true">
+            <div class="feat__icon">☁️</div><h3 class="feat__title">Demo o nube</h3><p class="feat__text">Pruébalo sin cuenta en modo demo, o inicia sesión para guardar tus tareas en la nube.</p>
+          </div>
+          <div class="feat__dots" aria-hidden="true"><i class="is-active"></i><i></i><i></i></div>
+        </div>
       </div>
 
       <div class="flow">
@@ -195,7 +231,7 @@
             <label class="field">Categoría
               <select class="input" id="task-category" required></select>
             </label>
-            <button class="link category-field__manage" type="button" data-category-manage>Gestionar categorías</button>
+            <button class="category-field__manage" type="button" data-category-manage><span class="category-field__manage-icon" aria-hidden="true">＋</span>Gestionar categorías</button>
           </div>
           <div class="event-time-fields">
             <label class="field">Inicio
@@ -209,9 +245,6 @@
             <select class="input" id="task-difficulty" required></select>
           </label>
           <p class="note difficulty-hint" id="task-difficulty-hint"></p>
-          <label class="field">Fecha límite (opcional)
-            <input class="input" id="task-due" type="datetime-local" />
-          </label>
           <p class="message message--error task-dialog__error" id="task-dialog-error" role="alert" hidden></p>
           <button class="btn btn--primary btn--block" type="submit">Agregar tarea</button>
         </form>
@@ -367,18 +400,23 @@
         <label class="field">Categoría
           <select class="input" id="event-category"></select>
         </label>
-        <button class="link category-field__manage" type="button" data-category-manage>Gestionar categorías</button>
+        <button class="category-field__manage" type="button" data-category-manage><span class="category-field__manage-icon" aria-hidden="true">＋</span>Gestionar categorías</button>
       </div>
       <p class="note event-dialog__block-hint" id="event-dialog-block-hint" hidden></p>
       <p class="message message--error task-dialog__error" id="event-dialog-error" role="alert" hidden></p>
       <div class="event-dialog__actions">
-        <button class="btn" id="event-dialog-cancel" type="button">Cancelar</button>
-        <button class="btn" id="event-dialog-edit" type="button" hidden>Editar tarea</button>
-        <button class="btn" id="event-dialog-add-block" type="button" hidden>Crear otro bloque</button>
-        <button class="btn btn--pomodoro" id="event-dialog-pomodoro" type="button" hidden>Iniciar Pomodoro</button>
-        <button class="btn btn--danger" id="event-dialog-delete-block" type="button" hidden>Eliminar bloque</button>
-        <button class="btn btn--danger" id="event-dialog-delete-task" type="button" hidden>Eliminar tarea</button>
-        <button class="btn btn--primary" id="event-dialog-save" type="submit">Guardar</button>
+        <div class="event-dialog__group event-dialog__group--main">
+          <button class="btn btn--pomodoro" id="event-dialog-pomodoro" type="button" hidden>Iniciar Pomodoro</button>
+          <button class="btn" id="event-dialog-edit" type="button" hidden>Editar tarea</button>
+          <button class="btn" id="event-dialog-add-block" type="button" hidden>Crear otro bloque</button>
+        </div>
+        <div class="event-dialog__group event-dialog__group--danger">
+          <button class="btn btn--danger" id="event-dialog-delete-block" type="button" hidden>Eliminar bloque</button>
+          <button class="btn btn--danger" id="event-dialog-delete-task" type="button" hidden>Eliminar tarea</button>
+        </div>
+        <div class="event-dialog__group event-dialog__group--end">
+          <button class="btn btn--primary" id="event-dialog-save" type="submit">Guardar</button>
+        </div>
       </div>
     </form>
   </dialog>
@@ -395,19 +433,11 @@
       </div>
       <div class="task-detail__meta">
         <span class="task-detail__chip"><span aria-hidden="true">🗓️</span> <span id="task-detail-when"></span></span>
-        <span class="task-detail__chip"><span aria-hidden="true">⚑</span> <span id="task-detail-due"></span></span>
         <span class="task-detail__chip task-detail__chip--category" id="task-detail-category" hidden></span>
         <span class="task-detail__chip task-detail__chip--points" id="task-detail-points" hidden></span>
       </div>
       <div class="task-detail__section-head">
         <h3 class="task-detail__section-title">Bloques de trabajo</h3>
-        <div class="task-detail__controls">
-          <label class="task-detail__duration">Duración
-            <select class="input task-detail__select" id="task-detail-duration"></select>
-            min
-          </label>
-          <button class="task-detail__reorganize" id="task-detail-reorganize" type="button">Reorganizar</button>
-        </div>
       </div>
       <ol class="work-timeline" id="task-detail-blocks"></ol>
       <p class="task-detail__note" id="task-detail-note"></p>
@@ -533,6 +563,6 @@
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
   <!-- Idioma español de FullCalendar (nombres de meses y días). Si no carga, calendar.view.js ya trae los textos de los botones. -->
   <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.15/locales/es.global.min.js"></script>
-  <script type="module" src="src/main.js"></script>
+  <script type="module" src="src/main.js?v=20261104x"></script>
 </body>
 </html>

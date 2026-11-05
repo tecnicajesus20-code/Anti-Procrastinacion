@@ -1,6 +1,6 @@
 /**
  * DETALLE DE TAREA (overlay): se abre al hacer clic en una tarjeta de la lista.
- * Muestra título, descripción, horario, fecha límite y los BLOQUES DE TRABAJO en orden cronológico,
+ * Muestra título, descripción, horario y los BLOQUES DE TRABAJO en orden cronológico,
  * cada uno con su botón "Enfocar". Solo presentación: las acciones reutilizan los mismos casos de uso
  * y los mismos diálogos de siempre (editar tarea/bloque, agregar bloque, completar, eliminar).
  */
@@ -9,7 +9,7 @@ import { runAction } from "../../shared/feedback.js";
 import { formatClock, formatDayShort } from "../../shared/date-time.js";
 import { getTaskBlocks, isDone } from "../../domain/task.js";
 import { POMODORO_SESSION_STATUS, planPomodoroTask } from "../../domain/pomodoro.js";
-import { buildWorkBlocks, BLOCK_DURATION_OPTIONS, WORK_BLOCK_DEFAULTS } from "../../domain/work-blocks.js";
+import { buildWorkBlocks, WORK_BLOCK_DEFAULTS } from "../../domain/work-blocks.js";
 import { getTaskColor } from "./task-color.js";
 import { getDifficulty, pointsForBlock } from "../../domain/difficulty.js";
 import { BLOCK_OUTCOME, OUTCOME_SOURCE, usesBlockScoring, isAwaitingAnswer } from "../../domain/block-outcome.js";
@@ -55,24 +55,13 @@ export function initTaskDetailDialog(taskService, { editBlockDialog, editTaskDia
   const titleEl = byId("task-detail-title");
   const descriptionEl = byId("task-detail-description");
   const whenEl = byId("task-detail-when");
-  const dueEl = byId("task-detail-due");
-  const durationSelect = byId("task-detail-duration");
-  const reorganizeButton = byId("task-detail-reorganize");
   const noteEl = byId("task-detail-note");
   const timeline = byId("task-detail-blocks");
   const actionsEl = byId("task-detail-actions");
   const categoryEl = byId("task-detail-category");
   const pointsEl = byId("task-detail-points");
 
-  const durations = new Map(); // taskId → minutos elegidos (solo apariencia, no se guarda)
-  const reorganized = new Map(); // taskId → instante desde el que se reorganizó (solo apariencia)
   let currentId = null;
-
-  durationSelect.replaceChildren(...BLOCK_DURATION_OPTIONS.map((minutes) => {
-    const option = el("option", "", String(minutes));
-    option.value = String(minutes);
-    return option;
-  }));
 
   /** Sale del overlay y ejecuta una acción que abre otra ventana (para no apilar diálogos). */
   const thenClose = (fn) => () => {
@@ -182,8 +171,7 @@ export function initTaskDetailDialog(taskService, { editBlockDialog, editTaskDia
     const blocks = getTaskBlocks(task)
       .map((block, index) => ({ ...block, index }))
       .sort((a, b) => Date.parse(a.start) - Date.parse(b.start));
-    const blockMinutes = durations.get(task.id) ?? WORK_BLOCK_DEFAULTS.blockMinutes;
-    const reorganizeFrom = reorganized.get(task.id) ?? null;
+    const blockMinutes = WORK_BLOCK_DEFAULTS.blockMinutes;
     const now = Date.now();
 
     dialog.style.setProperty("--task-color", getTaskColor(task.id));
@@ -194,14 +182,12 @@ export function initTaskDetailDialog(taskService, { editBlockDialog, editTaskDia
     whenEl.textContent = blocks.length === 1
       ? formatRange(blocks[0])
       : `${formatRange(blocks[0])} · ${blocks.length} horarios`;
-    dueEl.textContent = task.dueDate ? `Vence ${day(task.dueDate)}` : "Sin fecha límite";
     const category = resolveTaskCategory(task, getCategories());
     categoryEl.hidden = !category;
     categoryEl.textContent = category ? `${category.icon} ${category.name}` : "";
     const points = pointsSummary([task]);
     pointsEl.hidden = points.completedBlocks + points.failedBlocks === 0;
     pointsEl.textContent = `${points.net >= 0 ? "+" : ""}${points.net} pts`;
-    durationSelect.value = String(blockMinutes);
 
     // Bloques de trabajo de cada horario, numerados en orden cronológico.
     const items = [];
@@ -221,11 +207,7 @@ export function initTaskDetailDialog(taskService, { editBlockDialog, editTaskDia
       }
       items.push(renderBlockStatus(task, scheduleBlock, now));
 
-      const from = reorganizeFrom && reorganizeFrom > Date.parse(scheduleBlock.start) && reorganizeFrom < Date.parse(scheduleBlock.end)
-        ? new Date(Math.ceil(reorganizeFrom / 300_000) * 300_000).toISOString() // siguiente múltiplo de 5 min
-        : scheduleBlock.start;
-      if (reorganizeFrom && Date.parse(scheduleBlock.end) <= reorganizeFrom) return; // horario ya pasado: se omite
-      const { blocks: workBlocks, total } = buildWorkBlocks({ start: from, end: scheduleBlock.end }, { blockMinutes });
+      const { blocks: workBlocks, total } = buildWorkBlocks({ start: scheduleBlock.start, end: scheduleBlock.end }, { blockMinutes });
       hidden += total - workBlocks.length;
       workBlocks.forEach((workBlock) => {
         number += 1;
@@ -233,12 +215,11 @@ export function initTaskDetailDialog(taskService, { editBlockDialog, editTaskDia
       });
     });
 
-    if (!number) items.push(el("li", "work-empty", reorganizeFrom ? "No quedan bloques pendientes en el horario de esta tarea." : "Esta tarea no tiene bloques de trabajo."));
+    if (!number) items.push(el("li", "work-empty", "Esta tarea no tiene bloques de trabajo."));
     timeline.replaceChildren(...items);
 
     const notes = [];
     if (number) notes.push(`${number} ${number === 1 ? "bloque" : "bloques"} de ${blockMinutes} min con 5 min de pausa`);
-    if (reorganizeFrom) notes.push(`reorganizado desde las ${formatClock(new Date(reorganizeFrom).toISOString())}`);
     if (hidden) notes.push(`${hidden} más no se muestran`);
     noteEl.textContent = notes.join(" · ");
 
@@ -258,23 +239,11 @@ export function initTaskDetailDialog(taskService, { editBlockDialog, editTaskDia
 
   function open(taskId) {
     currentId = taskId;
-    reorganized.delete(taskId);
     render();
     if (!dialog.open) dialog.showModal();
     timeline.scrollTop = 0;
   }
 
-  durationSelect.addEventListener("change", () => {
-    if (!currentId) return;
-    durations.set(currentId, Number(durationSelect.value));
-    render();
-  });
-  reorganizeButton.addEventListener("click", () => {
-    if (!currentId) return;
-    durations.set(currentId, Number(durationSelect.value));
-    reorganized.set(currentId, Date.now());
-    render();
-  });
   byId("task-detail-close").addEventListener("click", () => dialog.close());
   dialog.addEventListener("click", (event) => {
     if (event.target === dialog) dialog.close(); // clic sobre el fondo oscuro
