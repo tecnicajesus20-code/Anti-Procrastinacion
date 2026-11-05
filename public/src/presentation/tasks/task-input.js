@@ -5,7 +5,7 @@
 import { byId } from "../../shared/dom.js";
 import { localInputToIso } from "../../shared/date-time.js";
 
-const DATE_FIELDS = new Set(["start", "end", "dueDate"]);
+const DATE_FIELDS = new Set(["start", "end"]);
 
 /**
  * @param {Record<string, string>} fieldIds  campo de la tarea → id del input (ej. { title: "task-title" })

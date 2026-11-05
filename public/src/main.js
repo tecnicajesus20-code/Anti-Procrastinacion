@@ -46,6 +46,8 @@ import { initProfileUi } from "./presentation/profile/profile.ui.js";
 import { initCategoryUi } from "./presentation/tasks/category.ui.js";
 import { initBlockIntentDialog } from "./presentation/tasks/block-intent.ui.js";
 import { initBlockEndUi } from "./presentation/tasks/block-end.ui.js";
+import { initDateTimePickers } from "./presentation/shared/date-time-picker.ui.js";
+import { initProgressUi } from "./presentation/profile/progress.ui.js";
 
 const auth = createFirebaseAuth();
 const createDemoRepository = () => createMemoryTaskRepository(buildSeedTasks(), {
@@ -94,7 +96,8 @@ async function startApp() {
     const taskService = createTaskService(createDemoRepository());
     const calendar = createCalendarView();
     // El calendario se monta con su pestaña oculta; al mostrarla recalcula su tamaño.
-    const navigation = initNavigation({ onPanelShown: { calendar: calendar.refresh } });
+    const onPanelShown = { calendar: calendar.refresh }; // "profile" se añade al crear el progreso
+    const navigation = initNavigation({ onPanelShown });
     const pomodoro = createPomodoroService();
     const pomodoroSessions = createPomodoroSessionService({
       taskService,
@@ -106,6 +109,7 @@ async function startApp() {
     initBellMenu(); // campana de recordatorios (solo presentación)
     initTaskForm(taskService);
     initTaskDialog(); // ventana "+ Nueva tarea" (solo presentación)
+    initDateTimePickers(); // calendario propio para todos los campos Inicio / Fin
     const categoryService = createCategoryService(createDemoCategoryRepository(), { taskService });
     initCategoryUi(categoryService, ["task-category", "event-category"]);
     const blockOutcomes = createBlockOutcomeService({ taskService });
@@ -181,10 +185,17 @@ async function startApp() {
     }
 
     taskService.subscribe(calendar.render);
-  const profileService = createProfileService();
-   const authUi = initAuthUi(auth, profileService);
-   const profileUi = initProfileUi(profileService);
-   profileService.subscribe(authUi.setProfile);
+    const profileService = createProfileService();
+    const authUi = initAuthUi(auth, profileService);
+    const profileUi = initProfileUi(profileService);
+    profileService.subscribe(authUi.setProfile);
+    // Perfil · Score, historial y estadísticas: se calculan de las MISMAS tareas del usuario (aisladas por UID).
+    const progressUi = initProgressUi({
+      taskService,
+      getCategories: categoryService.getAll,
+      subscribeCategories: categoryService.subscribe,
+    });
+    onPanelShown.profile = progressUi.refresh; // al abrir Perfil se recalcula con la hora actual
 
     await taskService.load();
     await categoryService.load().catch((error) => showMessage(`No se pudieron cargar las categorías: ${error.message}`, "error"));

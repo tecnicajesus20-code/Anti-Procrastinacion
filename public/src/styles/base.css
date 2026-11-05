@@ -135,7 +135,7 @@ textarea {
   z-index: -1;
   pointer-events: none;
   filter: blur(14px);
-  animation: drift 14s ease-in-out infinite alternate;
+  will-change: translate, rotate, border-radius;
 }
 
 .blob--leaf {
@@ -146,6 +146,11 @@ textarea {
   background: linear-gradient(160deg, rgba(25, 230, 140, 0.28), rgba(0, 200, 120, 0.1));
   border-radius: 80% 15% 80% 15%;
   transform: rotate(-15deg);
+  /* Deriva lenta por la pantalla + leve vaivén, como una hoja flotando en el agua */
+  animation:
+    float-leaf 60s ease-in-out infinite,
+    sway 9s ease-in-out infinite alternate,
+    ripple-leaf 13s ease-in-out infinite alternate;
 }
 
 .blob--sky {
@@ -155,11 +160,44 @@ textarea {
   right: 6%;
   background: linear-gradient(135deg, rgba(100, 181, 246, 0.22), rgba(30, 136, 229, 0.08));
   border-radius: 50%;
-  animation-delay: -6s;
+  /* Burbuja que se desplaza y se deforma suavemente, como una gota en el agua */
+  animation:
+    float-sky 70s ease-in-out infinite,
+    ripple-sky 11s ease-in-out infinite alternate;
 }
 
-@keyframes drift {
-  to { translate: 30px -40px; }
+/* Recorridos amplios por toda la pantalla; ease-in-out en cada tramo = movimiento sin tirones */
+@keyframes float-leaf {
+  0%, 100% { translate: 0 0; }
+  20% { translate: 22vw 18vh; }
+  40% { translate: 50vw 4vh; }
+  60% { translate: 38vw 42vh; }
+  80% { translate: 8vw 30vh; }
+}
+
+@keyframes float-sky {
+  0%, 100% { translate: 0 0; }
+  25% { translate: -30vw 22vh; }
+  50% { translate: -58vw -8vh; }
+  75% { translate: -22vw -14vh; }
+}
+
+@keyframes sway {
+  from { rotate: -6deg; }
+  to   { rotate: 8deg; }
+}
+
+/* La forma "respira" como si el agua la empujara */
+@keyframes ripple-leaf {
+  0%   { border-radius: 80% 15% 80% 15%; }
+  50%  { border-radius: 72% 22% 84% 18%; }
+  100% { border-radius: 84% 12% 74% 24%; }
+}
+
+@keyframes ripple-sky {
+  0%   { border-radius: 50% 50% 50% 50%; scale: 1; }
+  50%  { border-radius: 56% 44% 52% 48% / 46% 54% 46% 54%; scale: 1.04; }
+  100% { border-radius: 46% 54% 44% 56% / 54% 46% 56% 44%; scale: 0.97; }
 }
 
 /* Cada pantalla entra con un ligero deslizamiento */

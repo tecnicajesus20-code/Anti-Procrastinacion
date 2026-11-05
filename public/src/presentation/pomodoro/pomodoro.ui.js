@@ -66,7 +66,26 @@ export function initPomodoroUi(pomodoro, pomodoroSessions, navigation) {
     }
   }
 
+  const coin = byId("pomodoro-coin");
+  const nextLabel = byId("pomodoro-next");
+  const breakMinutes = Math.round(POMODORO_DEFAULTS.breakSeconds / 60);
+  const workMinutes = Math.round(POMODORO_DEFAULTS.workSeconds / 60);
+  let lastMode = null;
+
+  /** Cambio trabajo ↔ descanso: el reloj gira como una moneda. */
+  function flipCoin() {
+    coin.classList.remove("pomodoro-coin--flip");
+    void coin.offsetWidth; // reinicia la animación si se repite
+    coin.classList.add("pomodoro-coin--flip");
+  }
+  coin.addEventListener("animationend", () => coin.classList.remove("pomodoro-coin--flip"));
+
   pomodoro.onTick((state) => {
+    if (lastMode !== null && state.mode !== lastMode) flipCoin();
+    lastMode = state.mode;
+    nextLabel.textContent = state.mode === POMODORO_MODE.BREAK
+      ? `Luego: trabajo ${workMinutes} min`
+      : `Luego: descanso ${breakMinutes} min`;
     time.textContent = formatMinutesSeconds(state.remaining);
     mode.textContent = state.awaitingConfirmation ? "Confirmación pendiente" : MODE_LABELS[state.mode];
     const activeSession = pomodoroSessions.getCurrentSession();

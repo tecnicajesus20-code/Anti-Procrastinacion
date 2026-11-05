@@ -4,7 +4,9 @@
  *
  * La dificultad es un dato de cada bloque (block.difficulty), no de la tarea.
  * Puntos de un bloque = multiplicador × (minutos / 15), redondeado y con mínimo 1.
- * Penalización por no completarlo = 1,5 × esos puntos (redondeado).
+ * Penalización por no completarlo = 20 % de esos puntos (redondeado, mínimo 1 si el bloque da puntos).
+ * En el perfil: puntos ganados = "Impulsos", penalizaciones = "Desvíos", Score = Impulsos − Desvíos.
+ * Los resultados ya guardados conservan los puntos con los que se registraron (block.outcome.points).
  */
 
 const MS_PER_MINUTE = 60_000;
@@ -19,7 +21,8 @@ export const DIFFICULTIES = Object.freeze([
   Object.freeze({ id: "hardcore", label: "Hardcore", icon: "💀", maxMinutes: null, multiplier: 5 }),
 ]);
 
-export const PENALTY_FACTOR = 1.5;
+/** Los Desvíos pesan mucho menos que los Impulsos: 20 % del valor del bloque. */
+export const PENALTY_FACTOR = 0.2;
 
 /** @param {string} id */
 export const getDifficulty = (id) => DIFFICULTIES.find((difficulty) => difficulty.id === id) ?? null;
@@ -68,5 +71,6 @@ export function pointsForBlock(block) {
 
 /** Puntos que se descuentan si el bloque no se completa (valor positivo). */
 export function penaltyForBlock(block) {
-  return Math.round(pointsForBlock(block) * PENALTY_FACTOR);
+  const points = pointsForBlock(block);
+  return points > 0 ? Math.max(1, Math.round(points * PENALTY_FACTOR)) : 0;
 }
