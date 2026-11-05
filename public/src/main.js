@@ -43,7 +43,6 @@ import { initTaskReminderUi } from "./presentation/tasks/task-reminder.ui.js";
 import { createProfileService } from "./application/profile.service.js";
 import { createFirestoreProfileRepository } from "./infrastructure/firebase/profile.firestore.repository.js";
 import { initProfileUi } from "./presentation/profile/profile.ui.js";
-import { initProgressUi } from "./presentation/profile/progress.ui.js";
 import { initCategoryUi } from "./presentation/tasks/category.ui.js";
 import { initBlockIntentDialog } from "./presentation/tasks/block-intent.ui.js";
 import { initBlockEndUi } from "./presentation/tasks/block-end.ui.js";
