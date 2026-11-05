@@ -1,89 +1,549 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Welcome to Firebase Hosting</title>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Sistema Antiprocrastinación</title>
+  <link rel="stylesheet" href="src/styles/base.css?v=20261104e" />
+  <link rel="stylesheet" href="src/styles/layout.css" />
+  <link rel="stylesheet" href="src/styles/landing.css" />
+  <link rel="stylesheet" href="src/styles/components.css?v=20261104f" />
+</head>
+<body>
+  <!-- Decoración de fondo -->
+  <div class="blob blob--leaf" aria-hidden="true"></div>
+  <div class="blob blob--sky" aria-hidden="true"></div>
 
-    <!-- update the version number as needed -->
-    <script defer src="/__/firebase/13.2.0/firebase-app-compat.js"></script>
-    <!-- include only the Firebase features as you need -->
-    <script defer src="/__/firebase/13.2.0/firebase-auth-compat.js"></script>
-    <script defer src="/__/firebase/13.2.0/firebase-database-compat.js"></script>
-    <script defer src="/__/firebase/13.2.0/firebase-firestore-compat.js"></script>
-    <script defer src="/__/firebase/13.2.0/firebase-functions-compat.js"></script>
-    <script defer src="/__/firebase/13.2.0/firebase-messaging-compat.js"></script>
-    <script defer src="/__/firebase/13.2.0/firebase-storage-compat.js"></script>
-    <script defer src="/__/firebase/13.2.0/firebase-analytics-compat.js"></script>
-    <script defer src="/__/firebase/13.2.0/firebase-remote-config-compat.js"></script>
-    <script defer src="/__/firebase/13.2.0/firebase-performance-compat.js"></script>
-    <!-- 
-      initialize the SDK after all desired features are loaded, set useEmulator to false
-      to avoid connecting the SDK to running emulators.
-    -->
-    <script defer src="/__/firebase/init.js?useEmulator=true"></script>
+  <!-- ⚠️ REVISIÓN PENDIENTE (D-08): los errores también usan este elemento con role="status" (lectores de pantalla los
+       anuncian con baja prioridad). Sugerencia: role="alert" para errores, o un segundo elemento para ellos. -->
+  <p class="message" id="message" role="status" hidden></p>
+  <p class="loading" id="loading" hidden>Cargando…</p>
 
-    <style media="screen">
-      body { background: #ECEFF1; color: rgba(0,0,0,0.87); font-family: Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; }
-      #message { background: white; max-width: 360px; margin: 100px auto 16px; padding: 32px 24px; border-radius: 3px; }
-      #message h2 { color: #ffa100; font-weight: bold; font-size: 16px; margin: 0 0 8px; }
-      #message h1 { font-size: 22px; font-weight: 300; color: rgba(0,0,0,0.6); margin: 0 0 16px;}
-      #message p { line-height: 140%; margin: 16px 0 24px; font-size: 14px; }
-      #message a { display: block; text-align: center; background: #039be5; text-transform: uppercase; text-decoration: none; color: white; padding: 16px; border-radius: 4px; }
-      #message, #message a { box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24); }
-      #load { color: rgba(0,0,0,0.4); text-align: center; font-size: 13px; }
-      @media (max-width: 600px) {
-        body, #message { margin-top: 0; background: white; box-shadow: none; }
-        body { border-top: 16px solid #ffa100; }
-      }
-    </style>
-  </head>
-  <body>
-    <div id="message">
-      <h2>Welcome</h2>
-      <h1>Firebase Hosting Setup Complete</h1>
-      <p>You're seeing this because you've successfully setup Firebase Hosting. Now it's time to go build something extraordinary!</p>
-      <a target="_blank" href="https://firebase.google.com/docs/hosting/">Open Hosting Documentation</a>
+  <main class="app-main">
+    <!-- ================= INICIO (landing) ================= -->
+    <section class="view wrap" id="view-home">
+      <nav class="nav">
+        <span class="logo">Muven</span>
+        <button class="btn guest-only" type="button" data-go="cuenta">Iniciar sesión</button>
+        <button class="btn user-only" type="button" data-go="tareas">Ir a mis tareas</button>
+      </nav>
+
+      <div class="hero">
+        <div>
+          <h1 class="hero__title">Hagamos que tu vida entre en movimiento con MUVEN.</h1>
+          <p class="hero__lead">Escribe la tarea, elige cuándo la harás y colócala en tu calendario. Enfócate con un Pomodoro y empieza por la primera, nada más.</p>
+          <div class="cta-row">
+            <button class="btn btn--primary btn--big guest-only" type="button" data-go="tareas">Probar el demo</button>
+            <button class="btn btn--big guest-only" type="button" data-go="cuenta">Crear cuenta</button>
+            <button class="btn btn--big guest-only" type="button" data-go="cuenta">Iniciar sesión</button>
+            <button class="btn btn--primary btn--big user-only" type="button" data-go="tareas">Ir a mis tareas</button>
+          </div>
+        </div>
+        <div class="stage" aria-hidden="true">
+          <div class="orb">
+            <svg viewBox="0 0 260 260"><circle class="orb__track" cx="130" cy="130" r="116" /><circle class="orb__arc" cx="130" cy="130" r="116" /></svg>
+            <b class="orb__time">1%</b>
+          </div>
+          <div class="pill pill--done">Tarea 1 · completada</div>
+          <div class="pill pill--now">Tarea 2 · ahora</div>
+          <div class="pill pill--next">Tarea 3 · 16:30</div>
+        </div>
+      </div>
+
+      <div class="feats">
+        <div class="card"><div class="feat__icon">📝</div><h3 class="feat__title">Tareas claras</h3><p class="feat__text">Crea cada tarea con su título, descripción, horario y bloques de trabajo.</p></div>
+        <div class="card"><div class="feat__icon">🗓️</div><h3 class="feat__title">Calendario</h3><p class="feat__text">Arrastra una tarea para moverla o estira su borde para cambiar su duración.</p></div>
+        <div class="card"><div class="feat__icon">⏱️</div><h3 class="feat__title">Pomodoro propio</h3><p class="feat__text">Trabaja 25 minutos y descansa 5, con un temporizador que respira contigo.</p></div>
+      </div>
+
+      <div class="flow">
+        <h2>Así avanzas</h2>
+        <ol class="flow__steps">
+          <li><b>1.</b> Creas una tarea</li>
+          <li><b>2.</b> La ubicas en el calendario</li>
+          <li><b>3.</b> Enfocas con el Pomodoro</li>
+          <li><b>4.</b> La marcas como completada</li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ================= CUENTA ================= -->
+    <section class="view wrap" id="view-auth" hidden>
+      <button class="btn btn--sm back-btn" type="button" data-go="inicio">← Volver al inicio</button>
+      <div class="card auth-box">
+        <h2 class="auth-title">Tu cuenta</h2>
+        <p class="muted">Inicia sesión para guardar tus tareas en la nube.</p>
+        <form class="form" id="auth-form">
+          <label class="field">Correo
+            <input class="input" id="auth-email" type="email" autocomplete="email" required />
+          </label>
+          <label class="field">Contraseña
+            <!-- ⚠️ REVISIÓN PENDIENTE (D-09): el mismo campo sirve para "Crear cuenta"; con current-password el navegador no
+                 propone una contraseña nueva al registrarse. Opcional: cambiar a "new-password" al pulsar "Crear cuenta". -->
+            <input class="input" id="auth-password" type="password" autocomplete="current-password" minlength="6" required />
+          </label>
+             <details class="auth-extra" id="auth-extra">
+           <summary>¿Cuenta nueva? Añade tu nombre y foto</summary>
+           <label class="field">Nombre
+             <input class="input" id="auth-name" type="text" maxlength="50" autocomplete="name" />
+           </label>
+           <label class="field">Foto (opcional)
+             <input class="input" id="auth-photo" type="file" accept="image/*" />
+           </label>
+           <img class="avatar avatar--lg" id="auth-photo-preview" alt="Vista previa de la foto" hidden />
+         </details>
+          <div class="auth-actions">
+            <button class="btn btn--primary btn--big" id="auth-login" type="submit">Iniciar sesión</button>
+            <button class="btn" id="auth-register" type="submit">Crear cuenta</button>
+            <button class="btn btn--soft" id="auth-reset" type="button">🔑 Recuperar contraseña</button>
+          </div>
+        </form>
+        <p class="note" id="auth-note"></p>
+      </div>
+    </section>
+
+    <!-- ================= APP ================= -->
+    <section class="view wrap" id="view-app" hidden>
+    <header class="top">
+      <span class="logo">Muven</span>
+      <nav class="nav-tabs" aria-label="Secciones">
+        <button class="nav-tab" type="button" data-go="tareas">Tareas</button>
+        <button class="nav-tab" type="button" data-go="calendario">Calendario</button>
+        <button class="nav-tab" type="button" data-go="pomodoro">Pomodoro</button>
+        <button class="nav-tab user-only" type="button" data-go="perfil">Perfil</button>
+      </nav>
+      <!-- Campana de recordatorios: se abre al pasar el cursor o al pulsar. Mismos botones e ids de siempre. -->
+      <div class="bell" id="bell">
+        <button class="bell__toggle" id="bell-toggle" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="bell-menu" aria-label="Recordatorios" title="Recordatorios">🔔<span class="bell__badge" id="bell-badge" hidden></span></button>
+        <div class="bell__menu" id="bell-menu" role="group" aria-label="Recordatorios">
+          <p class="bell__title">Recordatorios</p>
+          <button class="bell__item" id="notifications-enable" type="button">Activar notificaciones</button>
+          <button class="bell__item" id="alarm-enable" type="button">Activar alarma sonora</button>
+          <button class="bell__item bell__item--danger" id="alarm-stop" type="button" hidden>Silenciar alarma</button>
+          <!-- Bloques terminados sin respuesta a "¿Terminaste la tarea?" (block-end.ui.js) -->
+          <div class="bell__pending" id="bell-pending" hidden>
+            <p class="bell__title">Pendientes de confirmar</p>
+            <ul class="bell__pending-list" id="bell-pending-list"></ul>
+          </div>
+        </div>
+      </div>
+      <!-- Información del usuario -->
+<div class="user-profile">
+
+  <!-- Avatar del usuario -->
+  <img
+    id="user-avatar"
+    class="avatar"
+    src=""
+    alt="Avatar del usuario"
+    hidden
+  />
+
+  <!-- Nombre o estado de sesión -->
+  <span class="user" id="user-label">
+    Modo demo (sin sesión)
+  </span>
+
+</div>
+
+<!-- Acciones de sesión -->
+<button
+  class="btn btn--sm guest-only"
+  type="button"
+  data-go="inicio"
+>
+  Salir del demo
+</button>
+
+<button
+  class="btn btn--sm"
+  id="auth-logout"
+  type="button"
+  hidden
+>
+  Cerrar sesión
+</button>
+    </header>
+
+    <div class="demo-banner guest-only">
+      Estás en modo demo: los cambios se guardan solo en este dispositivo y navegador.
+      <button class="link" type="button" data-go="cuenta">Iniciar sesión o crear una cuenta</button>
     </div>
-    <p id="load">Firebase SDK Loading&hellip;</p>
 
-    <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        const loadEl = document.querySelector('#load');
-        // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
-        // // The Firebase SDK is initialized and available here!
-        //
-        // firebase.auth().onAuthStateChanged(user => { });
-        // firebase.database().ref('/path/to/ref').on('value', snapshot => { });
-        // firebase.firestore().doc('/foo/bar').get().then(() => { });
-        // firebase.functions().httpsCallable('yourFunction')().then(() => { });
-        // firebase.messaging().requestPermission().then(() => { });
-        // firebase.storage().ref('/path/to/ref').getDownloadURL().then(() => { });
-        // firebase.analytics(); // call to activate
-        // firebase.analytics().logEvent('tutorial_completed');
-        // firebase.performance(); // call to activate
-        //
-        // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
+    <!-- Tareas -->
+    <div id="panel-tasks">
+      <div class="page-head tasks-head">
+        <h2 class="page-title">Mis tareas</h2>
+        <button class="btn btn--primary" id="task-new-open" type="button">+ Nueva tarea</button>
+      </div>
+      <ul class="task-list" id="task-list"></ul>
 
-        try {
-          let app = firebase.app();
-          let features = [
-            'auth', 
-            'database', 
-            'firestore',
-            'functions',
-            'messaging', 
-            'storage', 
-            'analytics', 
-            'remoteConfig',
-            'performance',
-          ].filter(feature => typeof app[feature] === 'function');
-          loadEl.textContent = `Firebase SDK loaded with ${features.join(', ')}`;
-        } catch (e) {
-          console.error(e);
-          loadEl.textContent = 'Error loading the Firebase SDK, check the console.';
-        }
-      });
-    </script>
-  </body>
+      <!-- "Nueva tarea": el mismo formulario (mismos ids), ahora dentro de una ventana emergente -->
+      <dialog class="event-dialog task-dialog" id="task-dialog" aria-labelledby="task-dialog-title">
+        <div class="event-dialog__header">
+          <h2 class="event-dialog__title" id="task-dialog-title">Nueva tarea</h2>
+          <button class="icon-button" id="task-dialog-close" type="button" aria-label="Cerrar">×</button>
+        </div>
+        <form class="form" id="task-form">
+          <label class="field event-field--title">
+            <span class="sr-only">Título</span>
+            <input class="input event-title-input" id="task-title" type="text" maxlength="120" placeholder="Nombre de la tarea" required />
+          </label>
+          <label class="field">Descripción (opcional)
+            <input class="input" id="task-description" type="text" />
+          </label>
+          <div class="category-field">
+            <label class="field">Categoría
+              <select class="input" id="task-category" required></select>
+            </label>
+            <button class="link category-field__manage" type="button" data-category-manage>Gestionar categorías</button>
+          </div>
+          <div class="event-time-fields">
+            <label class="field">Inicio
+              <input class="input" id="task-start" type="datetime-local" required />
+            </label>
+            <label class="field">Fin
+              <input class="input" id="task-end" type="datetime-local" required />
+            </label>
+          </div>
+          <label class="field">Dificultad del bloque
+            <select class="input" id="task-difficulty" required></select>
+          </label>
+          <p class="note difficulty-hint" id="task-difficulty-hint"></p>
+          <p class="message message--error task-dialog__error" id="task-dialog-error" role="alert" hidden></p>
+          <button class="btn btn--primary btn--block" type="submit">Agregar tarea</button>
+        </form>
+      </dialog>
+    </div>
+
+    <!-- Calendario -->
+    <div id="panel-calendar" hidden>
+      <section class="card">
+        <h2 class="card-title">Calendario</h2>
+        <div class="calendar" id="calendar"></div>
+        <div class="calendar-legend" aria-label="Leyenda de sesiones Pomodoro">
+          <span class="calendar-legend__item"><span class="calendar-legend__swatch calendar-legend__swatch--focus"></span>Enfoque · 25 min</span>
+          <span class="calendar-legend__item"><span class="calendar-legend__swatch calendar-legend__swatch--break"></span>Descanso · 5 min</span>
+          <p class="calendar-hint">La franja gris al pie de cada enfoque marca el descanso de 5 min. Haz clic en un bloque verde para iniciarlo; para cambiar horarios, edita el bloque desde Tareas.</p>
+        </div>
+      </section>
+    </div>
+
+    <!-- Pomodoro -->
+    <div id="panel-pomodoro" hidden>
+      <div class="pomodoro-wrap">
+        <section class="pomodoro" id="pomodoro-card">
+          <p class="pomodoro-mode" id="pomodoro-mode">Trabajo</p>
+          <div class="pomodoro-coin" id="pomodoro-coin">
+            <div class="pomodoro-ring">
+              <svg viewBox="0 0 260 260" aria-hidden="true">
+                <circle class="pomodoro-ring__track" cx="130" cy="130" r="116" />
+                <circle class="pomodoro-ring__progress" id="pomodoro-ring" cx="130" cy="130" r="116" pathLength="1" />
+              </svg>
+              <p class="pomodoro-time" id="pomodoro-time">25:00</p>
+              <p class="pomodoro-next" id="pomodoro-next">Luego: descanso 5 min</p>
+            </div>
+          </div>
+          <p class="pomodoro-task" id="pomodoro-task">Sin tarea seleccionada</p>
+          <p class="pomodoro-cycle" id="pomodoro-cycle">Sin ciclo programado</p>
+          <progress class="pomodoro-progress" id="pomodoro-progress" max="1" value="0" aria-label="Progreso del ciclo"></progress>
+          <p class="pomodoro-session-status" id="pomodoro-session-status" role="status"></p>
+          <div class="btn-row">
+            <button class="btn btn--primary" id="pomodoro-start" type="button">Iniciar</button>
+            <button class="btn" id="pomodoro-pause" type="button">Pausar</button>
+            <button class="btn" id="pomodoro-reset" type="button">Reiniciar</button>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn--primary" id="pomodoro-confirm" type="button" hidden>Confirmar sesión completada</button>
+            <button class="btn btn--danger" id="pomodoro-fail" type="button" hidden>Registrar incumplimiento</button>
+          </div>
+        </section>
+      </div>
+    </div>
+    <!-- Perfil -->
+    <!-- Perfil: datos personales + Score + historial + estadísticas (profile.ui.js / progress.ui.js) -->
+    <div id="panel-profile" hidden>
+      <div class="profile-grid">
+        <!-- 1 · Información personal -->
+        <section class="card profile-head">
+          <div class="profile-avatar">
+            <img class="avatar avatar--lg" id="profile-avatar" alt="Foto de perfil" hidden />
+            <span class="profile-avatar__initial" id="profile-initial" aria-hidden="true">?</span>
+          </div>
+          <div class="profile-head__info">
+            <h2 class="profile-head__name" id="profile-name">Sin nombre</h2>
+            <p class="muted" id="profile-email"></p>
+            <p class="muted profile-head__since" id="profile-since"></p>
+          </div>
+          <button class="btn btn--sm" id="profile-edit" type="button">Editar perfil</button>
+        </section>
+
+        <!-- 2 · Score y puntos -->
+        <section class="card score-card" aria-labelledby="score-title">
+          <p class="section-kicker" id="score-title">Tu Score</p>
+          <p class="score-card__value" id="score-value">0</p>
+          <div class="score-card__split">
+            <div class="score-pill score-pill--up">
+              <span class="score-pill__label">Impulsos</span>
+              <strong id="score-impulses">+0</strong>
+              <span class="score-pill__sub" id="score-impulses-count"></span>
+            </div>
+            <div class="score-pill score-pill--down">
+              <span class="score-pill__label">Desvíos</span>
+              <strong id="score-deviations">−0</strong>
+              <span class="score-pill__sub" id="score-deviations-count"></span>
+            </div>
+          </div>
+          <p class="score-card__rule">Cumplir un bloque suma su valor completo; no cumplirlo resta solo el 20 %.</p>
+        </section>
+
+        <!-- 3 · Historial de movimientos -->
+        <section class="card profile-section profile-section--history" aria-labelledby="history-title">
+          <h3 class="section-title" id="history-title">Historial de movimientos</h3>
+          <ul class="movements" id="history-list"></ul>
+          <button class="btn btn--sm movements__more" id="history-more" type="button" hidden>Ver más</button>
+        </section>
+
+        <!-- 4 · Distribución del tiempo -->
+        <section class="card profile-section" aria-labelledby="distribution-title">
+          <h3 class="section-title" id="distribution-title">Distribución del tiempo</h3>
+          <p class="section-sub">Tiempo de los bloques completados, por categoría.</p>
+          <div class="distribution" id="distribution"></div>
+        </section>
+
+        <!-- 5 · Productividad -->
+        <section class="card profile-section profile-section--wide" aria-labelledby="productivity-title">
+          <h3 class="section-title" id="productivity-title">Productividad</h3>
+          <div class="stat-tiles" id="productivity-tiles"></div>
+          <div class="productivity-split">
+            <div>
+              <h4 class="subsection-title">Horarios más productivos</h4>
+              <p class="section-sub" id="hours-summary"></p>
+              <div class="chart" id="hours-chart"></div>
+            </div>
+            <div>
+              <h4 class="subsection-title">Tiempo libre esta semana</h4>
+              <div id="free-time"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 6 · Evolución semanal -->
+        <section class="card profile-section profile-section--wide" aria-labelledby="evolution-title">
+          <h3 class="section-title" id="evolution-title">Evolución semanal</h3>
+          <p class="section-sub">Últimas 8 semanas. Cada gráfico tiene su propia escala.</p>
+          <div class="evolution" id="evolution"></div>
+        </section>
+      </div>
+    </div>
+
+    </section>
+  </main>
+
+  <dialog class="event-dialog" id="event-dialog" aria-labelledby="event-dialog-title">
+    <form class="event-form" id="event-form">
+      <div class="event-dialog__header">
+        <h2 class="event-dialog__title" id="event-dialog-title">Nueva tarea</h2>
+        <button class="icon-button" id="event-dialog-close" type="button" aria-label="Cerrar">×</button>
+      </div>
+      <!-- Modo "Detalles": resumen tipo comprobante (lo rellena calendar-task-dialog.ui.js) -->
+      <div class="receipt" id="event-receipt" hidden>
+        <h3 class="receipt__title" id="receipt-title"></h3>
+        <p class="receipt__date" id="receipt-date"></p>
+        <dl class="receipt__rows">
+          <div class="receipt__row"><dt>Inicio</dt><dd id="receipt-start"></dd></div>
+          <div class="receipt__row"><dt>Fin</dt><dd id="receipt-end"></dd></div>
+          <div class="receipt__row"><dt>Bloque</dt><dd id="receipt-block"></dd></div>
+        </dl>
+        <dl class="receipt__rows">
+          <div class="receipt__row"><dt>Enfoque</dt><dd id="receipt-focus"></dd></div>
+          <div class="receipt__row"><dt>Descansos</dt><dd id="receipt-breaks"></dd></div>
+        </dl>
+        <div class="receipt__total"><span>Duración total</span><strong id="receipt-total"></strong></div>
+        <p class="receipt__description" id="receipt-description"></p>
+      </div>
+      <label class="field event-field--title">
+        <span class="sr-only">Título</span>
+        <input class="input event-title-input" id="event-title" type="text" maxlength="120" placeholder="Nombre de la tarea" required />
+      </label>
+      <div class="event-time-fields">
+        <label class="field">Inicio
+          <input class="input" id="event-start" type="datetime-local" required />
+        </label>
+        <label class="field">Fin
+          <input class="input" id="event-end" type="datetime-local" required />
+        </label>
+      </div>
+      <label class="field">Dificultad del bloque
+        <select class="input" id="event-difficulty"></select>
+      </label>
+      <p class="note difficulty-hint" id="event-difficulty-hint"></p>
+      <label class="field event-field--description">Descripción <span class="optional-label">(opcional)</span>
+        <textarea class="input event-description-input" id="event-description" rows="2"></textarea>
+      </label>
+      <div class="category-field">
+        <label class="field">Categoría
+          <select class="input" id="event-category"></select>
+        </label>
+        <button class="link category-field__manage" type="button" data-category-manage>Gestionar categorías</button>
+      </div>
+      <p class="note event-dialog__block-hint" id="event-dialog-block-hint" hidden></p>
+      <p class="message message--error task-dialog__error" id="event-dialog-error" role="alert" hidden></p>
+      <div class="event-dialog__actions">
+        <button class="btn" id="event-dialog-cancel" type="button">Cancelar</button>
+        <button class="btn" id="event-dialog-edit" type="button" hidden>Editar tarea</button>
+        <button class="btn" id="event-dialog-add-block" type="button" hidden>Crear otro bloque</button>
+        <button class="btn btn--pomodoro" id="event-dialog-pomodoro" type="button" hidden>Iniciar Pomodoro</button>
+        <button class="btn btn--danger" id="event-dialog-delete-block" type="button" hidden>Eliminar bloque</button>
+        <button class="btn btn--danger" id="event-dialog-delete-task" type="button" hidden>Eliminar tarea</button>
+        <button class="btn btn--primary" id="event-dialog-save" type="submit">Guardar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Detalle de tarea: se abre al hacer clic en una tarjeta de "Mis tareas" (task-detail-dialog.ui.js) -->
+  <dialog class="task-detail" id="task-detail-dialog" aria-labelledby="task-detail-title">
+    <div class="task-detail__body">
+      <div class="task-detail__header">
+        <div class="task-detail__heading">
+          <h2 class="task-detail__title" id="task-detail-title"></h2>
+          <p class="task-detail__description" id="task-detail-description"></p>
+        </div>
+        <button class="icon-button" id="task-detail-close" type="button" aria-label="Cerrar">×</button>
+      </div>
+      <div class="task-detail__meta">
+        <span class="task-detail__chip"><span aria-hidden="true">🗓️</span> <span id="task-detail-when"></span></span>
+        <span class="task-detail__chip"><span aria-hidden="true">⏱</span> <span id="task-detail-last"></span></span>
+        <span class="task-detail__chip task-detail__chip--category" id="task-detail-category" hidden></span>
+        <span class="task-detail__chip task-detail__chip--points" id="task-detail-points" hidden></span>
+      </div>
+      <div class="task-detail__section-head">
+        <h3 class="task-detail__section-title">Bloques de trabajo</h3>
+      </div>
+      <ol class="work-timeline" id="task-detail-blocks"></ol>
+      <p class="task-detail__note" id="task-detail-note"></p>
+      <p class="message message--error task-dialog__error task-detail__error" id="task-detail-error" role="alert" hidden></p>
+      <div class="task-detail__actions" id="task-detail-actions"></div>
+    </div>
+  </dialog>
+
+  <!-- Editar perfil (profile.ui.js). El correo NO se edita aquí: pertenece a la cuenta de Firebase Auth. -->
+  <dialog class="event-dialog profile-dialog" id="profile-dialog" aria-labelledby="profile-dialog-title">
+    <form class="form" id="profile-form">
+      <div class="event-dialog__header">
+        <h2 class="event-dialog__title" id="profile-dialog-title">Editar perfil</h2>
+        <button class="icon-button" id="profile-dialog-close" type="button" aria-label="Cerrar">×</button>
+      </div>
+      <div class="profile-dialog__photo">
+        <img class="avatar avatar--lg" id="profile-form-preview" alt="Vista previa de la foto" hidden />
+        <span class="profile-avatar__initial" id="profile-form-initial" aria-hidden="true">?</span>
+        <div class="profile-dialog__photo-actions">
+          <label class="btn btn--sm" for="profile-form-photo">Cambiar foto</label>
+          <input class="sr-only" id="profile-form-photo" type="file" accept="image/*" />
+          <button class="btn btn--sm btn--danger" id="profile-form-remove-photo" type="button">Quitar foto</button>
+        </div>
+      </div>
+      <label class="field">Nombre
+        <input class="input" id="profile-form-name" type="text" maxlength="50" autocomplete="name" required />
+      </label>
+      <label class="field">Correo
+        <input class="input" id="profile-form-email" type="email" disabled />
+      </label>
+      <p class="note">El correo es el de tu cuenta y no se cambia desde el perfil.</p>
+      <p class="message message--error task-dialog__error" id="profile-form-error" role="alert" hidden></p>
+      <div class="event-dialog__actions">
+        <button class="btn" id="profile-form-cancel" type="button">Cancelar</button>
+        <button class="btn btn--primary" id="profile-form-save" type="submit">Guardar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Aviso tras "Recuperar contraseña": se abre como ventana flotante (auth.ui.js) -->
+  <dialog class="alarm-dialog reset-dialog" id="reset-dialog" aria-labelledby="reset-dialog-title">
+    <div class="alarm-dialog__content">
+      <div class="reset-dialog__icon" aria-hidden="true">✉️</div>
+      <p class="alarm-dialog__eyebrow">Recuperar contraseña</p>
+      <h2 class="alarm-dialog__title" id="reset-dialog-title">Revisa tu correo</h2>
+      <p class="reset-dialog__text">Te enviamos un enlace para restablecer la contraseña a <b id="reset-dialog-email"></b>.</p>
+      <p class="reset-dialog__hint">Si no lo ves en unos minutos, revisa la carpeta de spam o correo no deseado.</p>
+      <div class="alarm-dialog__actions">
+        <a class="btn btn--primary" id="reset-dialog-mail" href="https://mail.google.com/" target="_blank" rel="noopener noreferrer">Abrir Gmail</a>
+        <button class="btn" id="reset-dialog-close" type="button">Cerrar</button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog class="alarm-dialog" id="alarm-dialog" aria-labelledby="alarm-dialog-title">
+    <div class="alarm-dialog__content">
+      <p class="alarm-dialog__eyebrow">Recordatorio de tarea</p>
+      <h2 class="alarm-dialog__title" id="alarm-dialog-title">¡Te toca realizar esta tarea!</h2>
+      <p class="alarm-dialog__task" id="alarm-dialog-task"></p>
+      <p class="alarm-dialog__time" id="alarm-dialog-time"></p>
+      <div class="alarm-dialog__actions">
+        <button class="btn btn--primary" id="alarm-do-pomodoro" type="button">Hacerla con Pomodoro</button>
+        <button class="btn btn--danger" id="alarm-reject" type="button">Rechazar y silenciar</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Inicio de bloque: tarea concreta (block-intent.ui.js) -->
+  <dialog class="alarm-dialog block-intent-dialog" id="block-intent-dialog" aria-labelledby="block-intent-title">
+    <form class="alarm-dialog__content" id="block-intent-form">
+      <p class="alarm-dialog__eyebrow">Inicio de bloque</p>
+      <h2 class="alarm-dialog__title" id="block-intent-title">Define una tarea concreta para realizar en este bloque de tiempo</h2>
+      <p class="alarm-dialog__task" id="block-intent-task"></p>
+      <p class="alarm-dialog__time" id="block-intent-time"></p>
+      <textarea class="input block-intent__input" id="block-intent-text" rows="3" maxlength="200" required placeholder="Ej.: resolver los ejercicios 1 a 5 del taller"></textarea>
+      <div class="alarm-dialog__actions">
+        <button class="btn" id="block-intent-cancel" type="button">Cancelar</button>
+        <button class="btn btn--primary" id="block-intent-submit" type="submit">Comenzar bloque</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Fin de bloque: "¿Terminaste la tarea?" (block-end.ui.js). Sin respuesta en 3 min pasa a la campanita -->
+  <dialog class="alarm-dialog block-end-dialog" id="block-end-dialog" aria-labelledby="block-end-title">
+    <div class="alarm-dialog__content">
+      <p class="alarm-dialog__eyebrow">Fin del bloque</p>
+      <h2 class="alarm-dialog__title" id="block-end-title">¿Terminaste la tarea?</h2>
+      <p class="alarm-dialog__task" id="block-end-task"></p>
+      <p class="alarm-dialog__time" id="block-end-intent"></p>
+      <p class="note" id="block-end-countdown"></p>
+      <p class="message message--error task-dialog__error" id="block-end-error" role="alert" hidden></p>
+      <div class="alarm-dialog__actions">
+        <button class="btn btn--danger" id="block-end-no" type="button">No la terminé</button>
+        <button class="btn btn--primary" id="block-end-yes" type="button" autofocus>Sí, la terminé</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Gestión de categorías (category.ui.js) -->
+  <dialog class="event-dialog category-dialog" id="category-dialog" aria-labelledby="category-dialog-title">
+    <div class="event-dialog__header">
+      <h2 class="event-dialog__title" id="category-dialog-title">Categorías</h2>
+      <button class="icon-button" id="category-dialog-close" type="button" aria-label="Cerrar">×</button>
+    </div>
+    <p class="note">Las 5 categorías base no se pueden eliminar. Si eliminas una propia, sus tareas pasan a Ocio.</p>
+    <ul class="category-list" id="category-list"></ul>
+    <form class="form category-form" id="category-form">
+      <div class="category-form__row">
+        <label class="field">Nueva categoría
+          <input class="input" id="category-name" type="text" maxlength="40" required />
+        </label>
+        <label class="field category-form__color">Color
+          <input class="input" id="category-color" type="color" value="#7c8db5" />
+        </label>
+      </div>
+      <p class="message message--error task-dialog__error" id="category-dialog-error" role="alert" hidden></p>
+      <button class="btn btn--primary" type="submit">Crear categoría</button>
+    </form>
+  </dialog>
+
+  <!-- FullCalendar 6.1.15 (paquete completo con vistas e interacción). Define window.FullCalendar -->
+
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+  <!-- Idioma español de FullCalendar (nombres de meses y días). Si no carga, calendar.view.js ya trae los textos de los botones. -->
+  <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.15/locales/es.global.min.js"></script>
+  <script type="module" src="src/main.js"></script>
+</body>
 </html>
